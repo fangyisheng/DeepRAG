@@ -1,0 +1,9 @@
+[tool.poetry]
+name = "DeepRAG"                # 项目名称
+version = "0.1.0"                  # 项目版本
+description = "A Fast and Efficient LLM-RAG Python project based DeepSeek-v3 using Poetry "  # 项目描述
+authors = ["fys380799654@gmail.com"]  # 作者信息
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]  # 构建系统要求
+build-backend = "poetry.core.masonry.api"
