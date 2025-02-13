@@ -1,0 +1,28 @@
+from deeprag.text_extract_and_clean import process_text
+from deeprag.text_chunk_based_by_token import split_text_by_token
+from deeprag.agent.index.extract_entity_relationship_graph import extract_entity_relationship_agent
+from deeprag.agent.index.graph_storage_to_html import store_graph_data_to_html
+import asyncio
+from loguru import logger
+import time
+
+async def main():
+     cleaned_text = await process_text("/home/easonfang/DeepRAG/deeprag-item/deeprag/knowledge_file/test2.txt")
+     logger.info("文本预清洗完成")
+     logger.info(f"这是清洗好的文本：{cleaned_text}")
+     chunks = await split_text_by_token(cleaned_text)
+     logger.info("文本切分完成")
+     logger.info(f"这是切分好的文本分块列表：{chunks}")
+     tasks = [extract_entity_relationship_agent(chunk) for chunk in chunks]
+     start_time = time.perf_counter()
+     results = await extract_entity_relationship_agent(chunks[0])
+     end_time = time.perf_counter()
+     print(f"并发执行时间：{end_time - start_time}")
+     logger.info("并发提取图结构成功，下面是结果")
+     
+    #  another_tasks = [store_graph_data_to_html(graph) for graph in results]
+    #  new_results = await asyncio.gather(*another_tasks)
+    
+
+asyncio.run(main())
+

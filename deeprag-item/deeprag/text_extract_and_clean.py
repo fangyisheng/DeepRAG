@@ -15,4 +15,4 @@ async def process_text(file_path):
 
 
 # import asyncio
-# print(asyncio.run(process_text("/home/easonfang/deeprag-item/deeprag/knowledge_file/test.txt")))
+# print(asyncio.run(process_text("/home/easonfang/DeepRAG/deeprag-item/deeprag/knowledge_file/test.txt")))

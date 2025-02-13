@@ -33,7 +33,7 @@ async def split_text_by_token(text: str, max_tokens: int = int(os.getenv("EMBEDD
     return chunks
 
 
-# test code
+# # test code
 # async def main():
 #     text = "这是一个示例文本，用于演示如何根据token进行分块。我们将这段文本分成多个小块，每块包含一定数量的token。"
 #     max_tokens = 10  # 每块最多包含10个token
