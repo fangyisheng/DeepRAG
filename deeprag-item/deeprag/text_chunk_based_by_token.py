@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from loguru import logger
 load_dotenv()
+from loguru import logger
 
 #在读取环境文件中的数字时，其实读到的是str
 async def split_text_by_token(text: str, max_tokens: int = int(os.getenv("EMBEDDING_MODEL_MAX_TOKEN")), model_name: str = "gpt-4o") -> list[str]:
@@ -22,6 +23,8 @@ async def split_text_by_token(text: str, max_tokens: int = int(os.getenv("EMBEDD
     
     # 将文本编码为token
     tokens = encoding.encode(text)
+    logger.info(f"文本的token数量为:{len(tokens)}")
+ 
     
     # 分块
     chunks = []
@@ -43,3 +46,5 @@ async def split_text_by_token(text: str, max_tokens: int = int(os.getenv("EMBEDD
 # if __name__ == "__main__":
 #     import asyncio
 #     print(asyncio.run(main()))
+
+
