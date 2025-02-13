@@ -1,6 +1,6 @@
 from deeprag.llm_api_client import llm_service
 from importlib import resources
-
+import asyncio
 
 with resources.files("deeprag.prompts").joinpath("sentence_agent_pattern_prompt.txt").open("r") as file:
     system_prompt = file.read()
