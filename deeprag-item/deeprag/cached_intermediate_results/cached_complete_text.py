@@ -1,28 +1,25 @@
-import pandas as pd
-from tabulate import tabulate
-import uuid
-from pathlib import Path
-
+from . import *
 
 # 创建示例 DataFrame
-async def cache_complete_text(complete_text,title):
+async def cache_complete_text(complete_text, file_path):
     data = {
-        "id":f"doc_{str(uuid.uuid4())}",
+        "id": f"doc_{str(uuid.uuid4())}",
         "text": complete_text,
-        "title": title
+        "title": Path(file_path).name  
     }
     df = pd.DataFrame(data)
     
-    df.to_csv()
+    storaged_file_name = f"text_{str(uuid.uuid4())}"
+
+    csv_path = Path.cwd() / "csv_output" / f"{storaged_file_name}.csv"
+    df.to_csv(csv_path, index = False)
     
+    parquet_path = Path(__file__).parent / "parquet_output" / f"{storaged_file_name}.parquet"
     # parquet_path = 
-    df.to_parquet()
+    df.to_parquet(parquet_path,engine="pyarrow")
 
     return df
     #返回一个DataFrame对象
 
 
-# from pathlib import Path
 
-# def test():
-#     print(Path.cwd())
