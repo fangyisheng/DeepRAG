@@ -29,7 +29,12 @@ for entity in a:
 
 for relation in b:
     
+aa
+a
 
+a
+
+a
 print(merged_graph)
         
 
