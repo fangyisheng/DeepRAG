@@ -1,4 +1,4 @@
-from deeprag.llm_api_client import llm_service
+from deeprag.rag_core_utils.llm_api.llm_api_client import llm_service
 
 system_prompt = """
 假如你是一个强大的人工智能助手，你可以通过逐步思考回答用户的问题。

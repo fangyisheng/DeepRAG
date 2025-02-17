@@ -1,4 +1,4 @@
-from deeprag.llm_api_client import llm_service
+from deeprag.rag_core_utils.llm_api.llm_api_client import llm_service
 from importlib import resources
 import asyncio
 

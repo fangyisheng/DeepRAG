@@ -1,5 +1,5 @@
-from deeprag.embedding_api_client import text_to_vector
-from deeprag.embedding_api_client import embedding_model_input_string_array_length
+from deeprag.rag_core_utils.embedding_api.embedding_api_client import text_to_vector
+from deeprag.rag_core_utils.embedding_api.embedding_api_client import embedding_model_input_string_array_length
 import asyncio
 
 

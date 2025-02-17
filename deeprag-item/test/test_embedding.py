@@ -1,4 +1,4 @@
-from deeprag.embedding_api_client import text_to_vector
+from deeprag.rag_core_utils.embedding_api.embedding_api_client import text_to_vector
 import asyncio
 from deeprag.text_extract_and_clean import process_text
 from deeprag.text_chunk_based_by_token import split_text_by_token
