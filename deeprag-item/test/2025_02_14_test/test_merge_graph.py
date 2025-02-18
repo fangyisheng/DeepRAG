@@ -7,12 +7,25 @@ merged_graph = {
     "relations":[]
 }
 
-a = test_data_1["entities"]+test_data_2["entities"]
-b = test_data_1["relations"]+test_data_2["relations"]
+test_data_list = [test_data_1,test_data_2]
 
-for relation in test_data_1["relations"]:
-    relation["head"] = next((item["text"] for item in test_data_1["entities"] if item["id"] == relation["head"]),None)
-    relation["tail"] = next((item["text"] for item in test_data_1["entities"] if item["id"] == relation["head"]),None)
+import uuid
+
+#将提取的图结构中的语义不明确的关系的实体的id填充完整，head和tail
+for test_data in test_data_list:
+    for relation in test_data["relations"]:
+        relation["head"] = next((item["text"] for item in test_data_1["entities"] if item["id"] == relation["head"]),None)
+        relation["tail"] = next((item["text"] for item in test_data_1["entities"] if item["id"] == relation["tail"]),None)
+      
+for dict in test_data_list:
+    for entity in dict["entities"]:
+        print(entity)
+        text = entity["text"]
+        for all
+        
+
+
+
 
 
 
