@@ -6,11 +6,11 @@
 #     #   relation["head"] = next((item["text"] for item in test_data_1["entities"] if item["id"] == relation["head"]),None)
 #       relation["tail"] = next((item["text"] for item in test_data_1["entities"] if item["id"] == relation["head"]),None)
 
-
-test_data = {
-    "data":1,
-    "data":1
+merged_graph = {
+    "entities":[],
+    "relations":[]
 }
-print(test_data)
+print(next((item["text"] for item in merged_graph["entities"] if item["text"] == "nihao"),None))
+
 
     
