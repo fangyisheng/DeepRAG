@@ -1,11 +1,12 @@
 from . import *
 
 # 创建示例 DataFrame
-async def cache_complete_text(complete_text, file_path):
+async def cache_complete_text(knowledge_base_space_id, complete_text, file_path):
     data = {
-        "id": f"doc_{str(uuid.uuid4())}",
-        "text": complete_text,
-        "title": Path(file_path).name  
+        "human_readable_id": list(range(complete_text)),
+        "doc_id": [f"doc_{str(uuid.uuid4())}" for _ in range(0,len(complete_text))],
+        "doc_title": [Path(file_path).name for file_path in file_path],
+        "doc_text": complete_text,  
     }
     df = pd.DataFrame(data)
     
