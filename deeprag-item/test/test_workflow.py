@@ -1,7 +1,7 @@
 from deeprag.text_extract_and_clean import process_text
 from deeprag.text_chunk_based_by_token import TextSplitter
 from deeprag.agent.index.extract_entity_relationship_graph import extract_entity_relationship_agent
-from deeprag.agent.index.graph_storage_to_html import store_graph_data_to_html
+from deeprag.agent.index.graph_storage_to_html_with_no_leiden import store_graph_data_to_html
 import asyncio
 from loguru import logger
 import time

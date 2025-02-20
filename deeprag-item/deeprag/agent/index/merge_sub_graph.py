@@ -34,6 +34,9 @@ async def merge_sub_entity_relationship_graph(entity_relationship_graphs: list):
                 else:
                     relation["id"] = str(uuid.uuid4())
                     merged_graph["relations"].append(relation)
+            for relation in merged_graph["relations"]:
+                relation["head"] = next((entity["id"] for entity in merged_graph["entities"] if entity["text"] == relation["head"]),None)
+                relation["tail"] = next((entity["id"] for entity in merged_graph["entities"] if entity["text"] == relation["tail"]),None)
                     
         return merged_graph
 

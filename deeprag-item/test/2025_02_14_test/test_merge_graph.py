@@ -30,7 +30,7 @@ for dict in test_data_list:
              entity["id"] = str(uuid.uuid4())
              merged_graph["entities"].append(entity)
     for relation in dict["relations"]:
-        print(relation)
+        
         existing_relation = next(( item for item in merged_graph["relations"] if item.get("head") == relation["head"] and item.get("tail") == relation["tail"]),None)
         if existing_relation:
             if existing_relation["type"] != relation["type"]:
@@ -39,6 +39,9 @@ for dict in test_data_list:
             relation["id"] = str(uuid.uuid4())
             merged_graph["relations"].append(relation)
 
+for relation in merged_graph["relations"]:
+    relation["head"] = next((entity["id"] for entity in merged_graph["entities"] if entity["text"] == relation["head"]),None)
+    relation["tail"] = next((entity["id"] for entity in merged_graph["entities"] if entity["text"] == relation["tail"]),None)
 
 print(merged_graph)
 

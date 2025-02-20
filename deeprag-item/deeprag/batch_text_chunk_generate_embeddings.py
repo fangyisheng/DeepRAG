@@ -3,7 +3,7 @@ from deeprag.rag_core_utils.embedding_api.embedding_api_client import embedding_
 import asyncio
 
 
-async def batch_text_chunk_generate_embeddings_process(chunked_text_array:str, embedding_model_input_string_array_length:int = embedding_model_input_string_array_length):
+async def batch_text_chunk_generate_embeddings_process(chunked_text_array:list, embedding_model_input_string_array_length:int = embedding_model_input_string_array_length):
     if len(chunked_text_array) <= embedding_model_input_string_array_length:
         vector_array = await text_to_vector(chunked_text_array)
         return vector_array
