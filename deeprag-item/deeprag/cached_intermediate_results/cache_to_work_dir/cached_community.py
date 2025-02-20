@@ -1,4 +1,4 @@
-from . import *
+from .. import *
 
 
 async def cache_community(community_label, community_node, community_report):

@@ -1,4 +1,4 @@
-from . import *
+from .. import *
 
 # 创建示例 DataFrame
 async def cache_complete_text(knowledge_base_space_id, complete_text, file_path):

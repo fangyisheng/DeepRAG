@@ -1,4 +1,4 @@
-from . import *
+from .. import *
 
 async def cache_text_chunk(chunks_list, tokens_by_chunk, doc_id , doc_title):
     chunk_id = [f"chunk_{str(uuid.uuid4())}" for _ in chunks_list]

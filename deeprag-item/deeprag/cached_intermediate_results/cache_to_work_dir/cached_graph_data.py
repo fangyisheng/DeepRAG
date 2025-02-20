@@ -1,4 +1,4 @@
-from . import *
+from .. import *
 
 async def cache_entity_relation(entity_relation_by_chunk, graph_data):
     data = {

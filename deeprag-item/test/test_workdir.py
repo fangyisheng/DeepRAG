@@ -1,4 +1,4 @@
-from deeprag.cached_intermediate_results.cached_complete_text import test
+from deeprag.cached_intermediate_results.cache_to_work_dir.cached_complete_text import test
 
 test()
 

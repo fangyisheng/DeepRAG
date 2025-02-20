@@ -3,14 +3,12 @@ from pyvis.network import Network
 import random
 import asyncio
 import uuid
-
+import igraph as ig
 
 async def store_graph_data_to_html(entity_relationship):
-    import networkx as nx
 
-    # 创建有向的多关系图
-    G = nx.MultiDiGraph()
-
+    # 创建有向关系图
+    G = nx.Graph()
 
     # 存储实体和实体之间的关系
     for entity in entity_relationship["entities"]:
@@ -18,7 +16,8 @@ async def store_graph_data_to_html(entity_relationship):
     
     for relationship in entity_relationship["relations"]:
         G.add_edge(relationship["head"], relationship["tail"], type=relationship["type"])
-
+    g = ig.Graph.from_networkx(G)
+    print(g)
     # 使用 PyVis 可视化
     net = Network(notebook=True, cdn_resources="in_line", height="750px", width="100%",bgcolor="#222222", font_color="white")
 
@@ -42,21 +41,8 @@ async def store_graph_data_to_html(entity_relationship):
     return 
 
 
-
-# test_data = {
-#     "entities": [
-#         {"id": 0, "text": "张三", "type": "人物"},
-#         {"id": 1, "text": "上海", "type": "地点"},
-#         {"id": 2, "text": "建筑工人", "type": "职业"},
-#         {"id": 3, "text": "李四", "type": "人物"}
-#     ],
-#     "relations": [
-#         {"head": 0, "tail": 1, "type": "工作地点"},
-#         {"head": 0, "tail": 2, "type": "从事职业"},
-#         {"head": 3, "tail": 0, "type": "别名"}
-#     ]
-# }
-# asyncio.run(store_graph_data_to_html(test_data))
+test_data = {'entities': [{'id': 'a7ab0c52-3068-4622-825a-4a4a1b6daaad', 'text': 'Microsoft', 'type': 'company'}, {'id': 'dc244362-7747-48f4-8a00-16fb39f273fc', 'text': 'Satya Nadella', 'type': ['person', 'manager']}, {'id': 'ca4c99bf-66e0-426b-a40c-2ffce62a4529', 'text': 'Azure AI', 'type': 'product'}], 'relations': [{'head': 'Satya Nadella', 'tail': 'Microsoft', 'type': 'CEO of', 'id': '7477a645-1ead-4c65-a9e2-36666fa9a239'}, {'head': 'Microsoft', 'tail': 'Azure AI', 'type': ['developed', 'product'], 'id': '19c83af7-a526-4e06-985e-e7df0a2f8eca'}]}
+asyncio.run(store_graph_data_to_html(test_data))
 
 
 
