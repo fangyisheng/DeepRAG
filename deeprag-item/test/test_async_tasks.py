@@ -11,7 +11,7 @@ async def main():
     end_time = time.perf_counter()
     logger.info(f"多并发时间为：{end_time - start_time}")
     
-   
+    return 
 
  
 
