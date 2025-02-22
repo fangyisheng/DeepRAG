@@ -12,4 +12,3 @@ async def main():
     logger.info(f"多并发时间为：{end_time - start_time}")
     return result
 
-print(asyncio.run(main()))
