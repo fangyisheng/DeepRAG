@@ -45,6 +45,8 @@ for relation in merged_graph["relations"]:
 
 print(merged_graph)
 
+
+print
 #恭喜，测试通过！！！！
 
 
