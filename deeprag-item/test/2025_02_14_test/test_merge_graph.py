@@ -77,7 +77,7 @@ print(merged_graph)
 #         }
 #         merged_graph["entities"].append(new_data)
 # print(a)
-# print(merged_graph)
+
 
 
         
