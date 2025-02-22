@@ -43,9 +43,9 @@ for relation in merged_graph["relations"]:
     relation["head"] = next((entity["id"] for entity in merged_graph["entities"] if entity["text"] == relation["head"]),None)
     relation["tail"] = next((entity["id"] for entity in merged_graph["entities"] if entity["text"] == relation["tail"]),None)
 
-print(merged_graph)
 
-print
+
+
 
 #恭喜，测试通过！！！！
 
