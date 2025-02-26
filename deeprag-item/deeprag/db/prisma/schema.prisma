@@ -1,16 +1,15 @@
+generator client {
+  provider = "prisma-client-py"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-py"
-}
-
 model knowledge_space {
-  id    String     @id 
-  human_readable_id  String
-  knowledge_space_id  String @unique
+  id                    String @id
+  human_readable_id     String @default(dbgenerated("nextval('example_human_readable_id_seq'::regclass)"))
+  knowledge_space_id    String @unique
   knowledge_space_title String
 }
-
