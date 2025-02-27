@@ -8,7 +8,7 @@ async def main():
         data = {
             "id":str(uuid.uuid4()),
             "knowledge_space_id":str(uuid.uuid4()),
-            "knowledge_space_title":"测试知识库1"
+            "knowledge_space_title":"测试知识库4"
         }
     )
 
@@ -16,8 +16,7 @@ async def main():
 
     print(users)
     print(type(users))
-    print(users.id)
-
+    print(users.__dict__)
 
 
 # 运行异步函数

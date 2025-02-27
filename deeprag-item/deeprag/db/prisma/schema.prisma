@@ -12,4 +12,45 @@ model knowledge_space {
   human_readable_id     String @default(dbgenerated("nextval('example_human_readable_id_seq'::regclass)"))
   knowledge_space_id    String @unique
   knowledge_space_title String
+  files  file[]
+}
+
+model file {
+  id  String @id
+  human_readable_id  String
+  knowledge_space_id  String 
+  doc_id  String @unique
+  doc_title  String
+  doc_text  String
+  KnowledgeSpaceFile     knowledge_space @relation(fields: [knowledge_space_id], references: [knowledge_space_id])
+  text_chunks  text_chunk[]
+}
+
+model text_chunk {
+  id String @id
+  human_readable_id  String
+  doc_id  String
+  text_chunk  String
+  text_chunk_id  String @unique
+  FileTextChunk    file @relation(fields: [doc_id], references: [doc_id])
+  sub_graph_datas  sub_graph_data[]
+}
+
+model sub_graph_data {
+  id String @id
+  human_readable_id  String
+  text_chunk_id String
+  sub_graph_data   String
+  sub_graph_data_id   String @unique
+  TextChunkSubGraphData  text_chunk @relation(fields: [text_chunk_id], references: [text_chunk_id])
+  merged_graph_datas merged_graph_data[]
+}
+
+model merged_graph_data {
+  id String @id
+  human_readable_id  String 
+  sub_graph_data_id  String
+  merged_graph_data  String
+  merged_graph_data_id  String @unique
+  SubGraphDataMergedGraphData sub_graph_data @relation(fields: [sub_graph_data_id], references: [sub_graph_data_id])
 }
