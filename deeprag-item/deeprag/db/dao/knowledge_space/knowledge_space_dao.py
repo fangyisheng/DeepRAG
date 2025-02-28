@@ -28,7 +28,7 @@ class KnowledgeSpaceDAO:
         await self.db.connect()
         return knowledge_space
     
-    async def update_knowledge_space(self, id:str, knowledge_space_id: str, data: dict):
+    async def update_knowledge_space(self,  knowledge_space_id: str, data: dict):
         await self.db.connect()
         knowledge_space = await self.db.knowledge_space.update(
             where = {"knowledge_space_id":knowledge_space_id},

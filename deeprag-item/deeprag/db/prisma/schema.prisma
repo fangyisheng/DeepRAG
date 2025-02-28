@@ -43,14 +43,16 @@ model sub_graph_data {
   sub_graph_data   String
   sub_graph_data_id   String @unique
   TextChunkSubGraphData  text_chunk @relation(fields: [text_chunk_id], references: [text_chunk_id])
-  merged_graph_datas merged_graph_data[]
+  SubGraphDataMergedGraphData merged_graph_data @relation(fields: [sub_graph_data_id], references: [sub_graph_data_id])
+  
 }
 
 model merged_graph_data {
   id String @id
-  human_readable_id  String 
-  sub_graph_data_id  String
+  human_readable_id  String
+  sub_graph_data_id  String @unique
   merged_graph_data  String
-  merged_graph_data_id  String @unique
-  SubGraphDataMergedGraphData sub_graph_data @relation(fields: [sub_graph_data_id], references: [sub_graph_data_id])
+  merged_graph_data_id  String 
+  sub_graph_datas sub_graph_data[]
+  
 }
