@@ -1,7 +1,10 @@
 from deeprag.agent.index.extract_entity_relationship_graph import extract_entity_relationship_agent
 import asyncio
 import time
-from loguru import logger
+
+
+
+
 
 
 async def main():
@@ -12,6 +15,3 @@ async def main():
     logger.info(f"多并发时间为：{end_time - start_time}")
     
     return nihao
-
- 
-
