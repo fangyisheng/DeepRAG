@@ -33,5 +33,6 @@ def generate_chinese_array(size=20, string_length=5):
 # 生成包含 20 个中文字符串的数组
 chinese_array = generate_chinese_array(size=20, string_length=8000)
 
+print
 # 打印结果
 
