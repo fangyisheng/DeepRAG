@@ -34,4 +34,3 @@ def generate_chinese_array(size=20, string_length=5):
 chinese_array = generate_chinese_array(size=20, string_length=8000)
 
 # 打印结果
-print(chinese_array)
