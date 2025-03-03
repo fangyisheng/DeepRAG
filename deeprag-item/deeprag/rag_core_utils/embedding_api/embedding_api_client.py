@@ -31,5 +31,5 @@ async def text_to_vector(input:list[str],limiter=limiter):
         return [item.embedding for item in response.data]
 
 
-# test code
+
 # print(asyncio.run(text_to_vector(["你好","hello"])))
