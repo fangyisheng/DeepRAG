@@ -6,13 +6,14 @@ class TextChunkService:
     def __init__(self):
         self.dao = TextChunkDAO()
 
-    async def create_text_chunk_service(self, id: str , doc_id: str, text_chunk: str, text_chunk_id: str):
+    async def create_text_chunk_service(self, id: str , doc_id: str, text_chunk: str, text_chunk_id: str, n_tokens):
        
         text_chunk = await self.dao.create_text_chunk(
             id,
             doc_id,
             text_chunk,
-            text_chunk_id
+            text_chunk_id,
+            n_tokens
             
         )
         

@@ -32,6 +32,7 @@ model text_chunk {
   doc_id  String
   text_chunk  String
   text_chunk_id  String @unique
+  n_tokens  String
   FileTextChunk    file @relation(fields: [doc_id], references: [doc_id])
   sub_graph_datas  sub_graph_data[]
 }
