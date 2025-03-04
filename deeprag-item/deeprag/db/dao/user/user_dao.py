@@ -1,0 +1,25 @@
+from prisma import Prisma
+
+class TextChunkDAO:
+    def __init__(self):
+        self.db = Prisma()
+
+    async def create_user(self, id: str , user_id:str, user_name:str):
+        await self.db.connect()
+        text_chunk = await self.db.user.create(
+            data = {
+                "id": id,
+                "doc_id": doc_id,
+                "text_chunk": text_chunk,
+                "text_chunk_id": text_chunk_id,
+                "n_tokens":n_tokens
+            }
+        )
+        await self.db.disconnect()
+        return text_chunk
+    
+    async def get_user_name_by_user_id(self, text_chunk_id: str):
+        await self.db.connect()
+        text_chunk = await self.db.knowledge_space.find_unique(where={"text_chunk_id":text_chunk_id})
+        await self.db.connect()
+        return text_chunk
