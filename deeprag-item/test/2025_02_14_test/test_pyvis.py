@@ -71,4 +71,3 @@ net.toggle_physics(True)
 net.show_buttons(filter_=['physics'])  # 显示物理模拟相关的按钮
 
 # 保存为HTML文件
-net.show("network.html")
