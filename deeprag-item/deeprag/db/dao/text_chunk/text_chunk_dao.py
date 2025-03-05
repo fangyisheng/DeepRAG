@@ -17,7 +17,7 @@ class TextChunkDAO:
         await self.db.disconnect()
         return text_chunk
     
-    async def get_text_chunk_by_text_chunk_id(self, id: str):
+    async def get_text_chunk_by_id(self, id: str):
         await self.db.connect()
         text_chunk = await self.db.knowledge_space.find_unique(where={"id":id})
         await self.db.connect()

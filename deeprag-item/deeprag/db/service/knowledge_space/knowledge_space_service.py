@@ -22,16 +22,16 @@ class KnowledgeSpaceService:
         )
         return knowledge_space.__dict__
     
-    async def query_by_knowledge_space_id_service(self, knowledge_space_id: str):
+    async def get_knowledge_space_by_id(self, id: str):
         
-        knowledge_space = await self.dao.query_by_knowledge_space_id(knowledge_space_id)
+        knowledge_space = await self.dao.get_knowledge_space_by_id(id)
         
         return knowledge_space.__dict__
     
-    async def update_knowledge_space(self, knowledge_space_id: str, data: dict):
+    async def update_knowledge_space(self, id: str, data: dict):
 
         knowledge_space = await self.dao.knowledge_space.update(
-          knowledge_space_id,data
+         id,data
         )
 
         return knowledge_space.__dict__

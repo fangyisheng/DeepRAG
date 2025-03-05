@@ -25,7 +25,7 @@ class FileDAO:
     
     async def update_existed_file_in_knowledge_space(self, id: str, data: dict):
         await self.db.connect()
-        file = await self.db.file.delete(where = {"id":id},
+        file = await self.db.file.update(where = {"id":id},
                                          data = data)
         await self.db.disconnect()
         return file

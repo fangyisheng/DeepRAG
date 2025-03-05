@@ -21,7 +21,7 @@ class KnowledgeSpaceDAO:
         await self.db.connect()
         return knowledge_space
     
-    async def query_by_knowledge_space_id(self, id: str):
+    async def get_knowledge_space_by_id(self, id: str):
         await self.db.connect()
         knowledge_space = await self.db.knowledge_space.find_unique(where={"id":id})
         await self.db.connect()
