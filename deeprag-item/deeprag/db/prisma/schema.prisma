@@ -103,6 +103,7 @@ model llm_chat {
   llm_answer String
   message_time String
   session_id String
+  cost_tokens String
   LLLMChatUser user @relation(fields: [user_id], references: [id])
   rag_params rag_param?
 }
@@ -120,4 +121,7 @@ model workflow {
   id String @id //这个相当于workflow_id
   status String
   action String
+  workflow_start_time String
+  workflow_end_time String
+  workflow_duration_time String
 }

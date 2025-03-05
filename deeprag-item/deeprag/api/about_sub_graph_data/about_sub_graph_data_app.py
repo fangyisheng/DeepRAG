@@ -4,7 +4,7 @@ from deeprag.db.service.sub_graph_data.sub_graph_data_service import SubGraphDat
 
 sub_graph_data_service = SubGraphDataService()
 
-sub_graph_data_router = APIRouter()
+sub_graph_data_router = APIRouter(tags = ["sub_graph_data"])
 
 @sub_graph_data_router.get("/{id}")
 async def get_sub_graph_data(id):

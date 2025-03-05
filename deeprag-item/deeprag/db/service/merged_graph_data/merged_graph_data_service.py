@@ -6,9 +6,9 @@ class MergedGraphDataService:
     def __init__(self):
         self.dao = MergedGraphDataDAO()
 
-    async def create_merged_graph_data_service(self, id: str ,sub_graph_data_id: str, merged_graph_data: str, merged_graph_data_visualization_html:str):
+    async def create_merged_graph_data(self, id: str ,sub_graph_data_id: str, merged_graph_data: str, merged_graph_data_visualization_html:str):
     
-        merged_graph_data = await self.dao.create_merged_graph_data_service(
+        merged_graph_data = await self.dao.create_merged_graph_data(
         
             id,
             sub_graph_data_id,

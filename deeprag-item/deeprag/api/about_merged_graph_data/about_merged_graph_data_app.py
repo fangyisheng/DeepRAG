@@ -4,7 +4,7 @@ from deeprag.db.service.merged_graph_data.merged_graph_data_service import Merge
 merged_graph_data_service = MergedGraphDataService()
 
 
-merged_graph_data_router = APIRouter()
+merged_graph_data_router = APIRouter( tags = ["merged_graph"])
 
 @merged_graph_data_router.get("/{id}")
 async def get_merged_graph_data(id):
