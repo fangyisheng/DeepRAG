@@ -1,6 +1,6 @@
 import asyncio
-from deeprag.text_extract_and_clean import process_text
-from deeprag.text_chunk_based_by_token import split_text_by_token
+from deeprag.workflow.text_extract_and_clean import process_text
+from deeprag.workflow.text_chunk_based_by_token import split_text_by_token
 
 async def main():
       text = await process_text("../knowledge_file/test.txt")

@@ -1,7 +1,5 @@
 from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import create_hybrid_search_milvus_client_collection
 
-
-
 #这边按道理会插入稀疏向量和稠密向量 BM25算法会自动生成sparse的稀疏向量
 async def data_insert_to_vector_db(text_chunk_list,vector,meta_data):
     data = [{"id":i,
