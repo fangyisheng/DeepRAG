@@ -68,7 +68,6 @@ net.add_edge(3, 1)
 
 # 设置一些可视化选项
 net.toggle_physics(True)
-net.show_buttons(filter_=['physics'])  # 显示物理模拟相关的按钮
-
+# net.show_buttons(filter_=['physics'])  # 显示物理模拟相关的按钮
+net.show_buttons(filter_=['physics'])
 # 保存为HTML文件
-net.show("network.html")
