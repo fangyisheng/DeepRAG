@@ -2,8 +2,12 @@ from deeprag.workflow.text_extract_and_clean import process_text
 from deeprag.workflow.text_chunk_based_by_token import TextSplitter
 from deeprag.agent.index.extract_entity_relationship_graph import extract_entity_relationship_agent
 from deeprag.workflow.batch_text_chunk_generate_graphs import batch_text_chunk_generate_graphs_process
-from deeprag.agent.index.graph_storage_to_html_with_no_leiden import store_graph_data_to_html_with_no_leiden
-from deeprag.agent.index.merge_sub_graph import merge_sub_entity_relationship_graph
+from deeprag.workflow.graph_storage_to_html_with_no_leiden import store_graph_data_to_html_with_no_leiden
+from deeprag.workflow.merge_sub_graph import merge_sub_entity_relationship_graph
+from deeprag.workflow.graph_description import describe_graph
+
+
+
 import asyncio
 from loguru import logger
 import time
@@ -21,6 +25,8 @@ async def main():
      logger.info(f"这是根据文本分块一起提取的图结构：{graphs}")
      merged_graphs = await merge_sub_entity_relationship_graph(graphs)
      logger.info(f"这是合并好的完整图结构：{merged_graphs}")
+     relation_description = await describe_graph(merged_graphs)
+     logger.info(f"这是加工后的关系列表：{relation_description}")
     #  tasks = [extract_entity_relationship_agent(cshunk) for chunk in chunks]
     #  start_time = time.perf_counter()
     #  results = await asyncio.gather(*tasks)
