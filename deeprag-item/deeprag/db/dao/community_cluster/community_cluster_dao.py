@@ -1,0 +1,25 @@
+from prisma import Prisma
+
+class CommunityClusterDAO:
+    def __init__(self):
+        self.db =  Prisma()
+
+    async def create_community_cluster(self, id:str, community:str, community_title:str):
+        await self.db.connect()
+        community_cluster = await self.db.community_cluster.create(
+            data = {
+                "id":id,
+                "community":community,
+                "community_title":community_title
+            }
+        )
+        await self.db.disconnect()
+        return  community_cluster
+    
+    async def get_community_cluster_by_id(self,id:str):
+        await self.db.connect()
+        community_cluster = await self.db.community_cluster.find_unique(
+            where = {"id":id}
+        )
+        await self.db.disconnect()
+        return community_cluster
