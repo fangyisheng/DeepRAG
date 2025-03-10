@@ -26,3 +26,11 @@ class FlattenEntityRelationDAO:
         )
         await self.db.disconnect()
         return flatten_entity_relation
+    
+    async def get_flatten_entity_relation_by_community_id(self, community_id: str):
+        await self.db.connect()
+        flatten_entity_relation = await self.db.flatten_entity_relation.find_many(
+            where = {"community_id":community_id}
+
+        )
+        return flatten_entity_relation

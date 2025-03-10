@@ -6,4 +6,4 @@ class LLMChatService:
         self.dao = LLMChatDAO()
 
 
-    async def 
+    async def chat_completions()
