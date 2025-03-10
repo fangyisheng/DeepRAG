@@ -8,7 +8,7 @@ TOKEN=os.getenv("MILVUS_CLUSTER_TOKEN") # Set your token
 # Initialize a MilvusClient instance
 # Replace uri and token with your own
 
-async def create_hybrid_search_milvus_client_collection(collection_name):
+async def create_hybrid_search_milvus_client_collection(collection_name: str | None = None):
 
     client = MilvusClient(
         uri=CLUSTER_ENDPOINT, # Cluster endpoint obtained from the console

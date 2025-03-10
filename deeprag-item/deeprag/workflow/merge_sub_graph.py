@@ -3,6 +3,10 @@ import json
 
 
 async def merge_sub_entity_relationship_graph(entity_relationship_graphs: list):
+        """
+        entity_relationship_graphs是一个关于字典的列表[{},{},{}]
+        
+        """
         merged_graph = {
             "entities":[],
             "relations":[]
@@ -10,11 +14,14 @@ async def merge_sub_entity_relationship_graph(entity_relationship_graphs: list):
 
 
         #下面两段for循环的作用是将提取的图结构中的语义不明确的关系的实体的id填充完整，head和tail
+
+        # 这段循环的作用是先把字典列表中的每一个dict的relation的head和tail用真正的text填充了
         for graph in entity_relationship_graphs:
             for relation in graph["relations"]:
                 relation["head"] = next((item["text"] for item in graph["entities"] if item["id"] == relation["head"]),None)
                 relation["tail"] = next((item["text"] for item in graph["entities"] if item["id"] == relation["tail"]),None)
-            
+        
+      
         for dict in entity_relationship_graphs:
             for entity in dict["entities"]:
                 
@@ -38,10 +45,12 @@ async def merge_sub_entity_relationship_graph(entity_relationship_graphs: list):
             for relation in merged_graph["relations"]:
                 relation["head"] = next((entity["id"] for entity in merged_graph["entities"] if entity["text"] == relation["head"]),None)
                 relation["tail"] = next((entity["id"] for entity in merged_graph["entities"] if entity["text"] == relation["tail"]),None)
+                
                     
         return merged_graph
 
 
 import asyncio
-test_data = [{"entities":[{"id":0,"text":"深度求索","type":"公司"},{"id":1,"text":"DeepSeek","type":"公司"},{"id":2,"text":"AI领域","type":"领域"},{"id":3,"text":"美股市场","type":"市场"},{"id":4,"text":"英伟达","type":"公司"},{"id":5,"text":"OpenAI","type":"公司"},{"id":6,"text":"GPT-4o","type":"产品"},{"id":7,"text":"幻方量化","type":"公司"},{"id":8,"text":"萤火二号","type":"产品"},{"id":9,"text":"华为云","type":"产品"},{"id":10,"text":"腾讯云","type":"产品"},{"id":11,"text":"百度云","type":"产品"},{"id":12,"text":"MLA架构","type":"技术"},{"id":13,"text":"MHA架构","type":"技术"},{"id":14,"text":"DeepSeek MoEs Parse结构","type":"技术"},{"id":15,"text":"硅谷","type":"地点"},{"id":16,"text":"DeepSeek-R1模型","type":"产品"},{"id":17,"text":"OpenAI o1模型","type":"产品"},{"id":18,"text":"纳米AI搜索","type":"产品"},{"id":19,"text":"周鸿祎","type":"人物"},{"id":20,"text":"小鹏汽车","type":"公司"},{"id":21,"text":"何小鹏","type":"人物"},{"id":22,"text":"阿里巴巴","type":"公司"},{"id":23,"text":"京东","type":"公司"},{"id":24,"text":"清华大学","type":"机构"},{"id":25,"text":"A大学","type":"机构"},{"id":26,"text":"微软","type":"公司"},{"id":27,"text":"亚马逊","type":"公司"}],"relations":[{"head":0,"tail":1,"type":"别名"},{"head":0,"tail":2,"type":"属于"},{"head":3,"tail":0,"type":"受影响"},{"head":4,"tail":3,"type":"影响"},{"head":5,"tail":6,"type":"开发"},{"head":7,"tail":0,"type":"投资"},{"head":8,"tail":7,"type":"属于"},{"head":9,"tail":0,"type":"合作"},{"head":10,"tail":0,"type":"合作"},{"head":11,"tail":0,"type":"合作"},{"head":12,"tail":0,"type":"使用"},{"head":13,"tail":12,"type":"对比"},{"head":14,"tail":0,"type":"开发"},{"head":15,"tail":0,"type":"评价"},{"head":16,"tail":0,"type":"开发"},{"head":17,"tail":16,"type":"对比"},{"head":18,"tail":0,"type":"合作"},{"head":19,"tail":18,"type":"提及"},{"head":20,"tail":0,"type":"计划合作"},{"head":21,"tail":20,"type":"担任"},{"head":22,"tail":0,"type":"合作"},{"head":23,"tail":0,"type":"合作"},{"head":16,"tail":24,"type":"互动"},{"head":16,"tail":25,"type":"互动"},{"head":26,"tail":27,"type":"合作"}]}]
+#下面这个test_data是大模型生成的子图列表的mock数据
+test_data = [{'entities': [{'id': 0, 'text': '深度求索（DeepSeek）', 'type': '组织'}, {'id': 1, 'text': '全球 AI 领域', 'type': '领域'}, {'id': 2, 'text': '2023 年', 'type': '时间'}, {'id': 3, 'text': '美股市场', 'type': '地点'}, {'id': 4, 'text': '1 月 27 日', 'type': '时间'}, {'id': 5, 'text': '美股 AI、芯片股', 'type': '股票'}, {'id': 6, 'text': '英伟达', 'type': '组织'}, {'id': 7, 'text': '美国股市', 'type': '地点'}], 'relations': [{'head': 0, 'tail': 1, 'type': '在领域中崭露头角', 'description': '深度求索（DeepSeek）在全球 AI 领域成为众人瞩目的焦点。'}, {'head': 0, 'tail': 2, 'type': '成立于', 'description': '深度求索（DeepSeek）成立于2023年。'}, {'head': 0, 'tail': 3, 'type': '影响力体现在', 'description': '深度求索（DeepSeek）的影响力在美股市场有明显体现。'}, {'head': 4, 'tail': 5, 'type': '导致重挫', 'description': '1月27日，美股AI、芯片股重挫。'}, {'head': 5, 'tail': 6, 'type': '影响公司股价', 'description': '英伟达收盘大跌超过17%，单日市值蒸发5890亿美元。'}, {'head': 6, 'tail': 7, 'type': '创历史纪录', 'description': '创下美国股市历史上最高纪录。'}, {'head': 0, 'tail': 5, 'type': '被认为是重要因素', 'description': '深度求索（DeepSeek）被认为是美股AI、芯片股波动的重要因素之一。'}]}]
 print(asyncio.run(merge_sub_entity_relationship_graph(test_data)))
