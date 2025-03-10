@@ -8,7 +8,7 @@ TOKEN=os.getenv("MILVUS_CLUSTER_TOKEN") # Set your token
 # Initialize a MilvusClient instance
 # Replace uri and token with your own
 
-async def create_hybrid_search_milvus_client_collection(collection_name: str | None = None):
+async def create_or_use_hybrid_search_milvus_client_collection(collection_name: str | None = None):
 
     client = MilvusClient(
         uri=CLUSTER_ENDPOINT, # Cluster endpoint obtained from the console
@@ -18,11 +18,11 @@ async def create_hybrid_search_milvus_client_collection(collection_name: str | N
     # Create schema
     schema = MilvusClient.create_schema(
         auto_id=False,
-        enable_dynamic_field=True,
+        enable_dynamic_field=True
     )
     # Add fields to schema
-    schema.add_field(field_name="id", datatype=DataType.INT64, is_primary=True)
-    schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=20000)
+    schema.add_field(field_name="id", datatype=DataType.INT64, is_primary=True,auto_id = True)
+    schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=20000, enable_analyzer=True)
     schema.add_field(field_name="sparse", datatype=DataType.SPARSE_FLOAT_VECTOR)
     schema.add_field(field_name="dense", datatype=DataType.FLOAT_VECTOR, dim=1024)
     bm25_function = Function(
@@ -38,25 +38,29 @@ async def create_hybrid_search_milvus_client_collection(collection_name: str | N
 
     index_params.add_index(
         field_name="sparse",
-        index_type="AUTOINDEX", 
+        index_name="sparse_index",
+        index_type="SPARSE_INVERTED_INDEX", 
         metric_type="BM25"
     )
     index_params.add_index(
-    field_name="dense", #指定需要创建索引的字段名称
-    index_name="dense_index", #为该索引创建一个名字
-    index_type="IVF_FLAT", #指定索引的类型
-    metric_type="IP",
-    params={"nlist": 128}, #index索引的超参数配置，表示向量空间中的聚类
-)   
-    
+        field_name="dense", #指定需要创建索引的字段名称
+        index_name="dense_index", #为该索引创建一个名字
+        index_type="IVF_FLAT", #指定索引的类型
+        metric_type="IP",
+        params={"nlist": 128}, #index索引的超参数配置，表示向量空间中的聚类
+    )   
+    #首先判断这个输入的参数collection_name存不存在
+    #如果输入的参数存在，那么继续判断这个collection_name在不在zilliz的集群中
     if collection_name:
-        if not client.has_collection(collection_name = collection_name):
+        if client.has_collection(collection_name = collection_name):
+            return client
+        else:
             client.create_collection(
-                collection_name="test", 
+                collection_name = collection_name, 
                 schema=schema, 
                 index_params=index_params
             )
-        return client
+            return client
     else:
         return client
     
