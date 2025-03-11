@@ -1,8 +1,9 @@
 # Connect using a MilvusClient object
 from pymilvus import MilvusClient, DataType, Function, FunctionType
 from dotenv import load_dotenv
-load_dotenv()
 import os
+load_dotenv()
+
 CLUSTER_ENDPOINT =  os.getenv("MILVUS_CLUSTER_ENDPOINT")
 TOKEN=os.getenv("MILVUS_CLUSTER_TOKEN") # Set your token
 # Initialize a MilvusClient instance

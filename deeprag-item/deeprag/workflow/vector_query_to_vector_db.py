@@ -2,7 +2,7 @@ from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import create_or_
 from deeprag.rag_core_utils.embedding_api.embedding_api_client import text_to_vector
 from pymilvus import AnnSearchRequest
 from pymilvus import RRFRanker
-from loguru import logger
+
 async def query_vector_db_by_vector(query,collection_name):
     query_vector = await text_to_vector([query])
     search_param_1 = {
