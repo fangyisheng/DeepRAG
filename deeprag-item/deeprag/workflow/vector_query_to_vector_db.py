@@ -27,13 +27,14 @@ async def query_vector_db_by_vector(query,collection_name):
     request_2 = AnnSearchRequest(**search_param_2)
     
     reqs = [request_1,request_2]
-    logger.info(f"{reqs}")
     ranker = RRFRanker()
     client = await create_or_use_hybrid_search_milvus_client_collection()
     res = client.hybrid_search(
     collection_name = collection_name,
     reqs=reqs,
     ranker=ranker,
-    limit=2
+    limit=2,
+    output_fields=["text","meta_data"]
 )
-    return res
+    context = [item["entity"]["text"] for item in res[0]]
+    return context

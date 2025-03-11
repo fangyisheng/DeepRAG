@@ -38,7 +38,6 @@ async def create_or_use_hybrid_search_milvus_client_collection(collection_name: 
 
     index_params.add_index(
         field_name="sparse",
-        index_name="sparse_index",
         index_type="SPARSE_INVERTED_INDEX", 
         metric_type="BM25"
     )

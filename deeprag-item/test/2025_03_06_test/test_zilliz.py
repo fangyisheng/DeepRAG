@@ -19,34 +19,42 @@ from loguru import logger
 
 # print(asyncio.run(main(mock_data)))
 
-# from deeprag.workflow.vector_query_to_vector_db import query_vector_db_by_vector
-# import asyncio
-# async def main(mock_data):
-#     response = await query_vector_db_by_vector(mock_data, "test")
-#     return response
-
-
-# print(asyncio.run(main("AI美股")))
-
-
-search_params = {
-    'params': {'drop_ratio_search': 0.2},
-}
-
-
+from deeprag.workflow.vector_query_to_vector_db import query_vector_db_by_vector
 import asyncio
-async def main():
-    client = await create_or_use_hybrid_search_milvus_client_collection()
+from pymilvus.client.types import ExtraList
+async def main(mock_data):
+    response = await query_vector_db_by_vector(mock_data, "test")
+    return response
 
-    res = client.search(
-        collection_name='test', 
-        data=['AI美股'],
-        anns_field='sparse',
-        limit=3,
-        search_params=search_params
-    )
-    return res
-print(asyncio.run(main()))
+a = asyncio.run(main("AI美股"))
+print(a)
+# print(type(a))
+# print(dir(a))
+# print(a[0])
+# context = [item["entity"]["text"] for item in a[0]]
+# print(context)
+
+
+
+# search_params = {
+#     'params': {'drop_ratio_search': 0.2},
+# }
+
+
+# import asyncio
+# async def main():
+#     client = await create_or_use_hybrid_search_milvus_client_collection()
+
+#     res = client.search(
+#         collection_name='test', 
+#         data=['AI美股'],
+#         anns_field='sparse',
+#         limit=3,
+#         search_params=search_params
+#     )
+#     return res
+# print(asyncio.run(main()))
+
 
 
 
