@@ -1,6 +1,5 @@
 from deeprag.rag_core_utils.llm_api.llm_api_client import llm_service
 from importlib import resources
-import asyncio
 from loguru import logger
 
 with (
@@ -19,5 +18,5 @@ async def semantic_enrichment_agent(user_prompt):
     )
     return response + user_prompt
 
-
+# import asyncio
 # asyncio.run(semantic_enrichment_agent("Satya Nadella和Microsoft的关系是Satya NadellaCEO ofMicrosoft"))
