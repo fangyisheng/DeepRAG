@@ -1,17 +1,24 @@
 import tiktoken
-import os 
+import os
 from dotenv import load_dotenv
 from loguru import logger
+
 load_dotenv()
 from loguru import logger
+
 
 class TextSplitter:
     def __init__(self):
         self.chunks = []
-        self.tokens_by_chunk = [] # 和上面的token一一对应
+        self.tokens_by_chunk = []  # 和上面的token一一对应
 
-    #在读取环境文件中的数字时，其实读到的是str
-    async def split_text_by_token(self, text: str, max_tokens: int = int(os.getenv("EMBEDDING_MODEL_MAX_TOKEN")), model_name: str = "gpt-4o") -> list[str]:
+    # 在读取环境文件中的数字时，其实读到的是str
+    async def split_text_by_token(
+        self,
+        text: str,
+        max_tokens: int = int(os.getenv("EMBEDDING_MODEL_MAX_TOKEN")),
+        model_name: str = "gpt-4o",
+    ) -> list[str]:
         """
         利用 tiktoken 根据 token 数量来切分文本。
 
@@ -25,22 +32,20 @@ class TextSplitter:
         """
 
         encoding = tiktoken.encoding_for_model(model_name)
-        
+
         # 将文本编码为token
         tokens = encoding.encode(text)
         logger.info(f"文本的token数量为:{len(tokens)}")
-    
-        
+
         # 分块
-      
+
         for i in range(0, len(tokens), max_tokens):
-            chunk_tokens = tokens[i:i + max_tokens]
+            chunk_tokens = tokens[i : i + max_tokens]
             chunk_text = encoding.decode(chunk_tokens)
             self.chunks.append(chunk_text)
             self.tokens_by_chunk.append(len(chunk_tokens))
-        
-        return self.chunks
 
+        return self.chunks
 
 
 # async def main():
@@ -59,5 +64,3 @@ class TextSplitter:
 # if __name__ == "__main__":
 #     import asyncio
 #     print(asyncio.run(main()))
-
-

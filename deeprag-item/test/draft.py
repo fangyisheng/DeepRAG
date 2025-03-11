@@ -11,6 +11,7 @@
 
 import random
 
+
 def generate_chinese_string(length=5):
     """
     生成一个指定长度的随机中文字符串。
@@ -18,8 +19,9 @@ def generate_chinese_string(length=5):
     :return: 随机生成的中文字符串
     """
     # 中文字符的 Unicode 范围：\u4e00-\u9fff
-    chinese_characters = [chr(random.randint(0x4e00, 0x9fff)) for _ in range(length)]
-    return ''.join(chinese_characters)
+    chinese_characters = [chr(random.randint(0x4E00, 0x9FFF)) for _ in range(length)]
+    return "".join(chinese_characters)
+
 
 def generate_chinese_array(size=20, string_length=5):
     """
@@ -30,10 +32,10 @@ def generate_chinese_array(size=20, string_length=5):
     """
     return [generate_chinese_string(string_length) for _ in range(size)]
 
+
 # 生成包含 20 个中文字符串的数组
 chinese_array = generate_chinese_array(size=20, string_length=8000)
 
 print
 
 # 打印结果
-

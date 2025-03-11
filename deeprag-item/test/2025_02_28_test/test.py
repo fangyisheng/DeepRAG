@@ -24,4 +24,4 @@ doc_scores = bm25.get_scores(tokenized_query)
 
 # 输出结果
 for i, score in enumerate(doc_scores):
-    print(f"Document {i+1}: {score}")
+    print(f"Document {i + 1}: {score}")

@@ -7,21 +7,24 @@ class MergedGraphDataService:
         self.dao = MergedGraphDataDAO()
 
     # 对于merged_service的创建是存疑的？这应该是程序内部创建的
-    async def create_merged_graph_data(self, id: str ,sub_graph_data_id: str, merged_graph_data: str, merged_graph_data_visualization_html:str):
-    
+    async def create_merged_graph_data(
+        self,
+        id: str,
+        sub_graph_data_id: str,
+        merged_graph_data: str,
+        merged_graph_data_visualization_html: str,
+    ):
         merged_graph_data = await self.dao.create_merged_graph_data(
-        
             id,
             sub_graph_data_id,
             merged_graph_data,
-            merged_graph_data_visualization_html
+            merged_graph_data_visualization_html,
         )
-    
+
         return merged_graph_data.__dict__
-    
-    #这可能才是外部的开发者和用户真正需要的servie服务
+
+    # 这可能才是外部的开发者和用户真正需要的servie服务
     async def get_merged_graph_data_by_id(self, id: str):
-  
         merged_graph_data = await self.dao.get_merged_graph_data_by_id(id)
-    
+
         return merged_graph_data.__dict__

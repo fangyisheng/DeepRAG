@@ -97,4 +97,5 @@ example：
 
 user_prompt = "如何学习知识图谱?推荐一些课程"
 import asyncio
-print(asyncio.run(llm_service(system_prompt=system_prompt,user_prompt=user_prompt)))
+
+print(asyncio.run(llm_service(system_prompt=system_prompt, user_prompt=user_prompt)))
