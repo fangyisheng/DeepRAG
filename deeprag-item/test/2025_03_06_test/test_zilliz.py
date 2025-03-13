@@ -3,7 +3,9 @@
 
 from deeprag.workflow.vector_with_text_to_vector_db import data_insert_to_vector_db
 from deeprag.rag_core_utils.embedding_api.embedding_api_client import text_to_vector
-from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import create_or_use_hybrid_search_milvus_client_collection
+from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import (
+    create_or_use_hybrid_search_milvus_client_collection,
+)
 from loguru import logger
 
 # async def main(mock_data):
@@ -21,10 +23,12 @@ from loguru import logger
 
 from deeprag.workflow.vector_query_to_vector_db import query_vector_db_by_vector
 import asyncio
-from pymilvus.client.types import ExtraList
+
+
 async def main(mock_data):
     response = await query_vector_db_by_vector(mock_data, "test")
     return response
+
 
 a = asyncio.run(main("AI美股"))
 print(a)
@@ -33,7 +37,6 @@ print(a)
 # print(a[0])
 # context = [item["entity"]["text"] for item in a[0]]
 # print(context)
-
 
 
 # search_params = {
@@ -46,7 +49,7 @@ print(a)
 #     client = await create_or_use_hybrid_search_milvus_client_collection()
 
 #     res = client.search(
-#         collection_name='test', 
+#         collection_name='test',
 #         data=['AI美股'],
 #         anns_field='sparse',
 #         limit=3,
@@ -54,9 +57,3 @@ print(a)
 #     )
 #     return res
 # print(asyncio.run(main()))
-
-
-
-
-
-
