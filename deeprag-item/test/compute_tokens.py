@@ -6,5 +6,3 @@ def compute_token(text):
 
     tokens = encoding.encode(text)
     return len(tokens)
-
-

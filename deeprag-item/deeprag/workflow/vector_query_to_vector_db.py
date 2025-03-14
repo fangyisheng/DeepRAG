@@ -15,8 +15,18 @@ async def query_vector_db_by_vector(query, collection_name, partition_name):
         "param": {"metric_type": "IP", "params": {"nprobe": 10}},
         "limit": 2,
     }
+        "data": query_vector,
+        "anns_field": "dense",
+        "param": {"metric_type": "IP", "params": {"nprobe": 10}},
+        "limit": 2,
+    }
     request_1 = AnnSearchRequest(**search_param_1)
     search_param_2 = {
+        "data": [query],
+        "anns_field": "sparse",
+        "param": {"metric_type": "BM25", "params": {"drop_ratio_build": 0.2}},
+        "limit": 2,
+    }
         "data": [query],
         "anns_field": "sparse",
         "param": {"metric_type": "BM25", "params": {"drop_ratio_build": 0.2}},

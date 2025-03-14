@@ -6,6 +6,9 @@ from deeprag.rag_core_utils.embedding_api.embedding_api_client import text_to_ve
 from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import (
     create_or_use_hybrid_search_milvus_client_collection,
 )
+from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import (
+    create_or_use_hybrid_search_milvus_client_collection,
+)
 from loguru import logger
 
 # async def main(mock_data):
@@ -49,6 +52,7 @@ print(a)
 #     client = await create_or_use_hybrid_search_milvus_client_collection()
 
 #     res = client.search(
+#         collection_name='test',
 #         collection_name='test',
 #         data=['AI美股'],
 #         anns_field='sparse',

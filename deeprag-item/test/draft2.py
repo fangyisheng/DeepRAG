@@ -6,12 +6,12 @@ data = {
     "entities": [
         {"id": 0, "text": "Microsoft", "type": "company"},
         {"id": 1, "text": "Satya Nadella", "type": "person"},
-        {"id": 2, "text": "Azure AI", "type": "product"}
+        {"id": 2, "text": "Azure AI", "type": "product"},
     ],
     "relations": [
         {"head": "Satya Nadella", "tail": "Microsoft", "type": "CEO of"},
-        {"head": "Microsoft", "tail": "Azure AI", "type": "developed"}
-    ]
+        {"head": "Microsoft", "tail": "Azure AI", "type": "developed"},
+    ],
 }
 
 # 创建一个有向图
@@ -34,12 +34,20 @@ pos = nx.spring_layout(G)  # 定义布局
 plt.figure(figsize=(8, 6))
 
 # 绘制节点
-node_colors = {'company': 'lightblue', 'person': 'lightgreen', 'product': 'salmon'}
-node_color = [node_colors[G.nodes[node]['type']] for node in G.nodes()]
-nx.draw(G, pos, with_labels=True, node_color=node_color, node_size=3000, font_size=10, font_weight='bold')
+node_colors = {"company": "lightblue", "person": "lightgreen", "product": "salmon"}
+node_color = [node_colors[G.nodes[node]["type"]] for node in G.nodes()]
+nx.draw(
+    G,
+    pos,
+    with_labels=True,
+    node_color=node_color,
+    node_size=3000,
+    font_size=10,
+    font_weight="bold",
+)
 
 # 绘制边的标签
-edge_labels = nx.get_edge_attributes(G, 'relation')
+edge_labels = nx.get_edge_attributes(G, "relation")
 nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
 
 plt.title("Knowledge Graph")

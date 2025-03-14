@@ -12,11 +12,22 @@ async def store_graph_data_to_html_with_no_leiden(entity_relationship):
     # 存储实体和实体之间的关系
     for entity in entity_relationship["entities"]:
         G.add_node(entity["id"], text=entity["text"], type=entity["type"])
+        G.add_node(entity["id"], text=entity["text"], type=entity["type"])
     for relation in entity_relationship["relations"]:
+        G.add_edge(relation["head"], relation["tail"], type=relation["type"])
         G.add_edge(relation["head"], relation["tail"], type=relation["type"])
     # G的数据格式没问题了
 
     # 使用 PyVis 可视化
+    net = Network(
+        notebook=True,
+        cdn_resources="in_line",
+        height="750px",
+        width="100%",
+        bgcolor="#222222",
+        font_color="white",
+        directed=True,
+    )
     net = Network(
         notebook=True,
         cdn_resources="in_line",
@@ -55,9 +66,11 @@ async def store_graph_data_to_html_with_no_leiden(entity_relationship):
     for node in net.nodes:
         # 在pyvis中label字段用于节点的显示标签，如果没有这个label，就会取node的id字段，通常id字段都是uuid什么的，容易不太好看，所以设置一下label标签
         node["label"] = f"{node['text']} ({node['type']})"  # 设置节点标签
+        node["label"] = f"{node['text']} ({node['type']})"  # 设置节点标签
         node["color"] = color
     for edge in net.edges:
         if len(edge["type"]) > 1:
+            edge["label"] = str(edge["type"])  # 设置边的提示信息
             edge["label"] = str(edge["type"])  # 设置边的提示信息
         else:
             edge["label"] = edge["type"]

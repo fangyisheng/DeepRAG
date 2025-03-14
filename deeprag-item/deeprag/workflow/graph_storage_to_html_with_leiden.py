@@ -20,7 +20,10 @@ async def realize_leiden_community_algorithm(graph_data):
     G = nx.DiGraph()
     for entity in graph_data["entities"]:
         G.add_node(entity["id"], text=entity["text"], type=entity["type"])
+        G.add_node(entity["id"], text=entity["text"], type=entity["type"])
     for relation in graph_data["relations"]:
+        G.add_edge(relation["head"], relation["tail"], type=relation["type"])
+        # type作为这条边的属性 attribute
         G.add_edge(relation["head"], relation["tail"], type=relation["type"])
         # type作为这条边的属性 attribute
     g = ig.Graph.from_networkx(G)
@@ -28,6 +31,15 @@ async def realize_leiden_community_algorithm(graph_data):
     community_membership = partition.membership
 
     # 使用 PyVis 可视化
+    net = Network(
+        notebook=True,
+        cdn_resources="in_line",
+        height="750px",
+        width="100%",
+        bgcolor="#222222",
+        font_color="white",
+        directed=True,
+    )
     net = Network(
         notebook=True,
         cdn_resources="in_line",
@@ -69,6 +81,10 @@ async def realize_leiden_community_algorithm(graph_data):
             f"#{random.randint(0, 255):02x}{random.randint(0, 255):02x}{random.randint(0, 255):02x}"
         )
 
+        community_color[community] = (
+            f"#{random.randint(0, 255):02x}{random.randint(0, 255):02x}{random.randint(0, 255):02x}"
+        )
+
     for i, community in enumerate(community_membership):
         color = community_color[community]
         community = community_membership[i]
@@ -78,9 +94,16 @@ async def realize_leiden_community_algorithm(graph_data):
         net.nodes[i]["title"] = f"Community {community}"
         net.nodes[i]["color"] = color
 
+        net.nodes[i]["label"] = (
+            f"{net.nodes[i]['text']} ({net.nodes[i]['type']})"  # 设置节点标签
+        )
+        net.nodes[i]["title"] = f"Community {community}"
+        net.nodes[i]["color"] = color
+
     for edge in net.edges:
         color = f"#{random.randint(0, 255):02x}{random.randint(0, 255):02x}{random.randint(0, 255):02x}"
         if len(edge["type"]) > 1:
+            edge["label"] = str(edge["type"])  # 设置边的提示信息
             edge["label"] = str(edge["type"])  # 设置边的提示信息
         else:
             edge["label"] = edge["type"]
@@ -99,6 +122,39 @@ async def realize_leiden_community_algorithm(graph_data):
 # asyncio.run(realize_leiden_community_algorithm(test_data))
 
 
+test_data = {
+    "entities": [
+        {
+            "id": "a7ab0c52-3068-4622-825a-4a4a1b6daaad",
+            "text": "Microsoft",
+            "type": "company",
+        },
+        {
+            "id": "dc244362-7747-48f4-8a00-16fb39f273fc",
+            "text": "Satya Nadella",
+            "type": ["person", "manager"],
+        },
+        {
+            "id": "ca4c99bf-66e0-426b-a40c-2ffce62a4529",
+            "text": "Azure AI",
+            "type": "product",
+        },
+    ],
+    "relations": [
+        {
+            "head": "Satya Nadella",
+            "tail": "Microsoft",
+            "type": "CEO of",
+            "id": "7477a645-1ead-4c65-a9e2-36666fa9a239",
+        },
+        {
+            "head": "Microsoft",
+            "tail": "Azure AI",
+            "type": ["developed", "product"],
+            "id": "19c83af7-a526-4e06-985e-e7df0a2f8eca",
+        },
+    ],
+}
 test_data = {
     "entities": [
         {

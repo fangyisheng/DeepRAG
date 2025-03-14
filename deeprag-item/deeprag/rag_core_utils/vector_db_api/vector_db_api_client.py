@@ -3,6 +3,8 @@ from pymilvus import MilvusClient, DataType, Function, FunctionType
 from dotenv import load_dotenv
 import os
 
+import os
+
 load_dotenv()
 
 
@@ -18,11 +20,23 @@ async def create_or_use_hybrid_search_milvus_client_collection_partition(
     client = MilvusClient(
         uri=CLUSTER_ENDPOINT,  # Cluster endpoint obtained from the console
         token=TOKEN,  # API key or a colon-separated cluster username and password
+        uri=CLUSTER_ENDPOINT,  # Cluster endpoint obtained from the console
+        token=TOKEN,  # API key or a colon-separated cluster username and password
     )
 
     # Create schema
     schema = MilvusClient.create_schema(auto_id=False, enable_dynamic_field=True)
+    schema = MilvusClient.create_schema(auto_id=False, enable_dynamic_field=True)
     # Add fields to schema
+    schema.add_field(
+        field_name="id", datatype=DataType.INT64, is_primary=True, auto_id=True
+    )
+    schema.add_field(
+        field_name="text",
+        datatype=DataType.VARCHAR,
+        max_length=20000,
+        enable_analyzer=True,
+    )
     schema.add_field(
         field_name="id", datatype=DataType.INT64, is_primary=True, auto_id=True
     )
@@ -38,6 +52,8 @@ async def create_or_use_hybrid_search_milvus_client_collection_partition(
         name="text_bm25_emb",
         input_field_names="text",  # 包含原始文本数据的 VARCHAR 字段名称
         output_field_names="sparse",  # 存储生成的向量的 SPARSE_FLOAT_VECTOR 字段名称
+        input_field_names="text",  # 包含原始文本数据的 VARCHAR 字段名称
+        output_field_names="sparse",  # 存储生成的向量的 SPARSE_FLOAT_VECTOR 字段名称
         function_type=FunctionType.BM25,
     )
 
@@ -47,8 +63,12 @@ async def create_or_use_hybrid_search_milvus_client_collection_partition(
 
     index_params.add_index(
         field_name="sparse", index_type="SPARSE_INVERTED_INDEX", metric_type="BM25"
+        field_name="sparse", index_type="SPARSE_INVERTED_INDEX", metric_type="BM25"
     )
     index_params.add_index(
+        field_name="dense",  # 指定需要创建索引的字段名称
+        index_name="dense_index",  # 为该索引创建一个名字
+        index_type="IVF_FLAT",  # 指定索引的类型
         field_name="dense",  # 指定需要创建索引的字段名称
         index_name="dense_index",  # 为该索引创建一个名字
         index_type="IVF_FLAT",  # 指定索引的类型

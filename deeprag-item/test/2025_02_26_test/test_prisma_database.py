@@ -1,14 +1,16 @@
 from prisma import Prisma
 import uuid
+
+
 async def main():
     db = Prisma()
     await db.connect()
 
     users = await db.knowledge_space.create(
-        data = {
-            "id":str(uuid.uuid4()),
-            "knowledge_space_id":str(uuid.uuid4()),
-            "knowledge_space_title":"测试知识库4"
+        data={
+            "id": str(uuid.uuid4()),
+            "knowledge_space_id": str(uuid.uuid4()),
+            "knowledge_space_title": "测试知识库4",
         }
     )
 
@@ -21,4 +23,5 @@ async def main():
 
 # 运行异步函数
 import asyncio
+
 asyncio.run(main())
