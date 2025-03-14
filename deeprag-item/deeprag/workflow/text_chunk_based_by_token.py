@@ -45,8 +45,6 @@ class TextSplitter:
             self.chunks.append(chunk_text)
             self.tokens_by_chunk.append(len(chunk_tokens))
 
-        return self.chunks
-
 
 # async def main():
 #     text = """《北京市住宅设计规范》（编号：DB11/1740—2020）是一份针对**北京市**及**城镇**地区**住宅**建筑设计的重要文件。该规范详细**规定了设计要求**，旨在提升住宅的功能性、安全性和舒适性，同时推动建筑行业的可持续发展。
