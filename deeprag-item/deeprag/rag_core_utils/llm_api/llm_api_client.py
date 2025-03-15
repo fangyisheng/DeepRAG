@@ -28,6 +28,21 @@ async def llm_chat(
         yield chunk.choices[0].message.content
 
 
+async def llm_chat_not_stream(
+    system_prompt: Optional[str] = "",
+    context_histroy: Optional[list] = [],
+    user_prompt: Optional[str] = "",
+):
+    chat_completion = await client.chat.completions.create(
+        model=llm_model,
+        messages=[{"role": "system", "content": system_prompt}]
+        + context_histroy
+        + [{"role": "user", "content": user_prompt}],
+        stream=False,
+    )
+    return chat_completion.choices[0].message.content
+
+
 async def llm_service(
     system_prompt: Optional[str] = "",
     context_histroy: Optional[list] = [],

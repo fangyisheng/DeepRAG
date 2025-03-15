@@ -18,5 +18,4 @@ async def data_insert_to_vector_db(
     )
 
     res = client.insert(collection_name="test", data=data)
-    res = client.insert(collection_name="test", data=data)
     return res

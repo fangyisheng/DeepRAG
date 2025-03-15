@@ -4,12 +4,12 @@
 
 
 def rag_answer_prompt_content(
-    knowledge_base_space, searched_file_name, searched_file_context
+    knowledge_space_name, searched_file_name, searched_file_context
 ):
     return f"""角色 ：你是一个强大的人工智能助手，能够基于给定的知识库片段回答用户问题。
 知识范围：
 
-知识库空间：{knowledge_base_space}
+知识库空间：{knowledge_space_name}
 搜索到的文件名：{searched_file_name}
 检索到的文本片段：{searched_file_context}
 
