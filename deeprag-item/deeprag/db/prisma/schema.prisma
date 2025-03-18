@@ -103,7 +103,7 @@ model llm_chat {
   llm_answer String
   message_start_time String
   message_end_time String
-  message_duration_time Strings
+  message_duration_time String
   session_id String
   cost_tokens String
   LLLMChatUser user @relation(fields: [user_id], references: [id])

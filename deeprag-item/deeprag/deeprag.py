@@ -13,14 +13,14 @@ from deeprag.workflow.graph_description import describe_graph
 from deeprag.workflow.vector_with_text_to_vector_db import data_insert_to_vector_db
 from deeprag.workflow.vector_query_to_vector_db import query_vector_db_by_vector
 from deeprag.workflow.final_rag_answer import final_rag_answer_process_stream,final_rag_answer_process_not_stream
-from deeprag.db.service.knowledge_space.knowledge_space_service import creat
+from deeprag.db.service.knowledge_space.knowledge_space_service import KnowledgeSpaceService
+from deeprag.db.service.file.file_service import FileService
 
 
 
 class DeepRAG:
     def __init__(self):
         pass
-        
         
     async def index(self,file_path:str,collection_name:str,partition_name:str,meta_data:str |list |None = None, knowledge_space_name: str  = "temporary",deep_knowledge_graph_pattern: bool = False):
         #首先提取干净的文本
@@ -36,11 +36,12 @@ class DeepRAG:
         relation_description = await describe_graph(merged_graph)
         # 利用embedding模型生成embedding向量
         embedding_vector = await batch_text_chunk_generate_embeddings_process(relation_description)
-        # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？
+        # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if not deep_knowledge_graph_pattern:
             partition_name = 
 
             
+
             if isinstance(meta_data,str):
                 meta_data = [meta_data for _ in range(len(embedding_vector))]
                 await data_insert_to_vector_db(relation_description,embedding_vector,collection_name,partition_name,meta_data)
@@ -50,6 +51,9 @@ class DeepRAG:
     async def query(self,user_prompt:str,stream:bool,context:list |None = None,knowledge_space_id:str | None =None,file_id:str | None =  None):
         if knowledge_space_id is None and file_id is None:
             raise ValueError("Either knowledge_space_id or file_id must be provided.") 
+        if knowledge_space_id is None and file_id is not None:
+
+
         
     
 
