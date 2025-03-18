@@ -3,11 +3,11 @@ from deeprag.prompts.dynamic_prompts.rag_answer_prompt import rag_answer_prompt_
 
 
 async def final_rag_answer_process_stream(
-    user_prompt,
-    context,
-    knowledge_space_name,
-    searched_file_name,
-    searched_file_context,
+    user_prompt: str,
+    knowledge_space_name: str,
+    searched_file_name: str,
+    searched_file_context: str,
+    context: list | None = None,
 ):
     system_prompt = rag_answer_prompt_content(
         knowledge_space_name, searched_file_name, searched_file_context
@@ -20,11 +20,11 @@ async def final_rag_answer_process_stream(
 
 
 async def final_rag_answer_process_not_stream(
-    user_prompt,
-    context,
-    knowledge_space_name,
-    searched_file_name,
-    searched_file_context,
+    user_prompt: str,
+    knowledge_space_name: str,
+    searched_file_name: str,
+    searched_file_context: str,
+    context: list | None = None,
 ):
     system_prompt = rag_answer_prompt_content(
         knowledge_space_name, searched_file_name, searched_file_context

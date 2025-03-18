@@ -2,7 +2,7 @@ import asyncio
 
 
 # 今天3月7日要改完这个bug
-async def describe_graph(graph):
+async def describe_graph(graph: dict):
     graph_description_list = []
     for relation in graph["relations"]:
         relation_head_text = next(
