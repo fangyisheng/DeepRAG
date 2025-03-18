@@ -1,5 +1,5 @@
 from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import (
-    create_or_use_hybrid_search_milvus_client_collection_partition,
+    create_or_use_hybrid_search_milvus_client_collection,
 )
 from loguru import logger
 
@@ -22,9 +22,7 @@ async def data_insert_to_vector_db(
         for i in range(len(text_list))
     ]
     logger.info(f"{data}")
-    client = await create_or_use_hybrid_search_milvus_client_collection_partition(
-        collection_name, partition_name
-    )
+    client = await create_or_use_hybrid_search_milvus_client_collection(collection_name)
 
     res = client.insert(collection_name="test", data=data)
     return res

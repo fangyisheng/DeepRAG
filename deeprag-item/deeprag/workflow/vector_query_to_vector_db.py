@@ -1,12 +1,12 @@
 from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import (
-    create_or_use_hybrid_search_milvus_client_collection_partition,
+    create_or_use_hybrid_search_milvus_client_collection,
 )
 from deeprag.rag_core_utils.embedding_api.embedding_api_client import text_to_vector
 from pymilvus import AnnSearchRequest
 from pymilvus import RRFRanker
 
 
-async def query_vector_db_by_vector(query, collection_name, partition_name):
+async def query_vector_db_by_vector(query: str, collection_name: str, filter: str):
     query_vector = await text_to_vector([query])
     search_param_1 = {
         "data": query_vector,
@@ -25,16 +25,14 @@ async def query_vector_db_by_vector(query, collection_name, partition_name):
     request_2 = AnnSearchRequest(**search_param_2)
     reqs = [request_1, request_2]
     ranker = RRFRanker()
-    client = await create_or_use_hybrid_search_milvus_client_collection_partition(
-        collection_name, partition_name
-    )
+    client = await create_or_use_hybrid_search_milvus_client_collection(collection_name)
     res = client.hybrid_search(
         collection_name=collection_name,
         reqs=reqs,
         ranker=ranker,
+        filter=filter,
         limit=2,
         output_fields=["text", "meta_data"],
-        partition_names=[partition_name],
     )
     context = [item["entity"]["text"] for item in res[0]]
     return context

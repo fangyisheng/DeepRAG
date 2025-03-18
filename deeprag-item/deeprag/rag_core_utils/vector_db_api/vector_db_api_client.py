@@ -14,18 +14,15 @@ TOKEN = os.getenv("MILVUS_CLUSTER_TOKEN")  # Set your token
 # Replace uri and token with your own
 
 
-async def create_or_use_hybrid_search_milvus_client_collection_partition(
-    collection_name: str | None = None, partition_name: str | None = None
+async def create_or_use_hybrid_search_milvus_client_collection(
+    collection_name: str | None = None,
 ):
     client = MilvusClient(
-        uri=CLUSTER_ENDPOINT,  # Cluster endpoint obtained from the console
-        token=TOKEN,  # API key or a colon-separated cluster username and password
         uri=CLUSTER_ENDPOINT,  # Cluster endpoint obtained from the console
         token=TOKEN,  # API key or a colon-separated cluster username and password
     )
 
     # Create schema
-    schema = MilvusClient.create_schema(auto_id=False, enable_dynamic_field=True)
     schema = MilvusClient.create_schema(auto_id=False, enable_dynamic_field=True)
     # Add fields to schema
     schema.add_field(
@@ -52,8 +49,6 @@ async def create_or_use_hybrid_search_milvus_client_collection_partition(
         name="text_bm25_emb",
         input_field_names="text",  # 包含原始文本数据的 VARCHAR 字段名称
         output_field_names="sparse",  # 存储生成的向量的 SPARSE_FLOAT_VECTOR 字段名称
-        input_field_names="text",  # 包含原始文本数据的 VARCHAR 字段名称
-        output_field_names="sparse",  # 存储生成的向量的 SPARSE_FLOAT_VECTOR 字段名称
         function_type=FunctionType.BM25,
     )
 
@@ -63,12 +58,8 @@ async def create_or_use_hybrid_search_milvus_client_collection_partition(
 
     index_params.add_index(
         field_name="sparse", index_type="SPARSE_INVERTED_INDEX", metric_type="BM25"
-        field_name="sparse", index_type="SPARSE_INVERTED_INDEX", metric_type="BM25"
     )
     index_params.add_index(
-        field_name="dense",  # 指定需要创建索引的字段名称
-        index_name="dense_index",  # 为该索引创建一个名字
-        index_type="IVF_FLAT",  # 指定索引的类型
         field_name="dense",  # 指定需要创建索引的字段名称
         index_name="dense_index",  # 为该索引创建一个名字
         index_type="IVF_FLAT",  # 指定索引的类型
@@ -84,12 +75,12 @@ async def create_or_use_hybrid_search_milvus_client_collection_partition(
             index_params=index_params,
         )
 
-    # 检查并创建分区
-    if not client.has_partition(
-        collection_name=collection_name, partition_name=partition_name
-    ):
-        client.create_partition(
-            collection_name=collection_name, partition_name=partition_name
-        )
+    # # 检查并创建分区
+    # if not client.has_partition(
+    #     collection_name=collection_name, partition_name=partition_name
+    # ):
+    #     client.create_partition(
+    #         collection_name=collection_name, partition_name=partition_name
+    #     )
 
     return client

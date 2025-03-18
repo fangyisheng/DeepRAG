@@ -13,7 +13,7 @@ async def increment_user_counter_lua(
     redis_client = await redis.Redis(host="localhost", port=6379, decode_responses=True)
     data = {
         "llm_cost_tokens": llm_cost_tokens,
-        "llm_cost_rps": llm_cost_rps,
+        "llm_cost_qps": llm_cost_rps,
         "embedding_cost_tokens": embedding_cost_tokens,
         "embedding_cost_rps": embedding_cost_rps,
     }
