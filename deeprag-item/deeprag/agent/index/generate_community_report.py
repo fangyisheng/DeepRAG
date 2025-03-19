@@ -6,6 +6,7 @@ import json
 
 
 # 使用了思维链的提示词工程方法
+# 根据输入的属于某个特定社区的关系描述，得到社区检测报告
 async def generate_community_agent(entity_relation_description: list):
     entity_relation_description_string = "。".join(entity_relation_description)
 

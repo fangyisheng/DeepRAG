@@ -15,8 +15,8 @@ class KnowledgeSpaceService:
         )
         return knowledge_space.__dict__
 
-    async def delete_knowledge_space(self, knowledge_space_id: str):
-        knowledge_space = await self.dao.delete_knowledge_space(knowledge_space_id)
+    async def delete_knowledge_space(self, id: str):
+        knowledge_space = await self.dao.delete_knowledge_space(id)
         return knowledge_space.__dict__
 
     async def get_knowledge_space_by_id(self, id: str):

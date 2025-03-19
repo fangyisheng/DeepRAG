@@ -9,9 +9,10 @@ datasource db {
 
 model knowledge_space {
   id                    String @id
-  human_readable_id     String @default(dbgenerated("nextval('example_human_readable_id_seq'::regclass)"))
-  knowledge_space_title String
+  human_readable_id     String 
+  user_id               String
   files  file[]
+  UserKnowledgeSpace  user @relation(fields: [user_id], references:[id])
 }
 
 model file {
@@ -92,6 +93,7 @@ model user {
   human_readable_id String
   user_name String
   llm_chats llm_chat[]
+  knowledge_spaces knowledge_space[]
 }
 
 model llm_chat {

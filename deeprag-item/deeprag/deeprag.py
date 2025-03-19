@@ -13,26 +13,34 @@ from deeprag.workflow.graph_description import describe_graph
 from deeprag.workflow.vector_with_text_to_vector_db import data_insert_to_vector_db
 from deeprag.workflow.vector_query_to_vector_db import query_vector_db_by_vector
 from deeprag.workflow.final_rag_answer import final_rag_answer_process_stream,final_rag_answer_process_not_stream
+from deeprag.agent.index.
 from deeprag.db.service.knowledge_space.knowledge_space_service import KnowledgeSpaceService
 from deeprag.db.service.file.file_service import FileService
-
+from deeprag.db.service.user.user_service import UserService
 
 
 class DeepRAG:
     def __init__(self):
-        pass
+       self.file_service = FileService()
+       self.knowledge_space_service = KnowledgeSpaceService()
+       self.user_service = UserService()
     
-    async def delete_file(file_id:str):
+    async def delete_file(self,file_id:str):
+        
+        await self.file_service.delete_file_in_knowledge_space(file_id)
 
 
-    async def delete_knowledge_space(knowledge_space_id:str):
+    async def delete_knowledge_space(self,knowledge_space_id:str):
+        await self.knowledge_space_service.delete_knowledge_space(knowledge_space_id)
+        
 
 
-    async def delete_user(user_id:str):
+    async def delete_user(self,user_id:str):
+        await self.user_service.delete_user(user_id)
 
 
-    async def index(self,file_path:str,collection_name:str,partition_name:str,meta_data:str |list |None = None, knowledge_space_name: str  = "temporary", index_pattern:str, deep_knowledge_graph_pattern: bool = False):
-        """index_pattern是一个很重要的概念，代表你要覆盖还是说要新增，这是一个需要区分的字段"""
+    async def index(self,file_path:str,collection_name:str,user_name:str,index_pattern:str, meta_data:str |list |None = None, knowledge_space_name: str  = "temporary", deep_knowledge_graph_pattern: bool = False):
+        """index_pattern是一个很重要的概念，代表你要覆盖还是说要新增，这是一个需要区分的字段???这是存疑的。需要再讨论一下"""
         
         #首先提取干净的文本
         cleaned_text = await process_text(file_path)

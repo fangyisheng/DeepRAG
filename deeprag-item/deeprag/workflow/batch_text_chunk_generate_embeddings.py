@@ -4,6 +4,11 @@ from deeprag.rag_core_utils.embedding_api.embedding_api_client import (
 )
 import asyncio
 
+"""
+这是对关系的描述的列表或者对社区检测报告的列表的嵌入。不是对文本分块的简单嵌入哦~
+目前本项目DeepRAG中没有对原始文本分块嵌入的操作。
+"""
+
 
 async def batch_text_chunk_generate_embeddings_process(
     chunked_text_array: list,

@@ -9,14 +9,23 @@ async def data_insert_to_vector_db(
     text_list: list,
     vector: list,
     collection_name: str,
-    partition_name: str,
+    knowledge_scope: list,
     meta_data: list | None = None,
 ):
+    """
+    knowledge_scope 举例
+    {
+      "user_id":"",
+      "knowledge_space_id":"",
+      "file_id":""
+    }
+    """
     # 通过引入字典解包，实现动态键值对的增加
     data = [
         {
             "text": text_list[i],
             "dense": vector[i],
+            "knowledge_scope": knowledge_scope[i],
             **({"meta_data": meta_data[i]} if meta_data else {}),
         }
         for i in range(len(text_list))
