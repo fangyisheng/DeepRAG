@@ -10,6 +10,7 @@ async def data_insert_to_vector_db(
     vector: list,
     collection_name: str,
     knowledge_scope: list,
+    community_cluster
     meta_data: list | None = None,
 ):
     """

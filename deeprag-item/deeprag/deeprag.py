@@ -39,8 +39,9 @@ class DeepRAG:
         await self.user_service.delete_user(user_id)
 
 
-    async def index(self,file_path:str,collection_name:str,user_name:str,index_pattern:str, meta_data:str |list |None = None, knowledge_space_name: str  = "temporary", deep_knowledge_graph_pattern: bool = False):
-        """index_pattern是一个很重要的概念，代表你要覆盖还是说要新增，这是一个需要区分的字段???这是存疑的。需要再讨论一下"""
+    async def index(self,file_path:str,collection_name:str,user_name:str,meta_data:str |list |None = None, knowledge_space_name: str  = "temporary", deep_index_pattern: bool = False):
+        """index_pattern是一个很重要的概念，代表你要覆盖还是说要新增，这是一个需要区分的字段???这是存疑的。需要再讨论一下，
+        不需要之前说的partition_name了"""
         
         #首先提取干净的文本
         cleaned_text = await process_text(file_path)
@@ -56,7 +57,7 @@ class DeepRAG:
         # 利用embedding模型生成embedding向量
         embedding_vector = await batch_text_chunk_generate_embeddings_process(relation_description)
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
-        if not deep_knowledge_graph_pattern:
+        if not deep_index_pattern:
             partition_name = 
 
             
