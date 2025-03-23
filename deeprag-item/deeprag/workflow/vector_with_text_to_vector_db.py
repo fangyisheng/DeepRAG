@@ -10,16 +10,19 @@ async def data_insert_to_vector_db(
     vector: list,
     collection_name: str,
     knowledge_scope: list,
-    community_cluster
+    community_cluster: list | None = None,
     meta_data: list | None = None,
 ):
     """
-    knowledge_scope 举例
+    knowledge_scope 的列表元素举例
     {
       "user_id":"",
       "knowledge_space_id":"",
       "file_id":""
     }
+
+    community_cluster 举例：
+    [uuid, uuid, uuid, uuid]
     """
     # 通过引入字典解包，实现动态键值对的增加
     data = [
@@ -28,6 +31,9 @@ async def data_insert_to_vector_db(
             "dense": vector[i],
             "knowledge_scope": knowledge_scope[i],
             **({"meta_data": meta_data[i]} if meta_data else {}),
+            **(
+                {"community_cluster": community_cluster[i]} if community_cluster else {}
+            ),
         }
         for i in range(len(text_list))
     ]
