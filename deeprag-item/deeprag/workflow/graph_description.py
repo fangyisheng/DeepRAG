@@ -77,7 +77,9 @@ class GraphDescription:
 
                     relation_community_id = f"temporary_{str(uuid.uuid4())}"
                     relation_community_id_list.append(relation_community_id)
-                    relation_from_different_community_temporary_map[relation["id"]] = relation_community_id
+                    relation_from_different_community_temporary_map[relation["id"]] = (
+                        relation_community_id
+                    )
                     # relation_community_id = next(
                     #     (
                     #         relation_head_community_id
@@ -97,7 +99,9 @@ class GraphDescription:
                     else:
                         relation_community_id = f"temporary_{str(uuid.uuid4())}"
                         relation_community_id_list.append(relation_community_id)
-                        relation_from_different_community_temporary_map[relation["id"]] = relation_community_id
+                        relation_from_different_community_temporary_map[
+                            relation["id"]
+                        ] = relation_community_id
                         # relation_community_id = next(
                         #     (
                         #         relation_head_community_id
@@ -107,12 +111,29 @@ class GraphDescription:
                         #     ),
                         #     None,
                         # )
-        for relation_id, relation_temporary_community_id in relation_from_different_community_temporary_map:
-            for  relation in graph["relations"]:
+        for (
+            relation_id,
+            relation_temporary_community_id,
+        ) in relation_from_different_community_temporary_map:
+            for relation in graph["relations"]:
                 if relation_id == relation["relation_id"]:
-                    
-
-
+                    relation_head_community_id = next(
+                        (
+                            entity["community_id"]
+                            for entity in graph["entities"]
+                            if entity["id"] == relation["head"]
+                        ),
+                        None,
+                    )
+                    relation_tail_community_id = next(
+                        (
+                            entity["community_id"]
+                            for entity in graph["entities"]
+                            if entity["id"] == relation["tail"]
+                        ),
+                        None,
+                    )
+                    for 
 
         return relation_community_id_list
 
