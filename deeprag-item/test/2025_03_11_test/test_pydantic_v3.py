@@ -21,6 +21,7 @@ data_list = [
     {"id": 3, "name": "Charlie"},
 ]
 
-key = 2
+key = "id"
 for dict in data_list:
-    if key value in dict
+    if key in dict:
+        print("nihao")

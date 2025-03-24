@@ -46,75 +46,8 @@ class GraphDescription:
     """ 怎么去区分这个描述文本块属于哪个社区的逻辑是：如果一个关系中的两个实体是来自同一个社区id的，那么这个描述文本块也来自同一个社区id，如果遇到
     一个关系中，两个实体来自不同的社区id，那么先判断哪个社区id已经被保存在了community_id_list中，没有被保存的那个社区id就是这个关系的社区id"""
 
-    # async def describe_graph_with_community_cluster(self, graph: dict):
-    #     relation_community_id_list = {}
-    #     for relation in graph["relations"]:
-    #         relation_head_community_id = next(
-    #             (
-    #                 entity["community_id"]
-    #                 for entity in graph["entities"]
-    #                 if relation["head"] == entity["id"]
-    #             ),
-    #             None,
-    #         )
-    #         relation_tail_community_id = next(
-    #             (
-    #                 entity["community_id"]
-    #                 for entity in graph["entities"]
-    #                 if relation["tail"] == entity["id"]
-    #             ),
-    #             None,
-    #         )
-    #         relation_head_text = next(
-    #             (
-    #                 entity["text"]
-    #                 for entity in graph["entities"]
-    #                 if entity["id"] == relation["head"]
-    #             ),
-    #             None,
-    #         )
-    #         relation_tail_text = next(
-    #             (
-    #                 entity["text"]
-    #                 for entity in graph["entities"]
-    #                 if entity["id"] == relation["tail"]
-    #             ),
-    #             None,
-    #         )
-    #         if isinstance(relation["type"], str):
-    #             graph_description = f"{relation_head_text}和{relation_tail_text}的关系是{relation_head_text}{relation['type']}{relation_tail_text},{relation['description']}"
-    #             if relation_head_community_id == relation_tail_community_id:
-    #                 relation_community_id_list.setdefault(
-    #                     relation_head_community_id, []
-    #                 ).append(graph_description)
-    #             else:
-    #                 relation_community_id_list.setdefault(
-    #                     relation_head_community_id, []
-    #                 ).append(graph_description)
-    #                 relation_community_id_list.setdefault(
-    #                     relation_tail_community_id, []
-    #                 ).append(graph_description)
-
-    #         else:
-    #             graph_description_list = []
-    #             for type in relation["type"]:
-    #                 graph_description = f"{relation_head_text}和{relation_tail_text}的关系是{relation_head_text}{type}{relation_tail_text},{relation['description']}"
-    #                 graph_description_list.append(graph_description)
-    #             if relation_head_community_id == relation_tail_community_id:
-    #                 relation_community_id_list.setdefault(
-    #                     relation_head_community_id, []
-    #                 ).extend(graph_description_list)
-    #             else:
-    #                 relation_community_id_list.setdefault(
-    #                     relation_head_community_id, []
-    #                 ).extend(graph_description_list)
-    #                 relation_community_id_list.setdefault(
-    #                     relation_tail_community_id, []
-    #                 ).extend(graph_description_list)
-    #     return relation_community_id_list
-
     async def describe_graph_with_community_cluster(self, graph: dict):
-        relation_community_id_list = []
+        relation_community_id_list = {}
         for relation in graph["relations"]:
             relation_head_community_id = next(
                 (
@@ -151,19 +84,9 @@ class GraphDescription:
             if isinstance(relation["type"], str):
                 graph_description = f"{relation_head_text}和{relation_tail_text}的关系是{relation_head_text}{relation['type']}{relation_tail_text},{relation['description']}"
                 if relation_head_community_id == relation_tail_community_id:
-
-                    for relation_community in relation_community_id_list:
-                        
-
-
-                    # new_dict = {"community_id": relation_head_community_id}
-                    # new_dict.setdefault(
-                    #     "graph_description", []
-                    # ).append(graph_description)
-                    # relation_community_id_list.append(
-                    #    new_dict
-                    # )
-
+                    relation_community_id_list.setdefault(
+                        relation_head_community_id, []
+                    ).append(graph_description)
                 else:
                     relation_community_id_list.setdefault(
                         relation_head_community_id, []
@@ -189,6 +112,84 @@ class GraphDescription:
                         relation_tail_community_id, []
                     ).extend(graph_description_list)
         return relation_community_id_list
+
+    # async def describe_graph_with_community_cluster(self, graph: dict):
+    #     relation_community_id_list = []
+    #     for relation in graph["relations"]:
+    #         relation_head_community_id = next(
+    #             (
+    #                 entity["community_id"]
+    #                 for entity in graph["entities"]
+    #                 if relation["head"] == entity["id"]
+    #             ),
+    #             None,
+    #         )
+    #         relation_tail_community_id = next(
+    #             (
+    #                 entity["community_id"]
+    #                 for entity in graph["entities"]
+    #                 if relation["tail"] == entity["id"]
+    #             ),
+    #             None,
+    #         )
+    #         relation_head_text = next(
+    #             (
+    #                 entity["text"]
+    #                 for entity in graph["entities"]
+    #                 if entity["id"] == relation["head"]
+    #             ),
+    #             None,
+    #         )
+    #         relation_tail_text = next(
+    #             (
+    #                 entity["text"]
+    #                 for entity in graph["entities"]
+    #                 if entity["id"] == relation["tail"]
+    #             ),
+    #             None,
+    #         )
+    #         if isinstance(relation["type"], str):
+    #             graph_description = f"{relation_head_text}和{relation_tail_text}的关系是{relation_head_text}{relation['type']}{relation_tail_text},{relation['description']}"
+    #             if relation_head_community_id == relation_tail_community_id:
+
+    #                 if relation_community_id_list:
+    #                     for relation_community in relation_community_id_list:
+    #                         if relation_head_community_id == relation_community["community_id"]
+
+    #                 else:
+    #                     new_dict = {"community_id": relation_head_community_id}
+    #                     new_dict.setdefault(
+    #                     "graph_description", []
+    #                 ).append(graph_description)
+    #                     relation_community_id_list.append(
+    #                     new_dict
+    #                 )
+
+    #             else:
+    #                 relation_community_id_list.setdefault(
+    #                     relation_head_community_id, []
+    #                 ).append(graph_description)
+    #                 relation_community_id_list.setdefault(
+    #                     relation_tail_community_id, []
+    #                 ).append(graph_description)
+
+    #         else:
+    #             graph_description_list = []
+    #             for type in relation["type"]:
+    #                 graph_description = f"{relation_head_text}和{relation_tail_text}的关系是{relation_head_text}{type}{relation_tail_text},{relation['description']}"
+    #                 graph_description_list.append(graph_description)
+    #             if relation_head_community_id == relation_tail_community_id:
+    #                 relation_community_id_list.setdefault(
+    #                     relation_head_community_id, []
+    #                 ).extend(graph_description_list)
+    #             else:
+    #                 relation_community_id_list.setdefault(
+    #                     relation_head_community_id, []
+    #                 ).extend(graph_description_list)
+    #                 relation_community_id_list.setdefault(
+    #                     relation_tail_community_id, []
+    #                 ).extend(graph_description_list)
+    #     return relation_community_id_list
 
 
 test_data = {
