@@ -151,12 +151,18 @@ class GraphDescription:
             if isinstance(relation["type"], str):
                 graph_description = f"{relation_head_text}和{relation_tail_text}的关系是{relation_head_text}{relation['type']}{relation_tail_text},{relation['description']}"
                 if relation_head_community_id == relation_tail_community_id:
-                    d = {"community_id": relation_head_community_id}.setdefault(
-                        "graph_description", []
-                    ).append
-                    relation_community_id_list.append(
-                        {"community_id": relation_head_community_id}
-                    )
+
+                    for relation_community in relation_community_id_list:
+                        
+
+
+                    # new_dict = {"community_id": relation_head_community_id}
+                    # new_dict.setdefault(
+                    #     "graph_description", []
+                    # ).append(graph_description)
+                    # relation_community_id_list.append(
+                    #    new_dict
+                    # )
 
                 else:
                     relation_community_id_list.setdefault(
