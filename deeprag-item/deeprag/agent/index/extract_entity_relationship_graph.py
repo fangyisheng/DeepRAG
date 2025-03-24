@@ -31,7 +31,7 @@ cot_prompt_chain2 = [
 cot_prompt = cot_prompt_chain1 + cot_prompt_chain2
 
 
-async def extract_entity_relationship_agent(user_prompt):
+async def extract_entity_relationship_agent(user_prompt: str) -> dict:
     response = await llm_service(
         system_prompt=system_prompt, user_prompt=user_prompt, cot_prompt=cot_prompt
     )

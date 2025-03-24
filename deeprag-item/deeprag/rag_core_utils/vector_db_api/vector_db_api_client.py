@@ -16,7 +16,7 @@ TOKEN = os.getenv("MILVUS_CLUSTER_TOKEN")  # Set your token
 
 async def create_or_use_hybrid_search_milvus_client_collection(
     collection_name: str | None = None,
-):
+) -> "MilvusClient":
     client = MilvusClient(
         uri=CLUSTER_ENDPOINT,  # Cluster endpoint obtained from the console
         token=TOKEN,  # API key or a colon-separated cluster username and password

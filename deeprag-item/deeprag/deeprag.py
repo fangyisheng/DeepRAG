@@ -18,9 +18,12 @@ from deeprag.workflow.final_rag_answer import (
     final_rag_answer_process_stream,
     final_rag_answer_process_not_stream,
 )
+from deeprag.workflow.batch_generate_community_report import batch_generate_community_report_func
+
 from deeprag.db.service.knowledge_space.knowledge_space_service import (
     KnowledgeSpaceService,
 )
+
 from deeprag.db.service.file.file_service import FileService
 from deeprag.db.service.user.user_service import UserService
 from pydantic import BaseModel
@@ -64,6 +67,8 @@ class DeepRAG:
             "file_id":""
         }
 
+        meta_data 由用户自己定义啦！~
+
         """
 
         # 首先提取干净的文本
@@ -100,6 +105,13 @@ class DeepRAG:
                     knowledge_scope,
                     meta_data,
                 )
+        else:
+            #先 生成社区报告
+            for 
+
+
+
+
 
     # async def query(self,user_prompt:str,stream:bool,context:list |None = None,knowledge_space_id:str | None =None,file_id:str | None =  None):
     #     if knowledge_space_id is None and file_id is None:

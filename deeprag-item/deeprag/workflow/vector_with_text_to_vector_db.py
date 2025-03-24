@@ -40,5 +40,5 @@ async def data_insert_to_vector_db(
     logger.info(f"{data}")
     client = await create_or_use_hybrid_search_milvus_client_collection(collection_name)
 
-    res = client.insert(collection_name="test", data=data)
+    res = client.insert(collection_name=collection_name, data=data)
     return res

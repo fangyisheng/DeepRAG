@@ -7,7 +7,9 @@ import json
 
 # 使用了思维链的提示词工程方法
 # 根据输入的属于某个特定社区的关系描述，得到社区检测报告
-async def generate_community_agent(entity_relation_description: list):
+async def generate_community_report_agent(
+    entity_relation_description: list,
+) -> dict[str, str]:
     entity_relation_description_string = "。".join(entity_relation_description)
 
     system_prompt = generate_community_report_prompt_content(
@@ -15,7 +17,6 @@ async def generate_community_agent(entity_relation_description: list):
     )
 
     response = await llm_service(system_prompt=system_prompt)
-    print(response)
     context_history = [{"role": "user", "content": """请输出社区检测报告"""}] + [
         {"role": "assistant", "content": f"""{response}"""}
     ]
@@ -32,12 +33,15 @@ async def generate_community_agent(entity_relation_description: list):
         user_prompt=user_prompt,
         cot_prompt=cot_prompt,
     )
-    return json.loads(final_response)
+    final_response_dict = json.loads(final_response)
+    community_report = f"""社区标题：{final_response_dict["title"]}，原来的知识图谱描述：{final_response_dict["origin_description"]}，总结：{final_response_dict["summary"]}"""
+    return community_report
 
 
 # #现在测试一下这个功能
 
 # import asyncio
-# entity_relation_description = ["微软的CEO是印度人","印度人之间的关系很好"]
 
-# print(asyncio.run(generate_community_agent(entity_relation_description)))
+# entity_relation_description = ["微软的CEO是印度人", "印度人之间的关系很好"]
+
+# print(asyncio.run(generate_community_report_agent(entity_relation_description)))

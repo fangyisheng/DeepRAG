@@ -7,7 +7,7 @@ class CommunityClusterDAO:
 
     async def create_community_cluster(
         self, id: str, community: str, community_title: str
-    ):
+    )-> :
         await self.db.connect()
         community_cluster = await self.db.community_cluster.create(
             data={"id": id, "community": community, "community_title": community_title}

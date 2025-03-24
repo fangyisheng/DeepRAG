@@ -1,7 +1,7 @@
 from openai import AsyncOpenAI
 import os
 from dotenv import load_dotenv
-from typing import Optional
+from typing import Optional, AsyncGenerator
 import asyncio
 
 load_dotenv()
@@ -16,7 +16,7 @@ async def llm_chat(
     system_prompt: Optional[str] = "",
     context_histroy: Optional[list] = [],
     user_prompt: Optional[str] = "",
-):
+) -> AsyncGenerator[str, None]:
     chat_completion = await client.chat.completions.create(
         model=llm_model,
         messages=[{"role": "system", "content": system_prompt}]
@@ -32,7 +32,7 @@ async def llm_chat_not_stream(
     system_prompt: Optional[str] = "",
     context_histroy: Optional[list] = [],
     user_prompt: Optional[str] = "",
-):
+) -> str:
     chat_completion = await client.chat.completions.create(
         model=llm_model,
         messages=[{"role": "system", "content": system_prompt}]
@@ -48,7 +48,7 @@ async def llm_service(
     context_histroy: Optional[list] = [],
     user_prompt: Optional[str] = "",
     cot_prompt: Optional[str] = [],
-):
+) -> str:
     chat_completion = await client.chat.completions.create(
         model=llm_model,
         messages=[{"role": "system", "content": system_prompt}]
