@@ -11,14 +11,16 @@ from deeprag.workflow.graph_storage_to_html_with_no_leiden import (
     store_graph_data_to_html_with_no_leiden,
 )
 from deeprag.workflow.merge_sub_graph import merge_sub_entity_relationship_graph
-from deeprag.workflow.graph_description import describe_graph
+from deeprag.workflow.graph_description import GraphDescription
 from deeprag.workflow.vector_with_text_to_vector_db import data_insert_to_vector_db
 from deeprag.workflow.vector_query_to_vector_db import query_vector_db_by_vector
 from deeprag.workflow.final_rag_answer import (
     final_rag_answer_process_stream,
     final_rag_answer_process_not_stream,
 )
-from deeprag.workflow.batch_generate_community_report import batch_generate_community_report_func
+from deeprag.workflow.batch_generate_community_report import (
+    batch_generate_community_report_func,
+)
 
 from deeprag.db.service.knowledge_space.knowledge_space_service import (
     KnowledgeSpaceService,
@@ -81,7 +83,8 @@ class DeepRAG:
         # 开始合并每个文本分块得到的子图结构变成一张完整的图谱结构
         merged_graph = await merge_sub_entity_relationship_graph(graphs)
         # 得到完整的图谱结构以后，要对其中的关系加以描述
-        relation_description = await describe_graph(merged_graph)
+        graph_description = GraphDescription()
+        relation_description = await graph_description.describe_graph(merged_graph)
         # 利用embedding模型生成embedding向量
         embedding_vector = await batch_text_chunk_generate_embeddings_process(
             relation_description
@@ -106,12 +109,12 @@ class DeepRAG:
                     meta_data,
                 )
         else:
-            #先 生成社区报告
-            for 
-
-
-
-
+            # 如果是deep_index_pattern 那么要生成社区报告
+            relation_description_with_community_id = (
+                await graph_description.describe_graph_with_community_cluster(
+                    merged_graph
+                )
+            )
 
     # async def query(self,user_prompt:str,stream:bool,context:list |None = None,knowledge_space_id:str | None =None,file_id:str | None =  None):
     #     if knowledge_space_id is None and file_id is None:

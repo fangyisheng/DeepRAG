@@ -13,18 +13,18 @@ class KnowledgeSpaceService:
         knowledge_space = await self.dao.create_knowledge_space(
             id, knowledge_space_id, knowledge_space_title
         )
-        return knowledge_space.__dict__
+        return knowledge_space
 
     async def delete_knowledge_space(self, id: str):
         knowledge_space = await self.dao.delete_knowledge_space(id)
-        return knowledge_space.__dict__
+        return knowledge_space
 
     async def get_knowledge_space_by_id(self, id: str):
         knowledge_space = await self.dao.get_knowledge_space_by_id(id)
 
-        return knowledge_space.__dict__
+        return knowledge_space
 
     async def update_knowledge_space(self, id: str, data: dict):
         knowledge_space = await self.dao.knowledge_space.update(id, data)
 
-        return knowledge_space.__dict__
+        return knowledge_space

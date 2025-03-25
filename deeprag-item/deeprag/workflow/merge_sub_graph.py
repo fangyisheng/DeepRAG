@@ -2,10 +2,14 @@ import uuid
 import json
 
 
-async def merge_sub_entity_relationship_graph(entity_relationship_graphs: list):
-    """
-    entity_relationship_graphs是一个关于字典的列表[{},{},{}]
+async def merge_sub_entity_relationship_graph(entity_relationship_graphs: list) -> dict:
+    """_summary_
 
+    Args:
+        entity_relationship_graphs (list): 子图元素组成的列表
+
+    Returns:
+        dict: 完整图的字典
     """
     merged_graph = {"entities": [], "relations": []}
 

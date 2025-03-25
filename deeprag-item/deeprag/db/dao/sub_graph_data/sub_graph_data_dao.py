@@ -13,7 +13,7 @@ class SubGraphDataDAO:
         merged_graph_data_id: str,
     ):
         await self.db.connect()
-        sub_graph_data = await self.db.sub_graph_data.create(
+        stored_sub_graph_data = await self.db.sub_graph_data.create(
             data={
                 "id": id,
                 "text_chunk_id": text_chunk_id,
@@ -22,10 +22,12 @@ class SubGraphDataDAO:
             }
         )
         await self.db.disconnect()
-        return sub_graph_data
+        return stored_sub_graph_data.model_dump()
 
     async def get_sub_graph_data_by_id(self, id: str):
         await self.db.connect()
-        sub_graph_data = await self.db.sub_graph_data.find_unique(where={"id": id})
+        found_sub_graph_data = await self.db.sub_graph_data.find_unique(
+            where={"id": id}
+        )
         await self.db.connect()
-        return sub_graph_data
+        return found_sub_graph_data.model_dump()

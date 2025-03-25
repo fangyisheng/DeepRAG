@@ -13,8 +13,8 @@ class FlattenEntityRelationService:
         flatten_entity_relation = (
             await self.dao.get_flatten_entity_relation_by_community_id(community_id)
         )
-        return flatten_entity_relation.__dict__
+        return flatten_entity_relation
 
     async def get_flatten_entity_relation_by_id(self, id: str):
         flatten_entity_relation = await self.dao.get_flatten_entity_relation_by_id(id)
-        return flatten_entity_relation.__dict__
+        return flatten_entity_relation

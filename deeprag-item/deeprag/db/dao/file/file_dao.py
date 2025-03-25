@@ -1,4 +1,5 @@
 from prisma import Prisma
+from deeprag.db.data_model import File
 
 
 class FileDAO:
@@ -7,9 +8,9 @@ class FileDAO:
 
     async def upload_new_file_to_knowledge_space(
         self, id: str, knowledge_space_id: str, doc_title: str, doc_text: str
-    ):
+    ) -> File:
         await self.db.connect()
-        file = await self.db.file.create(
+        stored_file = await self.db.file.create(
             data={
                 "id": id,
                 "knowledge_space_id": knowledge_space_id,
@@ -18,22 +19,22 @@ class FileDAO:
             }
         )
         await self.db.disconnect()
-        return file
+        return stored_file.model_dump()
 
     async def delete_file_in_knowledge_space(self, id: str):
         await self.db.connect()
-        file = await self.db.file.delete(where={"id": id})
+        deleted_file = await self.db.file.delete(where={"id": id})
         await self.db.disconnect()
-        return file
+        return deleted_file.model_dump()
 
     async def update_existed_file_in_knowledge_space(self, id: str, data: dict):
         await self.db.connect()
-        file = await self.db.file.update(where={"id": id}, data=data)
+        updated_file = await self.db.file.update(where={"id": id}, data=data)
         await self.db.disconnect()
-        return file
+        return updated_file.model_dump()
 
     async def get_file_in_knowledge_space_by_doc_id(self, id: str):
         await self.db.connect()
-        file = await self.db.file.find_unique(where={"id": id})
+        found_file = await self.db.file.find_unique(where={"id": id})
         await self.db.disconnect()
-        return file
+        return found_file.model_dump()

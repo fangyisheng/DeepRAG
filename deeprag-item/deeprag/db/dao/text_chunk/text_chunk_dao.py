@@ -9,7 +9,7 @@ class TextChunkDAO:
         self, id: str, doc_id: str, text_chunk: str, n_tokens: str
     ):
         await self.db.connect()
-        text_chunk = await self.db.knowledge_space.create(
+        stored_text_chunk = await self.db.text_chunk.create(
             data={
                 "id": id,
                 "doc_id": doc_id,
@@ -18,10 +18,10 @@ class TextChunkDAO:
             }
         )
         await self.db.disconnect()
-        return text_chunk
+        return stored_text_chunk.model_dump()
 
     async def get_text_chunk_by_id(self, id: str):
         await self.db.connect()
-        text_chunk = await self.db.knowledge_space.find_unique(where={"id": id})
+        found_text_chunk = await self.db.text_chunk.find_unique(where={"id": id})
         await self.db.connect()
-        return text_chunk
+        return found_text_chunk.model_dump()

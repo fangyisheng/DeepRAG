@@ -1,11 +1,4 @@
 import asyncio
-import uuid
-from pydantic import BaseModel
-
-
-class GraphDescriptionWithCommunity(BaseModel):
-    community_id: str
-    community_report: str
 
 
 class GraphDescription:
@@ -13,7 +6,15 @@ class GraphDescription:
     def __init__(self):
         pass
 
-    async def describe_graph(self, graph: dict) -> list:
+    async def describe_graph(self, graph: dict) -> list[str]:
+        """_summary_
+
+        Args:
+            graph (dict): 图的结构是个dict
+
+        Returns:
+            list[str]: 由图的结构扩展出来的关系描述文本列表
+        """
         graph_description_list = []
         for relation in graph["relations"]:
             relation_head_text = next(
@@ -46,7 +47,17 @@ class GraphDescription:
     """ 怎么去区分这个描述文本块属于哪个社区的逻辑是：如果一个关系中的两个实体是来自同一个社区id的，那么这个描述文本块也来自同一个社区id，如果遇到
     一个关系中，两个实体来自不同的社区id，那么先判断哪个社区id已经被保存在了community_id_list中，没有被保存的那个社区id就是这个关系的社区id"""
 
-    async def describe_graph_with_community_cluster(self, graph: dict):
+    async def describe_graph_with_community_cluster(
+        self, graph: dict
+    ) -> dict[str, list]:
+        """_summary_
+
+        Args:
+            graph (dict): 完整的图的结构(带有community_id)
+
+        Returns:
+            dict[str, list]: 带有community_id为键，关系描述文本列表为值的dict
+        """
         relation_community_id_list = {}
         for relation in graph["relations"]:
             relation_head_community_id = next(

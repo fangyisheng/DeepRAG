@@ -10,10 +10,10 @@ class MergedGraphDataDAO:
         id: str,
         sub_graph_data_id: str,
         merged_graph_data: str,
-        merged_graph_data_visualization_html,
+        merged_graph_data_visualization_html: str,
     ):
         await self.db.connect()
-        merged_graph_data = await self.db.merged_graph_data.create(
+        stored_merged_graph_data = await self.db.merged_graph_data.create(
             data={
                 "id": id,
                 "sub_graph_data_id": sub_graph_data_id,
@@ -22,12 +22,12 @@ class MergedGraphDataDAO:
             }
         )
         await self.db.disconnect()
-        return merged_graph_data
+        return stored_merged_graph_data.model_dump()
 
     async def get_merged_graph_data_by_id(self, id: str):
         await self.db.connect()
-        merged_graph_data = await self.db.merged_graph_data.find_unique(
+        found_merged_graph_data = await self.db.merged_graph_data.find_unique(
             where={"id": id}
         )
         await self.db.connect()
-        return merged_graph_data
+        return found_merged_graph_data.model_dump()

@@ -14,21 +14,21 @@ class FileService:
             id, knowledge_space_id, doc_title, doc_text
         )
 
-        return file.__dict__
+        return file
 
     async def delete_file_in_knowledge_space(self, id: str) -> dict[str, str]:
         file = await self.dao.delete_file_in_knowledge_space(id)
 
-        return file.__dict__
+        return file
 
     async def update_existed_file_in_knowledge(
         self, id: str, data: dict
     ) -> dict[str, str]:
         file = await self.dao.update_existed_file_in_knowledge_space(id, data)
 
-        return file.__dict__
+        return file
 
     async def get_file_in_knowledge_space_by_doc_id(self, id: str) -> dict[str, str]:
         file = await self.dao.get_file_in_knowledge_space_by_doc_id(id)
 
-        return file.__dict__
+        return file

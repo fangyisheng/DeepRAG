@@ -1,7 +1,15 @@
 import re
 
 
-async def process_text(file_path):
+async def process_text(file_path: str) -> str:
+    """_summary_
+
+    Args:
+        file_path (str): 文件路径
+
+    Returns:
+        str: 清洗好的文本字符串
+    """
     # 将文本按行分割
     with open(file_path, "r") as file:
         content = file.read()

@@ -10,10 +10,11 @@ import asyncio
 from pyvis.network import Network
 import random
 import uuid
+from typing import Tuple
 # 在这里实现leiden算法之前，还需要将networkx图转换为igraph图，同时igraph图的id字段是整数，这个要非常注意，所以要做一个字典映射
 
 
-async def realize_leiden_community_algorithm(graph_data):
+async def realize_leiden_community_algorithm(graph_data: dict) -> (str, dict):
     """
 
     将leiden算法应用于

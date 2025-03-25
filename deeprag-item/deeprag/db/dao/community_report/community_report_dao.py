@@ -1,4 +1,5 @@
 from prisma import Prisma
+from deeprag.db.data_model import CommunityReport
 
 
 class CommunityReportDAO:
@@ -7,9 +8,9 @@ class CommunityReportDAO:
 
     async def create_community_report(
         self, id: str, community_report: str, community_id: str
-    ):
+    ) -> CommunityReport:
         await self.db.connect()
-        community_report = await self.db.community_report.create(
+        stored_community_report = await self.db.community_report.create(
             data={
                 "id": id,
                 "community_report": community_report,
@@ -17,10 +18,12 @@ class CommunityReportDAO:
             }
         )
         await self.db.disconnect()
-        return community_report
+        return stored_community_report.model_dump()
 
-    async def get_community_report_by_id(self, id: str):
+    async def get_community_report_by_id(self, id: str) -> CommunityReport:
         await self.db.connect()
-        community_report = await self.db.community_report.find_unique(where={"id": id})
+        found_community_report = await self.db.community_report.find_unique(
+            where={"id": id}
+        )
         await self.db.disconnect()
-        return community_report
+        return found_community_report.model_dump()

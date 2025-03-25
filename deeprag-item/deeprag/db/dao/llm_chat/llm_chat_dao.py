@@ -19,7 +19,7 @@ class LLMChatDAO:
         cost_tokens: str,
     ):
         await self.db.connect()
-        message = await self.db.llm_chat.create(
+        stored_message = await self.db.llm_chat.create(
             data={
                 "id": id,
                 "user_id": user_id,
@@ -34,10 +34,10 @@ class LLMChatDAO:
             }
         )
         await self.db.disconnect()
-        return message
+        return stored_message.model_dump()
 
     async def get_message_by_id(self, id: str):
         await self.db.connect()
-        message = await self.db.llm_chat.find_unique(where={"id": id})
+        found_message = await self.db.llm_chat.find_unique(where={"id": id})
         await self.db.disconnect()
-        return message
+        return found_message.model_dump()
