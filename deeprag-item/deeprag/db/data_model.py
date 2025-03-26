@@ -22,6 +22,9 @@ class File(BaseModel):
     doc_text: str
 
 
+"""感觉这个类还需要打磨一下，增加数据验证啥的?? 明天再思考一下"""
+
+
 class UpdatedFile(BaseModel):
     doc_title: str | None = None
     doc_text: str | None = None
