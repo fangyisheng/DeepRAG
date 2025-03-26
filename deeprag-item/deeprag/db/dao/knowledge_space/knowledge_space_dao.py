@@ -1,5 +1,7 @@
 from prisma import Prisma
 from dotenv import load_dotenv
+from prisma.models import knowledge_space
+from deeprag.db.data_model import UpdateKnowledgeSpace
 
 load_dotenv()
 
@@ -10,7 +12,7 @@ class KnowledgeSpaceDAO:
 
     async def create_knowledge_space(
         self, id: str, user_id: str, knowledge_space_title: str
-    ):
+    ) -> knowledge_space:
         await self.db.connect()
         stored_knowledge_space = await self.db.knowledge_space.create(
             data={
@@ -20,26 +22,28 @@ class KnowledgeSpaceDAO:
             }
         )
         await self.db.disconnect()
-        return stored_knowledge_space.model_dump()
+        return stored_knowledge_space
 
-    async def delete_knowledge_space(self, id: str):
+    async def delete_knowledge_space(self, id: str) -> knowledge_space:
         await self.db.connect()
         deleted_knowledge_space = await self.db.knowledge_space.delete(where={"id": id})
         await self.db.connect()
-        return deleted_knowledge_space.model_dump()
+        return deleted_knowledge_space
 
-    async def get_knowledge_space_by_id(self, id: str):
+    async def get_knowledge_space_by_id(self, id: str) -> knowledge_space:
         await self.db.connect()
         found_knowledge_space = await self.db.knowledge_space.find_unique(
             where={"id": id}
         )
         await self.db.connect()
-        return found_knowledge_space.model_dump()
+        return found_knowledge_space
 
-    async def update_knowledge_space(self, id: str, data: dict):
+    async def update_knowledge_space(
+        self, id: str, data: UpdateKnowledgeSpace
+    ) -> knowledge_space:
         await self.db.connect()
         updated_knowledge_space = await self.db.knowledge_space.update(
             where={"id": id}, data=data
         )
         await self.db.disconnect()
-        return updated_knowledge_space.model_dump()
+        return updated_knowledge_space

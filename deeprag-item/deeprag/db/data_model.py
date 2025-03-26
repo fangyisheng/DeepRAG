@@ -22,6 +22,11 @@ class File(BaseModel):
     doc_text: str
 
 
+class UpdatedFile(BaseModel):
+    doc_title: str | None = None
+    doc_text: str | None = None
+
+
 class FlattenEntityRelation(BaseModel):
     id: str
     head_entity: str
@@ -34,6 +39,10 @@ class FlattenEntityRelation(BaseModel):
 class KnowledgeSpace(BaseModel):
     id: str
     user_id: str
+    knowledge_space_title: str
+
+
+class UpdateKnowledgeSpace(BaseModel):
     knowledge_space_title: str
 
 

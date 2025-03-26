@@ -1,5 +1,6 @@
 from prisma import Prisma
 from dotenv import load_dotenv
+from prisma.models import sub_graph_data
 
 load_dotenv()
 
@@ -14,7 +15,7 @@ class SubGraphDataDAO:
         text_chunk_id: str,
         sub_graph_data: str,
         merged_graph_data_id: str,
-    ):
+    ) -> sub_graph_data:
         await self.db.connect()
         stored_sub_graph_data = await self.db.sub_graph_data.create(
             data={
@@ -25,12 +26,12 @@ class SubGraphDataDAO:
             }
         )
         await self.db.disconnect()
-        return stored_sub_graph_data.model_dump()
+        return stored_sub_graph_data
 
-    async def get_sub_graph_data_by_id(self, id: str):
+    async def get_sub_graph_data_by_id(self, id: str) -> sub_graph_data:
         await self.db.connect()
         found_sub_graph_data = await self.db.sub_graph_data.find_unique(
             where={"id": id}
         )
         await self.db.connect()
-        return found_sub_graph_data.model_dump()
+        return found_sub_graph_data

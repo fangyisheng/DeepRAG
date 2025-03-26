@@ -1,5 +1,5 @@
 from prisma import Prisma
-from deeprag.db.data_model import CommunityCluster
+from prisma.models import community_cluster
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,18 +11,18 @@ class CommunityClusterDAO:
 
     async def create_community_cluster(
         self, id: str, community: str, community_title: str
-    ) -> CommunityCluster:
+    ) -> community_cluster:
         await self.db.connect()
         stored_community_cluster = await self.db.community_cluster.create(
             data={"id": id, "community": community, "community_title": community_title}
         )
         await self.db.disconnect()
-        return stored_community_cluster.model_dump()
+        return stored_community_cluster
 
-    async def get_community_cluster_by_id(self, id: str) -> CommunityCluster:
+    async def get_community_cluster_by_id(self, id: str) -> community_cluster:
         await self.db.connect()
         found_community_cluster = await self.db.community_cluster.find_unique(
             where={"id": id}
         )
         await self.db.disconnect()
-        return found_community_cluster.model_dump()
+        return found_community_cluster

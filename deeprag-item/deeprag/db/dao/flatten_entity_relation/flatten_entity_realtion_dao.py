@@ -1,4 +1,5 @@
 from prisma import Prisma
+from prisma.models import flatten_entity_relation
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,7 +17,7 @@ class FlattenEntityRelationDAO:
         relation: str,
         merged_graph_data_id: str,
         community_id: str,
-    ):
+    ) -> flatten_entity_relation:
         await self.db.connect()
         stored_flatten_entity_relation = await self.db.flatten_entity_relation.create(
             data={
@@ -29,17 +30,21 @@ class FlattenEntityRelationDAO:
             }
         )
         await self.db.disconnect()
-        return stored_flatten_entity_relation.model_dump()
+        return stored_flatten_entity_relation
 
-    async def get_flatten_entity_relation_by_id(self, id: str):
+    async def get_flatten_entity_relation_by_id(
+        self, id: str
+    ) -> flatten_entity_relation:
         await self.db.connect()
         found_flatten_entity_relation = (
             await self.db.flatten_entity_relation.find_unique(where={"id": id})
         )
         await self.db.disconnect()
-        return found_flatten_entity_relation.model_dump()
+        return found_flatten_entity_relation
 
-    async def get_flatten_entity_relation_by_community_id(self, community_id: str):
+    async def get_flatten_entity_relation_by_community_id(
+        self, community_id: str
+    ) -> list[flatten_entity_relation]:
         await self.db.connect()
         found_flatten_entity_relation_list = (
             await self.db.flatten_entity_relation.find_many(

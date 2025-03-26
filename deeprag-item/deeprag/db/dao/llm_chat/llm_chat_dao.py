@@ -1,5 +1,6 @@
 from prisma import Prisma
 from dotenv import load_dotenv
+from prisma.models import llm_chat
 
 load_dotenv()
 
@@ -20,7 +21,7 @@ class LLMChatDAO:
         message_duration_time: str,
         session_id: str,
         cost_tokens: str,
-    ):
+    ) -> llm_chat:
         await self.db.connect()
         stored_message = await self.db.llm_chat.create(
             data={
@@ -37,10 +38,10 @@ class LLMChatDAO:
             }
         )
         await self.db.disconnect()
-        return stored_message.model_dump()
+        return stored_message
 
-    async def get_message_by_id(self, id: str):
+    async def get_message_by_id(self, id: str) -> llm_chat:
         await self.db.connect()
         found_message = await self.db.llm_chat.find_unique(where={"id": id})
         await self.db.disconnect()
-        return found_message.model_dump()
+        return found_message

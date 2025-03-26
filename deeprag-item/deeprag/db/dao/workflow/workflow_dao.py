@@ -17,7 +17,7 @@ class WorkFlowDAO:
         workflow_start_time: str,
         workflow_end_time: str,
         workflow_duration_time: str,
-    ) -> "workflow":
+    ) -> workflow:
         await self.db.connect()
         stored_workflow = await self.db.workflow.create(
             data={
@@ -32,19 +32,19 @@ class WorkFlowDAO:
         await self.db.disconnect()
         return stored_workflow
 
-    async def get_workflow_by_id(self, id: str):
+    async def get_workflow_by_id(self, id: str) -> workflow:
         await self.db.connect()
         found_workflow = await self.db.workflow.find_unique(where={"id": id})
         await self.db.disconnect()
-        return found_workflow.model_dump()
+        return found_workflow
 
-    async def get_workflow_by_message_id(self, message_id: str):
+    async def get_workflow_by_message_id(self, message_id: str) -> workflow:
         await self.db.connect()
         found_workflow = await self.db.workflow.find_unique(
             where={"message_id": message_id}
         )
         await self.db.disconnect()
-        return found_workflow.model_dump()
+        return found_workflow
 
 
 # 编写测试代码
