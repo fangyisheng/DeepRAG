@@ -1,4 +1,8 @@
 from prisma import Prisma
+from prisma.models import workflow
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class WorkFlowDAO:
@@ -13,7 +17,7 @@ class WorkFlowDAO:
         workflow_start_time: str,
         workflow_end_time: str,
         workflow_duration_time: str,
-    ):
+    ) -> "workflow":
         await self.db.connect()
         stored_workflow = await self.db.workflow.create(
             data={
@@ -26,7 +30,7 @@ class WorkFlowDAO:
             }
         )
         await self.db.disconnect()
-        return stored_workflow.model_dump()
+        return stored_workflow
 
     async def get_workflow_by_id(self, id: str):
         await self.db.connect()
@@ -41,3 +45,28 @@ class WorkFlowDAO:
         )
         await self.db.disconnect()
         return found_workflow.model_dump()
+
+
+# 编写测试代码
+
+# import asyncio
+
+# workflow_dao = WorkFlowDAO()
+
+
+# async def test():
+#     data = await workflow_dao.create_workflow(
+#         id="8",
+#         status="1",
+#         action="1",
+#         workflow_start_time="1",
+#         workflow_end_time="1",
+#         workflow_duration_time="1",
+#     )
+#     print(data)
+#     print(data.id)
+#     print(type(data))
+
+
+# print(asyncio.run(test()))
+# 测试成功

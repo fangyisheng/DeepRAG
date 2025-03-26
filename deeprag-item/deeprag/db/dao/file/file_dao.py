@@ -1,5 +1,8 @@
 from prisma import Prisma
 from deeprag.db.data_model import File
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class FileDAO:
@@ -38,3 +41,20 @@ class FileDAO:
         found_file = await self.db.file.find_unique(where={"id": id})
         await self.db.disconnect()
         return found_file.model_dump()
+
+
+# # 撰写测试代码
+# import asyncio
+
+# file_dao = FileDAO()
+
+
+# async def test():
+#     data = await file_dao.upload_new_file_to_knowledge_space(
+#         id="1", knowledge_space_id="1", doc_title="test", doc_text="test"
+#     )
+#     print(data)
+#     print(type(data))
+
+
+# print(asyncio.run(test()))

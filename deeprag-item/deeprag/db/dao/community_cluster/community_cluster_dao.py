@@ -1,5 +1,8 @@
 from prisma import Prisma
 from deeprag.db.data_model import CommunityCluster
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class CommunityClusterDAO:

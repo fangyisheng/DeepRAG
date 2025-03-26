@@ -1,5 +1,8 @@
 from prisma import Prisma
 from deeprag.db.data_model import CommunityReport
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class CommunityReportDAO:
