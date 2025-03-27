@@ -3,7 +3,7 @@ from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import (
 )
 from loguru import logger
 
-
+from data_model import 
 # 这边按道理会插入稀疏向量和稠密向量 BM25算法会自动生成sparse的稀疏向量
 async def data_insert_to_vector_db(
     text_list: list,
@@ -41,4 +41,9 @@ async def data_insert_to_vector_db(
     client = await create_or_use_hybrid_search_milvus_client_collection(collection_name)
 
     res = client.insert(collection_name=collection_name, data=data)
-    return res
+    return {
+    "status": "success" if res else "failed",
+    "inserted_count": len(data),
+    "collection": collection_name,
+    "milvus_response": res  # 保留原始响应
+}

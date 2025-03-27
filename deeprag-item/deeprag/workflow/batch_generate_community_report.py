@@ -2,15 +2,19 @@ from deeprag.agent.index.generate_community_report import (
     generate_community_report_agent,
 )
 import asyncio
-from pydantic import BaseModel
-
-class BatchGenerateCommunityReportParam(BaseModel):
-    
 
 
 async def batch_generate_community_report_func(
     graph_description_list_with_community_id: dict,
 ) -> dict[str, list]:
+    """这个函数是用来批量生成社区检测报告的
+
+    Args:
+        graph_description_list_with_community_id (dict): _description_
+
+    Returns:
+        dict[str, list]: _description_
+    """
     tasks = []
     for (
         community_id,

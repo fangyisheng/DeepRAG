@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 """并不会在输入数据的时候进行强制的数据验证，只会静态地提醒你要输入什么结构的数据"""
 
@@ -28,6 +28,15 @@ class File(BaseModel):
 class UpdatedFile(BaseModel):
     doc_title: str | None = None
     doc_text: str | None = None
+
+    @model_validator(mode="before")
+    def check_at_least_one_field(cls, data):
+        if isinstance(data, dict):  # 确保输入是字典
+            doc_title = data.get("doc_title")
+            doc_text = data.get("doc_text")
+            if doc_title is None and doc_text is None:
+                raise ValueError("至少需要提供 doc_title 或 doc_text 中的一个")
+        return data
 
 
 class FlattenEntityRelation(BaseModel):
