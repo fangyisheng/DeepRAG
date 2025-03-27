@@ -153,7 +153,10 @@ class VectorWithTextToVectorDB(BaseModel):
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个字典，字典的键是id,value是向量",
         examples=[
-            {"id": 0, "vector": [0.1, 0.2, 0.3]},
+            {
+                "id": 0,
+                "vector": [0.1, 0.2, 0.3],
+            },
             {"id": 1, "vector": [0.2, -0.24, 0.2]},
         ],
     )
