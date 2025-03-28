@@ -110,7 +110,7 @@ class DeepRAG:
                     meta_data,
                 )
         else:
-            # 如果是deep_index_pattern 那么要生成社区报告
+            # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
             relation_description_with_community_id = (
                 await graph_description.describe_graph_with_community_cluster(
                     merged_graph
