@@ -2,11 +2,12 @@ from deeprag.agent.index.generate_community_report import (
     generate_community_report_agent,
 )
 import asyncio
+from deeprag.workflow.data_model import BatchGenerateCommunityReportResponse
 
 
 async def batch_generate_community_report_func(
     graph_description_list_with_community_id: dict,
-) -> dict[str, list]:
+) -> BatchGenerateCommunityReportResponse:
     """这个函数是用来批量生成社区检测报告的
 
     Args:

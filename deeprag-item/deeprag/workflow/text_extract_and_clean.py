@@ -1,7 +1,8 @@
 import re
-from data_model import
+from deeprag.workflow.data_model import CompleteTextUnit
 
-async def process_text(file_path: str) -> str:
+
+async def process_text(file_path: str) -> CompleteTextUnit:
     """_summary_
 
     Args:

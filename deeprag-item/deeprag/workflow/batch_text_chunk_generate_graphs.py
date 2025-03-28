@@ -2,11 +2,12 @@ from deeprag.agent.index.extract_entity_relationship_graph import (
     extract_entity_relationship_agent,
 )
 import asyncio
+from deeprag.workflow.data_model import BatchTextChunkGenerateGraphsResponse
 
 
 async def batch_text_chunk_generate_graphs_process(
     chunked_text_array: list,
-) -> list[dict]:
+) -> BatchTextChunkGenerateGraphsResponse:
     """_summary_
 
     Args:

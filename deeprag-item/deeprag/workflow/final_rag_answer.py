@@ -1,5 +1,10 @@
 from deeprag.rag_core_utils.llm_api.llm_api_client import llm_chat, llm_chat_not_stream
 from deeprag.prompts.dynamic_prompts.rag_answer_prompt import rag_answer_prompt_content
+from deeprag.workflow.data_model import (
+    FinalRAGAnswerResponse,
+    FinalRAGAnswerStreamResponse,
+)
+from typing import AsyncGenerator
 
 
 async def final_rag_answer_process_stream(
@@ -8,7 +13,7 @@ async def final_rag_answer_process_stream(
     searched_file_name: str,
     searched_file_context: str,
     context: list | None = None,
-):
+) -> AsyncGenerator[FinalRAGAnswerStreamResponse, None]:
     system_prompt = rag_answer_prompt_content(
         knowledge_space_name, searched_file_name, searched_file_context
     )
@@ -25,7 +30,7 @@ async def final_rag_answer_process_not_stream(
     searched_file_name: str,
     searched_file_context: str,
     context: list | None = None,
-):
+) -> FinalRAGAnswerResponse:
     system_prompt = rag_answer_prompt_content(
         knowledge_space_name, searched_file_name, searched_file_context
     )

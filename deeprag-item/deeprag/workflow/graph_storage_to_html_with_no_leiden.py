@@ -6,7 +6,7 @@ import uuid
 import igraph as ig
 
 
-async def store_graph_data_to_html_with_no_leiden(entity_relationship):
+async def store_graph_data_to_html_with_no_leiden(entity_relationship) -> :
     # 创建有向关系图 如果是nx.Graph()则是创建了无向图，(u,v)和(v,u)等价
     G = nx.DiGraph()
     # 存储实体和实体之间的关系
@@ -73,38 +73,38 @@ async def store_graph_data_to_html_with_no_leiden(entity_relationship):
     return html_content
 
 
-test_data = {
-    "entities": [
-        {
-            "id": "1a320717-8765-451e-9c1c-6648519d5632",
-            "text": "Microsoft",
-            "type": "company",
-        },
-        {
-            "id": "ea3432d9-972a-43da-9fab-89a2bb6b950f",
-            "text": "Satya Nadella",
-            "type": ["person", "manager"],
-        },
-        {
-            "id": "0d98dd23-042e-4a28-8cbc-a8050b9d9366",
-            "text": "Azure AI",
-            "type": "product",
-        },
-    ],
-    "relations": [
-        {
-            "head": "ea3432d9-972a-43da-9fab-89a2bb6b950f",
-            "tail": "1a320717-8765-451e-9c1c-6648519d5632",
-            "type": "CEO of",
-            "id": "af28a2d6-a543-4254-914d-7bc7bdb4947f",
-        },
-        {
-            "head": "1a320717-8765-451e-9c1c-6648519d5632",
-            "tail": "0d98dd23-042e-4a28-8cbc-a8050b9d9366",
-            "type": ["developed", "product"],
-            "id": "6c5720bd-03c1-4dba-be87-5bcd03856408",
-        },
-    ],
-}
+# test_data = {
+#     "entities": [
+#         {
+#             "id": "1a320717-8765-451e-9c1c-6648519d5632",
+#             "text": "Microsoft",
+#             "type": "company",
+#         },
+#         {
+#             "id": "ea3432d9-972a-43da-9fab-89a2bb6b950f",
+#             "text": "Satya Nadella",
+#             "type": ["person", "manager"],
+#         },
+#         {
+#             "id": "0d98dd23-042e-4a28-8cbc-a8050b9d9366",
+#             "text": "Azure AI",
+#             "type": "product",
+#         },
+#     ],
+#     "relations": [
+#         {
+#             "head": "ea3432d9-972a-43da-9fab-89a2bb6b950f",
+#             "tail": "1a320717-8765-451e-9c1c-6648519d5632",
+#             "type": "CEO of",
+#             "id": "af28a2d6-a543-4254-914d-7bc7bdb4947f",
+#         },
+#         {
+#             "head": "1a320717-8765-451e-9c1c-6648519d5632",
+#             "tail": "0d98dd23-042e-4a28-8cbc-a8050b9d9366",
+#             "type": ["developed", "product"],
+#             "id": "6c5720bd-03c1-4dba-be87-5bcd03856408",
+#         },
+#     ],
+# }
 
-asyncio.run(store_graph_data_to_html_with_no_leiden(test_data))
+# asyncio.run(store_graph_data_to_html_with_no_leiden(test_data))

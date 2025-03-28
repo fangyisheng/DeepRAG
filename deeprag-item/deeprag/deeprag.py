@@ -28,6 +28,7 @@ from deeprag.db.service.knowledge_space.knowledge_space_service import (
 
 from deeprag.db.service.file.file_service import FileService
 from deeprag.db.service.user.user_service import UserService
+from deeprag.workflow.data_model import CompleteTextUnit,
 from pydantic import BaseModel
 
 
@@ -74,7 +75,7 @@ class DeepRAG:
         """
 
         # 首先提取干净的文本
-        cleaned_text = await process_text(file_path)
+        cleaned_text: CompleteTextUnit = await process_text(file_path)
         # 然后进行文本切分
         splitter = TextSplitter()
         chunks = await splitter.split_text_by_token(cleaned_text)

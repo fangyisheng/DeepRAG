@@ -1,4 +1,8 @@
 import asyncio
+from deeprag.workflow.data_model import (
+    GraphDescriptionResponse,
+    GraphDescriptionWithCommunityClusterResponse,
+)
 
 
 class GraphDescription:
@@ -6,7 +10,7 @@ class GraphDescription:
     def __init__(self):
         pass
 
-    async def describe_graph(self, graph: dict) -> list[str]:
+    async def describe_graph(self, graph: dict) -> GraphDescriptionResponse:
         """_summary_
 
         Args:
@@ -49,7 +53,7 @@ class GraphDescription:
 
     async def describe_graph_with_community_cluster(
         self, graph: dict
-    ) -> dict[str, list]:
+    ) -> GraphDescriptionWithCommunityClusterResponse:
         """_summary_
 
         Args:

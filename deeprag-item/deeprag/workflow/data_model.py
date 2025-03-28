@@ -1,9 +1,52 @@
 from pydantic import BaseModel, Field
 from typing import AsyncGenerator
 
+class CompleteTextUnit(BaseModel):
+    """
+    str
+    示例数据：
+    "深度求索（DeepSeek） globally becomes a prominent focus in the global AI domain."
 
-class BatchGenerateCommunityReport(BaseModel):
-    coummunity_reports: dict[str, list] = Field(
+    """
+    __root__: str = Field(
+        ...,
+        description="这个数据模型是字符串，字符串是长文本块",
+        examples=[
+            "深度求索（DeepSeek）在全球 AI 领域 becomes a prominent focus.",
+            "深度求索（DeepSeek） was founded in 2023.",
+            "The rise of DeepSeek in the global AI domain has attracted attention from many people.",
+        ],
+    )
+
+
+class  ChunkedTextUnit(BaseModel):
+    """
+    list[str]
+    示例数据：
+    ["深度求索（DeepSeek） globally becomes a prominent focus in the global AI domain.",
+    "深度求索（DeepSeek） was founded in 2023.","The rise of DeepSeek in the global AI domain has attracted attention from many people."]
+    """
+    __root__: list[str] = Field(
+        ...,
+        description="这个数据模型是列表，列表中的每个元素是一个长文本块",
+        examples=
+            [
+                "深度求索（DeepSeek）在全球 AI 领域 becomes a prominent focus.",
+                "深度求索（DeepSeek） was founded in 2023."
+        ]
+    )
+
+
+class BatchGenerateCommunityReportResponse(BaseModel):
+    """
+      dict[str, list]
+      示例数据：
+      {"community_id_1": ["关系描述文本块1", "关系描述文本块2"],
+       "community_id_2": ["关系描述文本块1", "关系描述文本块2"],
+       "community_id_3": ["关系描述文本块1", "关系描述文本块2"]}
+
+    """
+    __root__: dict[str, list] = Field(
         ...,
         description="这个数据模型是字典，键是动态的社区id,值为社区id对应的社区报告的列表",
         examples=[
@@ -11,12 +54,21 @@ class BatchGenerateCommunityReport(BaseModel):
                 "community_id_1": ["关系描述文本块1", "关系描述文本块2"],
                 "community_id_2": ["关系描述文本块1", "关系描述文本块2"],
                 "community_id_3": ["关系描述文本块1", "关系描述文本块2"],
+            },
+            {
+                "community_id_1": ["关系描述文本块1", "关系描述文本块2"],
+                "community_id_3": ["关系描述文本块1", "关系描述文本块2"],
             }
         ],
     )
 
 
-class BatchTextChunkGenerateEmbeddings(BaseModel):
+class BatchTextChunkGenerateEmbeddingsResponse(BaseModel):
+    """
+    list[list]
+    示例数据：
+    [[0.1, 0.2, 0.3], [0.2, -0.24, 0.2]]
+    """
     __root__: list[list] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个高维度向量的列表",
@@ -24,7 +76,13 @@ class BatchTextChunkGenerateEmbeddings(BaseModel):
     )
 
 
-class BatchTextChunkGenerateGraphs(BaseModel):
+class BatchTextChunkGenerateGraphsResponse(BaseModel):
+    """
+    list[dict]
+    示例数据：
+    [ {"entities": [], "relations": []},
+     {"entities": [], "relations": []} ]
+    """
     __root__: list[dict] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个列表",
@@ -84,17 +142,33 @@ class BatchTextChunkGenerateGraphs(BaseModel):
     )
 
 
-class FinalRAGAnswerStream(BaseModel):
-    __root__: AsyncGenerator[str, None] = Field(
-        ..., description="这个数据模型是异步生成器，异步生成器返回一个字符串"
+class FinalRAGAnswerStreamResponse(BaseModel):
+    """
+    str
+    示例数据：
+    'data: {"answer":"", "rag_pattern":"", "workflow_id":""}'
+    """
+    __root__: str = Field(
+        ..., description="这个数据模型是字符串，异步生成器返回一个字符串",
+        examples=[
+            """data: {"answer":"", "rag_pattern":"", "workflow_id":""
+            }"""
+        ]
     )
 
 
-class FinalRAGAnswer(BaseModel):
-    __root__: str = Field(..., description="这个数据模型是字符串，字符串是rag的答案")
+class FinalRAGAnswerResponse(BaseModel):
+    """
+    str
+    示例数据：
+    "深度求索在全球 AI 领域 becomes a prominent focus."
+    """
+    __root__: str = Field(..., description="这个数据模型是字符串，字符串是rag的答案",examples=
+                          ["深度求索在全球 AI 领域 becomes a prominent focus."])
 
 
-class GraphDescription(BaseModel):
+class GraphDescriptionResponse(BaseModel):
+    """"""
     __root__: list[str] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个关系描述的文本字符串",
@@ -107,7 +181,7 @@ class GraphDescription(BaseModel):
     )
 
 
-class GraphDescriptionWithCommunityCluster(BaseModel):
+class GraphDescriptionWithCommunityClusterResponse(BaseModel):
     __root__: dict[str, list] = Field(
         ...,
         description="这个数据模型是字典，键是动态的社区id,值为社区id对应的关系描述文本块的列表",
@@ -121,7 +195,7 @@ class GraphDescriptionWithCommunityCluster(BaseModel):
     )
 
 
-class TextChunkByToken(BaseModel):
+class TextChunkByTokenResponse(BaseModel):
     __root__: list[str] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是从原始长文本块根据token切分后的一个文本块",
@@ -136,7 +210,7 @@ class TextChunkByToken(BaseModel):
     )
 
 
-class TextExtractAndClean(BaseModel):
+class TextExtractAndCleanResponse(BaseModel):
     __root__: str = Field(
         ...,
         description="这个数据模型是字符串，字符串是长文本块",
@@ -148,7 +222,7 @@ class TextExtractAndClean(BaseModel):
     )
 
 
-class VectorWithTextToVectorDB(BaseModel):
+class DataInsertVectorDBResponse(BaseModel):
     __root__: list[dict] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个字典，字典的键是id,value是向量",
@@ -160,3 +234,9 @@ class VectorWithTextToVectorDB(BaseModel):
             {"id": 1, "vector": [0.2, -0.24, 0.2]},
         ],
     )
+
+class 
+
+
+
+class
