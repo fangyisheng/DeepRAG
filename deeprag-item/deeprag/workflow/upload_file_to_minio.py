@@ -1,7 +1,7 @@
 from deeprag.rag_core_utils.s3_api.s3_api_client import create_minio_client
+ 
 
-
-async def upload_file_to_minio_func(bucket_name, file_path, object_name):
+async def upload_file_to_minio_func(bucket_name, file_path, object_name)->:
     client = await create_minio_client()
 
     # 检查存储桶是否存在，如果不存在则创建
@@ -12,5 +12,9 @@ async def upload_file_to_minio_func(bucket_name, file_path, object_name):
         print(f"Bucket '{bucket_name}' already exists.")
 
     # 上传文件
-    client.fput_object(bucket_name, object_name, file_path)
+    uploaded_file_object = client.fput_object(bucket_name, object_name, file_path)
     print(f"File '{file_path}' uploaded to bucket '{bucket_name}' as '{object_name}'.")
+    return {
+        "status":"sucess" if uploaded_file_object else "failed",
+        "result":uploaded_file_object
+    }

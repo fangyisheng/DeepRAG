@@ -3,7 +3,7 @@ from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import (
 )
 from loguru import logger
 
-from deeprag.workflow.data_model import VectorWithTextToVectorDB
+from deeprag.workflow.data_model import DataInsertVectorDBResponse
 
 
 # 这边按道理会插入稀疏向量和稠密向量 BM25算法会自动生成sparse的稀疏向量
@@ -14,7 +14,7 @@ async def data_insert_to_vector_db(
     knowledge_scope: list,
     community_cluster: list | None = None,
     meta_data: list | None = None,
-) -> VectorDBInsertResponse:
+) -> DataInsertVectorDBResponse:
     """
     knowledge_scope 的列表元素举例
     {

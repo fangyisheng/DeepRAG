@@ -1,8 +1,14 @@
 import uuid
 import json
+from deeprag.workflow.data_model import (
+    BatchTextChunkGenerateGraphsResponse,
+    CompleteGraphData,
+)
 
 
-async def merge_sub_entity_relationship_graph(entity_relationship_graphs: list) -> dict:
+async def merge_sub_entity_relationship_graph(
+    entity_relationship_graphs: BatchTextChunkGenerateGraphsResponse,
+) -> CompleteGraphData:
     """_summary_
 
     Args:

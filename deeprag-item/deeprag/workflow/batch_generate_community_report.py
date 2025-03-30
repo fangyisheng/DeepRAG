@@ -27,7 +27,7 @@ async def batch_generate_community_report_func(
         tasks.append((community_id, task))
     result = await asyncio.gather(*(task for _, task in tasks))
     community_reports = {
-        community_id: report for (community_id, _), report in zip(tasks, result)
+        community_id: report. for (community_id, _), report in zip(tasks, result)
     }
     return community_reports
 

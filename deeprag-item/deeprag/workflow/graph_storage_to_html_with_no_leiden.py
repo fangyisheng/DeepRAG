@@ -4,9 +4,15 @@ import random
 import asyncio
 import uuid
 import igraph as ig
+from deeprag.workflow.data_model import (
+    GraphDescriptionWithVisualization,
+    CompleteGraphData,
+)
 
 
-async def store_graph_data_to_html_with_no_leiden(entity_relationship) -> :
+async def store_graph_data_to_html_with_no_leiden(
+    entity_relationship: CompleteGraphData,
+) -> GraphDescriptionWithVisualization:
     # 创建有向关系图 如果是nx.Graph()则是创建了无向图，(u,v)和(v,u)等价
     G = nx.DiGraph()
     # 存储实体和实体之间的关系

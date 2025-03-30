@@ -28,14 +28,17 @@ from deeprag.db.service.knowledge_space.knowledge_space_service import (
 
 from deeprag.db.service.file.file_service import FileService
 from deeprag.db.service.user.user_service import UserService
-from deeprag.workflow.data_model import CompleteTextUnit,
-from pydantic import BaseModel
-
-
-class KnowledgeScope(BaseModel):
-    user_id: str
-    knowledge_space_id: str
-    file_id: str
+from deeprag.workflow.data_model import (
+    CompleteTextUnit,
+    KnowledgeScope,
+    ChunkedTextUnit,
+    BatchTextChunkGenerateGraphsResponse,
+    CompleteGraphData,
+    GraphDescriptionResponse,
+    BatchTextChunkGenerateEmbeddingsResponse,
+    GraphDescriptionWithCommunityClusterResponse,
+    TokenListByTextChunk,
+)
 
 
 class DeepRAG:
@@ -78,17 +81,24 @@ class DeepRAG:
         cleaned_text: CompleteTextUnit = await process_text(file_path)
         # 然后进行文本切分
         splitter = TextSplitter()
-        chunks = await splitter.split_text_by_token(cleaned_text)
+        chunks: ChunkedTextUnit = await splitter.split_text_by_token(cleaned_text)
+        token_list: TokenListByTextChunk = splitter.tokens_by_chunk
         # 开始提取图结构
-        graphs = await batch_text_chunk_generate_graphs_process(chunks)
+        graphs: BatchTextChunkGenerateGraphsResponse = (
+            await batch_text_chunk_generate_graphs_process(chunks)
+        )
         # 开始合并每个文本分块得到的子图结构变成一张完整的图谱结构
-        merged_graph = await merge_sub_entity_relationship_graph(graphs)
+        merged_graph: CompleteGraphData = await merge_sub_entity_relationship_graph(
+            graphs
+        )
         # 得到完整的图谱结构以后，要对其中的关系加以描述
         graph_description = GraphDescription()
-        relation_description = await graph_description.describe_graph(merged_graph)
+        relation_description: GraphDescriptionResponse = (
+            await graph_description.describe_graph(merged_graph)
+        )
         # 利用embedding模型生成embedding向量
-        embedding_vector = await batch_text_chunk_generate_embeddings_process(
-            relation_description
+        embedding_vector: BatchTextChunkGenerateEmbeddingsResponse = (
+            await batch_text_chunk_generate_embeddings_process(relation_description)
         )
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if not deep_index_pattern:
@@ -111,11 +121,26 @@ class DeepRAG:
                 )
         else:
             # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
-            relation_description_with_community_id = (
-                await graph_description.describe_graph_with_community_cluster(
-                    merged_graph
-                )
+            relation_description_with_community_id: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
+                merged_graph
             )
+            if isinstance(meta_data, str):
+                meta_data = [meta_data for _ in range(len(embedding_vector))]
+                await data_insert_to_vector_db(
+                    relation_description_with_community_id,
+                    embedding_vector,
+                    collection_name,
+                    knowledge_scope,
+                    meta_data,
+                )
+            if isinstance(meta_data, list):
+                await data_insert_to_vector_db(
+                    relation_description,
+                    embedding_vector,
+                    collection_name,
+                    knowledge_scope,
+                    meta_data,
+                )
 
     # async def query(self,user_prompt:str,stream:bool,context:list |None = None,knowledge_space_id:str | None =None,file_id:str | None =  None):
     #     if knowledge_space_id is None and file_id is None:

@@ -2,6 +2,7 @@ import tiktoken
 import os
 from dotenv import load_dotenv
 from loguru import logger
+from deeprag.workflow.data_model import ChunkedTextUnit
 
 load_dotenv()
 
@@ -9,7 +10,7 @@ load_dotenv()
 class TextSplitter:
     def __init__(self):
         self.chunks = []
-        self.tokens_by_chunk = []  # 和上面的token一一对应
+        self.tokens_by_chunk = []  # 和上面的chunk一一对应，存的是该chunk消耗的token数量
 
     # 在读取环境文件中的数字时，其实读到的是str
     async def split_text_by_token(
@@ -17,7 +18,7 @@ class TextSplitter:
         text: str,
         max_tokens: int = int(os.getenv("EMBEDDING_MODEL_MAX_TOKEN")),
         model_name: str = "gpt-4o",
-    ) -> list[str]:
+    ) -> ChunkedTextUnit:
         """
         利用 tiktoken 根据 token 数量来切分文本。
 

@@ -4,9 +4,12 @@ from deeprag.rag_core_utils.vector_db_api.vector_db_api_client import (
 from deeprag.rag_core_utils.embedding_api.embedding_api_client import text_to_vector
 from pymilvus import AnnSearchRequest
 from pymilvus import RRFRanker
+from deeprag.workflow.data_model import SearchedTextResponse
 
 
-async def query_vector_db_by_vector(query: str, collection_name: str, filter: str):
+async def query_vector_db_by_vector(
+    query: str, collection_name: str, filter: str
+) -> SearchedTextResponse:
     query_vector = await text_to_vector([query])
     search_param_1 = {
         "data": query_vector,
