@@ -9,7 +9,7 @@ from deeprag.workflow.batch_text_chunk_generate_embeddings import (
 )
 from deeprag.workflow.graph_storage_to_html_with_no_leiden import (
     store_graph_data_to_html_with_no_leiden,
-)
+)  # 可视化的函数方法
 from deeprag.workflow.merge_sub_graph import merge_sub_entity_relationship_graph
 from deeprag.workflow.graph_description import GraphDescription
 from deeprag.workflow.vector_with_text_to_vector_db import data_insert_to_vector_db
@@ -36,6 +36,7 @@ from deeprag.workflow.data_model import (
     CompleteGraphData,
     GraphDescriptionResponse,
     BatchTextChunkGenerateEmbeddingsResponse,
+    BatchGenerateCommunityReportResponse,
     GraphDescriptionWithCommunityClusterResponse,
     TokenListByTextChunk,
 )
@@ -104,43 +105,36 @@ class DeepRAG:
         if not deep_index_pattern:
             if isinstance(meta_data, str):
                 meta_data = [meta_data for _ in range(len(embedding_vector))]
-                await data_insert_to_vector_db(
-                    relation_description,
-                    embedding_vector,
-                    collection_name,
-                    knowledge_scope,
-                    meta_data,
-                )
-            if isinstance(meta_data, list):
-                await data_insert_to_vector_db(
-                    relation_description,
-                    embedding_vector,
-                    collection_name,
-                    knowledge_scope,
-                    meta_data,
-                )
+            await data_insert_to_vector_db(
+                relation_description,
+                embedding_vector,
+                collection_name,
+                knowledge_scope,
+                meta_data,
+            )
         else:
             # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
             relation_description_with_community_id: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
                 merged_graph
             )
+            community_report_with_community_id: BatchGenerateCommunityReportResponse = (
+                await batch_generate_community_report_func(
+                    relation_description_with_community_id
+                )
+            )
+            community_report_content = [
+                value.community_report
+                for value in community_report_with_community_id.values()
+            ]
             if isinstance(meta_data, str):
                 meta_data = [meta_data for _ in range(len(embedding_vector))]
-                await data_insert_to_vector_db(
-                    relation_description_with_community_id,
-                    embedding_vector,
-                    collection_name,
-                    knowledge_scope,
-                    meta_data,
-                )
-            if isinstance(meta_data, list):
-                await data_insert_to_vector_db(
-                    relation_description,
-                    embedding_vector,
-                    collection_name,
-                    knowledge_scope,
-                    meta_data,
-                )
+            await data_insert_to_vector_db(
+                community_report_content,
+                embedding_vector,
+                collection_name,
+                knowledge_scope,
+                meta_data,
+            )
 
     # async def query(self,user_prompt:str,stream:bool,context:list |None = None,knowledge_space_id:str | None =None,file_id:str | None =  None):
     #     if knowledge_space_id is None and file_id is None:

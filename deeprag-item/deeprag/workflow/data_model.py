@@ -1,9 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel, ConfigDict
 from typing import Any
 from minio.helpers import ObjectWriteResult
 
 
-class CompleteTextUnit(BaseModel):
+class CompleteTextUnit(RootModel):
     """
     str
     示例数据：
@@ -11,7 +11,7 @@ class CompleteTextUnit(BaseModel):
 
     """
 
-    __root__: str = Field(
+    root: str = Field(
         ...,
         description="这个数据模型是字符串，字符串是长文本块",
         examples=[
@@ -22,8 +22,8 @@ class CompleteTextUnit(BaseModel):
     )
 
 
-class TokenListByTextChunk(BaseModel):
-    __root__: list[str] = Field()
+class TokenListByTextChunk(RootModel):
+    root: list[str] = Field()
 
 
 class GraphDescriptionAddCommunityWithVisualization(BaseModel):
@@ -35,11 +35,11 @@ class GraphDescriptionAddCommunityWithVisualization(BaseModel):
     )
 
 
-class GraphDescriptionWithVisualization(BaseModel):
-    __root__: str = Field(..., description="这个数据模型是字符串，字符串是html_content")
+class GraphDescriptionWithVisualization(RootModel):
+    root: str = Field(..., description="这个数据模型是字符串，字符串是html_content")
 
 
-class ChunkedTextUnit(BaseModel):
+class ChunkedTextUnit(RootModel):
     """
     list[str]
     示例数据：
@@ -47,7 +47,7 @@ class ChunkedTextUnit(BaseModel):
     "深度求索（DeepSeek） was founded in 2023.","The rise of DeepSeek in the global AI domain has attracted attention from many people."]
     """
 
-    __root__: list[str] = Field(
+    root: list[str] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个长文本块",
         examples=[
@@ -87,48 +87,48 @@ class CompleteGraphData(BaseModel):
     relations: list[Relations]
 
 
-class BatchGenerateCommunityReportResponse(BaseModel):
+class BatchGenerateCommunityReportResponse(RootModel):
     """
     dict[str, list]
     示例数据：
-    {"community_id_1": ["关系描述文本块1", "关系描述文本块2"],
-     "community_id_2": ["关系描述文本块1", "关系描述文本块2"],
-     "community_id_3": ["关系描述文本块1", "关系描述文本块2"]}
+    {"community_id_1": "社区检测报告的文字",
+     "community_id_2": "社区检测报告的文字",
+     "community_id_3": "社区检测报告的文字"}
 
     """
 
-    __root__: dict[str, list] = Field(
+    root: dict[str, list] = Field(
         ...,
         description="这个数据模型是字典，键是动态的社区id,值为社区id对应的社区报告的列表",
         examples=[
             {
-                "community_id_1": ["关系描述文本块1", "关系描述文本块2"],
-                "community_id_2": ["关系描述文本块1", "关系描述文本块2"],
-                "community_id_3": ["关系描述文本块1", "关系描述文本块2"],
+                "community_id_1": "社区检测报告的文字",
+                "community_id_2": "社区检测报告的文字",
+                "community_id_3": "社区检测报告的文字",
             },
             {
-                "community_id_1": ["关系描述文本块1", "关系描述文本块2"],
-                "community_id_3": ["关系描述文本块1", "关系描述文本块2"],
+                "community_id_1": "社区检测报告的文字",
+                "community_id_3": "社区检测报告的文字",
             },
         ],
     )
 
 
-class BatchTextChunkGenerateEmbeddingsResponse(BaseModel):
+class BatchTextChunkGenerateEmbeddingsResponse(RootModel):
     """
     list[list]
     示例数据：
     [[0.1, 0.2, 0.3], [0.2, -0.24, 0.2]]
     """
 
-    __root__: list[list] = Field(
+    root: list[list] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个高维度向量的列表",
         examples=[[0.1, 0.2, 0.3], [0.2, -0.24, 0.2]],
     )
 
 
-class BatchTextChunkGenerateGraphsResponse(BaseModel):
+class BatchTextChunkGenerateGraphsResponse(RootModel):
     """
     list[dict]
     示例数据：
@@ -136,7 +136,7 @@ class BatchTextChunkGenerateGraphsResponse(BaseModel):
      {"entities": [], "relations": []} ]
     """
 
-    __root__: list[FirstExtractedGraphData] = Field(
+    root: list[FirstExtractedGraphData] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个列表",
         examples=[
@@ -195,14 +195,14 @@ class BatchTextChunkGenerateGraphsResponse(BaseModel):
     )
 
 
-class FinalRAGAnswerStreamResponse(BaseModel):
+class FinalRAGAnswerStreamResponse(RootModel):
     """
     str
     示例数据：
     'data: {"answer":"", "rag_pattern":"", "workflow_id":""}'
     """
 
-    __root__: str = Field(
+    root: str = Field(
         ...,
         description="这个数据模型是字符串，异步生成器返回一个字符串",
         examples=[
@@ -212,24 +212,24 @@ class FinalRAGAnswerStreamResponse(BaseModel):
     )
 
 
-class FinalRAGAnswerResponse(BaseModel):
+class FinalRAGAnswerResponse(RootModel):
     """
     str
     示例数据：
     "深度求索在全球 AI 领域 becomes a prominent focus."
     """
 
-    __root__: str = Field(
+    root: str = Field(
         ...,
         description="这个数据模型是字符串，字符串是rag的答案",
         examples=["深度求索在全球 AI 领域 becomes a prominent focus."],
     )
 
 
-class GraphDescriptionResponse(BaseModel):
+class GraphDescriptionResponse(RootModel):
     """"""
 
-    __root__: list[str] = Field(
+    root: list[str] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个关系描述的文本字符串",
         examples=[
@@ -241,8 +241,8 @@ class GraphDescriptionResponse(BaseModel):
     )
 
 
-class GraphDescriptionWithCommunityClusterResponse(BaseModel):
-    __root__: dict[str, list] = Field(
+class GraphDescriptionWithCommunityClusterResponse(RootModel):
+    root: dict[str, list] = Field(
         ...,
         description="这个数据模型是字典，键是动态的社区id,值为社区id对应的关系描述文本块的列表",
         examples=[
@@ -270,8 +270,8 @@ class GraphDescriptionWithCommunityClusterResponse(BaseModel):
 #     )
 
 
-class TextExtractAndCleanResponse(BaseModel):
-    __root__: str = Field(
+class TextExtractAndCleanResponse(RootModel):
+    root: str = Field(
         ...,
         description="这个数据模型是字符串，字符串是长文本块",
         examples=[
@@ -289,8 +289,8 @@ class DataInsertVectorDBResponse(BaseModel):
     zilliz_response: Any
 
 
-class SearchedTextResponse(BaseModel):
-    __root__: list[str] = Field(
+class SearchedTextResponse(RootModel):
+    root: list[str] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个字符串，字符串内容是搜索zilliz搜到的内容",
         examples=[["", "", ""], ["", "", ""]],
@@ -298,6 +298,7 @@ class SearchedTextResponse(BaseModel):
 
 
 class UploadFileToMinioResponse(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     status: str
     object_name: ObjectWriteResult
 
