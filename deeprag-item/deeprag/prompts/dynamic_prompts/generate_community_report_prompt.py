@@ -1,4 +1,9 @@
-def generate_community_report_prompt_content(entity_relation_description):
+from deeprag.workflow.data_model import SystemPrompt
+
+
+def generate_community_report_prompt_content(
+    entity_relation_description: str,
+) -> SystemPrompt:
     return f"""
     Role：
          你是一个撰写社区检测报告的人工智能助手，你可以根据给定的知识图谱中的描述生成社区检测报告

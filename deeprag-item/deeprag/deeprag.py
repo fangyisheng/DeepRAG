@@ -39,6 +39,7 @@ from deeprag.workflow.data_model import (
     BatchGenerateCommunityReportResponse,
     GraphDescriptionWithCommunityClusterResponse,
     TokenListByTextChunk,
+    SearchedTextResponse
 )
 
 
@@ -138,11 +139,26 @@ class DeepRAG:
             )
         return 
 
-    async def query(self,user_prompt:str,stream:bool,knowledge_scope:KnowledgeScope,session_id:str,context:list |None = None):
+    async def query(self,user_prompt:str,stream:bool,collection_name:str,knowledge_scope:KnowledgeScope,session_id:str,context:list |None = None):
         """感觉这里的context参数是可以保留那种原始的历史记录，也可以让用户手动增加的，保留更多灵活性,
         session_id如果是空白的，那就是新开一个会话，这个逻辑是可通的"""
-        if knowledge_space_id is None and file_id is None:
-            raise ValueError("Either knowledge_space_id or file_id must be provided.")
-        if knowledge_space_id is None and file_id is not None:
+        
+
+        #首先利用输入的query对向量数据库进行有筛选的检索
+        searched_text: SearchedTextResponse = await query_vector_db_by_vector(
+            user_prompt,
+            collection_name,
+            knowledge_scope,
+        )
+        if stream:
+             async for response in final_rag_answer_process_stream(
+                user_prompt,
+                collection_name,
+                searched_text.searched_file_name,
+                searched_text,
+                context
+            ):
+                yield response
+
 
     async def index_and_query(self,file_path,user_prompt,context):
