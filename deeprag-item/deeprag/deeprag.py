@@ -61,7 +61,7 @@ class DeepRAG:
         self,
         file_path: str,
         collection_name: str,
-        knowledge_scope: list[KnowledgeScope],
+        knowledge_scope: str|list[KnowledgeScope]|None = None,
         meta_data: str | list | None = None,
         deep_index_pattern: bool = False,
     ):
@@ -102,9 +102,12 @@ class DeepRAG:
             await batch_text_chunk_generate_embeddings_process(relation_description)
         )
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
-        if not deep_index_pattern:
-            if isinstance(meta_data, str):
+        if isinstance(meta_data, str) :
                 meta_data = [meta_data for _ in range(len(embedding_vector))]
+        if isinstance(knowledge_scope, str):
+                knowledge_scope = [knowledge_scope for _ in range(len(embedding_vector))]
+        if not deep_index_pattern:
+            
             await data_insert_to_vector_db(
                 relation_description,
                 embedding_vector,
@@ -126,8 +129,6 @@ class DeepRAG:
                 value.community_report
                 for value in community_report_with_community_id.values()
             ]
-            if isinstance(meta_data, str):
-                meta_data = [meta_data for _ in range(len(embedding_vector))]
             await data_insert_to_vector_db(
                 community_report_content,
                 embedding_vector,
@@ -135,10 +136,13 @@ class DeepRAG:
                 knowledge_scope,
                 meta_data,
             )
+        return 
 
-    # async def query(self,user_prompt:str,stream:bool,context:list |None = None,knowledge_space_id:str | None =None,file_id:str | None =  None):
-    #     if knowledge_space_id is None and file_id is None:
-    #         raise ValueError("Either knowledge_space_id or file_id must be provided.")
-    #     if knowledge_space_id is None and file_id is not None:
+    async def query(self,user_prompt:str,stream:bool,knowledge_scope:KnowledgeScope,session_id:str,context:list |None = None):
+        """感觉这里的context参数是可以保留那种原始的历史记录，也可以让用户手动增加的，保留更多灵活性,
+        session_id如果是空白的，那就是新开一个会话，这个逻辑是可通的"""
+        if knowledge_space_id is None and file_id is None:
+            raise ValueError("Either knowledge_space_id or file_id must be provided.")
+        if knowledge_space_id is None and file_id is not None:
 
-    # async def index_and_query(self,file_path,user_prompt,context):
+    async def index_and_query(self,file_path,user_prompt,context):

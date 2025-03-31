@@ -35,14 +35,11 @@ async def create_or_use_hybrid_search_milvus_client_collection(
         enable_analyzer=True,
     )
     schema.add_field(
-        field_name="id", datatype=DataType.INT64, is_primary=True, auto_id=True
-    )
-    schema.add_field(
-        field_name="text",
-        datatype=DataType.VARCHAR,
-        max_length=20000,
-        enable_analyzer=True,
-    )
+        field_name="meta_data", datatype=DataType.JSON
+    )  # 这是使用DeepRAG的用户和开发者添加的元数据信息
+    schema.add_field(field_name="community_id", datatype=DataType.VARCHAR)
+    schema.add_field(field_name="knowledge_scope", datatype=DataType.JSON)
+
     schema.add_field(field_name="sparse", datatype=DataType.SPARSE_FLOAT_VECTOR)
     schema.add_field(field_name="dense", datatype=DataType.FLOAT_VECTOR, dim=1024)
     bm25_function = Function(

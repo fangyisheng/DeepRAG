@@ -58,19 +58,47 @@ class ChunkedTextUnit(RootModel):
 
 
 class BaseEntity(BaseModel):
+    """
+    示例数据：
+    {"text": "深度求索（DeepSeek） ",
+     "type": "企业公司"}
+    """
+
     text: str
     type: str
 
 
 class EntityIdInt(BaseEntity):
+    """
+    示例数据：
+    {"text": "深度求索（DeepSeek） ",
+     "type": "企业公司",
+     "id": 1}
+    """
+
     id: int
 
 
 class EntityIdStr(BaseEntity):
+    """
+    示例数据：
+    {"text": "深度求索（DeepSeek） ",
+     "type": "企业公司",
+     "id": "uuid"}
+    """
+
     id: str
 
 
 class Relations(BaseModel):
+    """
+    示例数据：
+    {"head": "深度求索（DeepSeek） ",
+     "tail": " 英伟达",
+     "type": "影响",
+     "description": "深度求索和英伟达的关系是深度求索影响了英伟达"}
+    """
+
     head: str
     tail: str
     type: str
@@ -78,6 +106,11 @@ class Relations(BaseModel):
 
 
 class FirstExtractedGraphData(BaseModel):
+    """
+    示例数据：
+
+    """
+
     entities: list[EntityIdInt]
     relations: list[Relations]
 
@@ -141,56 +174,6 @@ class BatchTextChunkGenerateGraphsResponse(RootModel):
         description="这个数据模型是列表，列表中的每个元素是一个列表",
         examples=[
             {"entities": [], "relations": []},
-            {
-                "entities": [
-                    {"id": 0, "text": "深度求索", "type": "公司"},
-                    {"id": 1, "text": "DeepSeek", "type": "公司"},
-                    {"id": 2, "text": "全球 AI 领域", "type": "领域"},
-                    {"id": 3, "text": "2023 年", "type": "时间"},
-                    {"id": 4, "text": "美股市场", "type": "市场"},
-                    {"id": 5, "text": "1 月 27 日", "type": "时间"},
-                    {"id": 6, "text": "英伟达", "type": "公司"},
-                    {"id": 7, "text": "美国股市", "type": "市场"},
-                ],
-                "relations": [
-                    {
-                        "head": 1,
-                        "tail": 2,
-                        "type": "在领域中崭露头角",
-                        "description": "DeepSeek 在全球 AI 领域成为众人瞩目的焦点。",
-                    },
-                    {
-                        "head": 1,
-                        "tail": 3,
-                        "type": "成立于时间",
-                        "description": "深度求索（DeepSeek）成立于 2023 年。",
-                    },
-                    {
-                        "head": 1,
-                        "tail": 4,
-                        "type": "对市场产生影响",
-                        "description": "深度求索的崛起对美股市场产生了明显影响。",
-                    },
-                    {
-                        "head": 5,
-                        "tail": 6,
-                        "type": "股价大跌时间",
-                        "description": "1 月 27 日，英伟达收盘大跌超过 17%。",
-                    },
-                    {
-                        "head": 6,
-                        "tail": 7,
-                        "type": "创下市场记录",
-                        "description": "英伟达单日市值蒸发 5890 亿美元，创下美国股市历史上最高纪录。",
-                    },
-                    {
-                        "head": 1,
-                        "tail": 6,
-                        "type": "被认为是重要因素",
-                        "description": "DeepSeek 被认为是导致英伟达大跌的重要因素之一。",
-                    },
-                ],
-            },
         ],
     )
 
@@ -255,21 +238,6 @@ class GraphDescriptionWithCommunityClusterResponse(RootModel):
     )
 
 
-# class TextChunkByTokenResponse(BaseModel):
-#     __root__: list[str] = Field(
-#         ...,
-#         description="这个数据模型是列表，列表中的每个元素是从原始长文本块根据token切分后的一个文本块",
-#         examples=[
-#             ["深度求索（DeepSeek）在全球 AI 领域 becomes a prominent focus.", ""],
-#             ["深度求索（DeepSeek） was founded in 2023.", ""],
-#             [
-#                 "The rise of DeepSeek in the global AI domain has attracted attention from many people.",
-#                 "",
-#             ],
-#         ],
-#     )
-
-
 class TextExtractAndCleanResponse(RootModel):
     root: str = Field(
         ...,
@@ -283,6 +251,8 @@ class TextExtractAndCleanResponse(RootModel):
 
 
 class DataInsertVectorDBResponse(BaseModel):
+    """这边的zilliz_response需要再确认一下到底是怎么样的返回值"""
+
     status: str
     inserted_count: int
     collection_name: str
