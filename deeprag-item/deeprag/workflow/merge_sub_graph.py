@@ -96,10 +96,11 @@ async def merge_sub_entity_relationship_graph(
                 None,
             )
 
-    return merged_graph
+    return CompleteGraphData(**merged_graph)
 
 
 # import asyncio
+
 
 # # 下面这个test_data是大模型生成的子图列表的mock数据
 # test_data = [
@@ -160,4 +161,6 @@ async def merge_sub_entity_relationship_graph(
 #         ],
 #     }
 # ]
-# print(asyncio.run(merge_sub_entity_relationship_graph(test_data)))
+
+# data = asyncio.run(merge_sub_entity_relationship_graph(test_data))
+# print(data.__dict__)

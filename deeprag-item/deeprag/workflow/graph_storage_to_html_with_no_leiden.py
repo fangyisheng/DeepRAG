@@ -76,7 +76,7 @@ async def store_graph_data_to_html_with_no_leiden(
     net.show(f"{prefix}_graph_with_no_leiden.html")
     html_content = net.generate_html()
 
-    return html_content
+    return GraphDescriptionWithVisualization(root=html_content)
 
 
 # test_data = {

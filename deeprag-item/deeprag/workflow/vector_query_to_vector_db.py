@@ -53,4 +53,4 @@ async def query_vector_db_by_vector(
         output_fields=["text", "meta_data"],
     )
     context = [item["entity"]["text"] for item in res[0]]
-    return context
+    return SearchedTextResponse(root=context)

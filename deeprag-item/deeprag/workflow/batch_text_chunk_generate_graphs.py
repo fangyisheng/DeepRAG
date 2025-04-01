@@ -21,4 +21,4 @@ async def batch_text_chunk_generate_graphs_process(
         for text_chunk in chunked_text_array
     ]
     results = await asyncio.gather(*tasks)
-    return results
+    return BatchTextChunkGenerateGraphsResponse(root=results)

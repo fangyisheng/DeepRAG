@@ -2,6 +2,7 @@ import asyncio
 from deeprag.workflow.data_model import (
     GraphDescriptionResponse,
     GraphDescriptionWithCommunityClusterResponse,
+    CompleteGraphData,
 )
 
 
@@ -10,7 +11,9 @@ class GraphDescription:
     def __init__(self):
         pass
 
-    async def describe_graph(self, graph: dict) -> GraphDescriptionResponse:
+    async def describe_graph(
+        self, graph: CompleteGraphData
+    ) -> GraphDescriptionResponse:
         """_summary_
 
         Args:
@@ -45,7 +48,8 @@ class GraphDescription:
                 for type in relation["type"]:
                     graph_description = f"{relation_head_text}和{relation_tail_text}的关系是{relation_head_text}{type}{relation_tail_text},{relation['description']}"
                     graph_description_list.append(graph_description)
-        return graph_description_list
+
+        return GraphDescriptionResponse(root=graph_description_list)
 
     # 这个函数负责搞定给关系描述的文本块提供属于哪个社区的信息
     """ 怎么去区分这个描述文本块属于哪个社区的逻辑是：如果一个关系中的两个实体是来自同一个社区id的，那么这个描述文本块也来自同一个社区id，如果遇到

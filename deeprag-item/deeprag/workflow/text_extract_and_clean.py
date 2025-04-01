@@ -22,7 +22,7 @@ async def process_text(file_path: str) -> CompleteTextUnit:
     cleaned_content = re.sub(
         r"(?<=[\u4e00-\u9fff\d])\s+|\s+(?=[\u4e00-\u9fff\d])", "", content
     )
-    return cleaned_content
+    return CompleteTextUnit(root=cleaned_content)
 
 
 # import asyncio

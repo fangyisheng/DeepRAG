@@ -39,13 +39,18 @@ async def data_insert_to_vector_db(
         }
         for i in range(len(text_list))
     ]
-    logger.info(f"{data}")
     client = await create_or_use_hybrid_search_milvus_client_collection(collection_name)
 
     res = client.insert(collection_name=collection_name, data=data)
-    return {
-        "status": "success" if res else "failed",
-        "inserted_count": len(data),
-        "collection": collection_name,
-        "zilliz_response": res,  # 保留原始响应
-    }
+    # return {
+    #     "status": "success" if res else "failed",
+    #     "inserted_count": len(data),
+    #     "collection": collection_name,
+    #     "zilliz_response": res,  # 保留原始响应
+    # }
+    return DataInsertVectorDBResponse(
+        status="success" if res else "failed",
+        inserted_count=len(data),
+        collection_name=collection_name,
+        zilliz_response=res,  # 保留原始响应
+    )

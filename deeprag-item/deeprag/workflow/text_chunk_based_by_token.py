@@ -45,7 +45,7 @@ class TextSplitter:
             self.chunks.append(chunk_text)
             self.tokens_by_chunk.append(len(chunk_tokens))
 
-        return self.chunks
+        return ChunkedTextUnit(root=self.chunks)
 
 
 # async def main():

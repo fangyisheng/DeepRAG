@@ -32,6 +32,8 @@ from deeprag.workflow.data_model import (
     CompleteTextUnit,
     KnowledgeScope,
     ChunkedTextUnit,
+    User,
+    KnowledgeSpace,
     BatchTextChunkGenerateGraphsResponse,
     CompleteGraphData,
     GraphDescriptionResponse,
@@ -62,7 +64,7 @@ class DeepRAG:
         self,
         file_path: str,
         collection_name: str,
-        knowledge_scope: str|list[KnowledgeScope]|None = None,
+        knowledge_scope: dict|list[dict[str,str]]|None = None,
         meta_data: str | list | None = None,
         deep_index_pattern: bool = False,
     ):

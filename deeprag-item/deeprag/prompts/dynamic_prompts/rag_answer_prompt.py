@@ -11,9 +11,12 @@ def rag_answer_prompt_content(
     """
     这是RAG回答的系统提示词
     """
+    user_name = knowledge_scope.user_id
+    knowledge_space_id = knowledge_scope.knowledge_space_id
+    file_id = knowledge_scope.file_id
     return f"""角色 ：你是一个强大的人工智能助手，能够基于给定的知识库片段回答用户问题。
 知识范围：
-用户空间：
+用户空间：{}
 知识库空间：{knowledge_space_name}
 搜索到的文件名：{searched_file_name}
 检索到的文本片段：{searched_file_context}
