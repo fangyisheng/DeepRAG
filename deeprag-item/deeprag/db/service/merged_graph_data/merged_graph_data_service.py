@@ -13,7 +13,7 @@ class MergedGraphDataService:
         sub_graph_data_id: str,
         merged_graph_data: str,
         merged_graph_data_visualization_html: str,
-    ):
+    ) -> dict:
         stored_merged_graph_data = await self.dao.create_merged_graph_data(
             id,
             sub_graph_data_id,
@@ -21,10 +21,10 @@ class MergedGraphDataService:
             merged_graph_data_visualization_html,
         )
 
-        return stored_merged_graph_data
+        return stored_merged_graph_data.model_dump()
 
     # 这可能才是外部的开发者和用户真正需要的servie服务
-    async def get_merged_graph_data_by_id(self, id: str):
-        merged_graph_data = await self.dao.get_merged_graph_data_by_id(id)
+    async def get_merged_graph_data_by_id(self, id: str) -> dict:
+        found_merged_graph_data = await self.dao.get_merged_graph_data_by_id(id)
 
-        return merged_graph_data
+        return found_merged_graph_data.model_dump()

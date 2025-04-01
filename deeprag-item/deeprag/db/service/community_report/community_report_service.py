@@ -7,4 +7,4 @@ class CommunityReportService:
 
     async def get_community_report(self, id: str) -> dict[str, str]:
         community_report = await self.dao.get_community_report_by_id(id)
-        return community_report
+        return community_report.model_dump()

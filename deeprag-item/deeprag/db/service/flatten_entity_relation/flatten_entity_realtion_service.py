@@ -9,12 +9,14 @@ class FlattenEntityRelationService:
 
     async def get_flatten_entity_relation_by_community_id(
         self, community_id: str
-    ) -> dict:
-        flatten_entity_relation = (
+    ) -> list:
+        found_flatten_entity_relation_list = (
             await self.dao.get_flatten_entity_relation_by_community_id(community_id)
         )
-        return flatten_entity_relation
+        return found_flatten_entity_relation_list
 
     async def get_flatten_entity_relation_by_id(self, id: str):
-        flatten_entity_relation = await self.dao.get_flatten_entity_relation_by_id(id)
-        return flatten_entity_relation
+        found_flatten_entity_relation = (
+            await self.dao.get_flatten_entity_relation_by_id(id)
+        )
+        return found_flatten_entity_relation.model_dump()

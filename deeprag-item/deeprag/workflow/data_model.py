@@ -454,6 +454,11 @@ class KnowledgeScope(BaseModel):
     file: File
 
 
+class InputKnowledgeScope(BaseModel):
+    user_name: str
+    knowledge_space_name: str
+
+
 class SystemPrompt(RootModel):
     """
         系统提示词

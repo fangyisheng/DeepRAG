@@ -34,6 +34,7 @@ from deeprag.workflow.data_model import (
     ChunkedTextUnit,
     User,
     KnowledgeSpace,
+    InputKnowledgeScope,
     BatchTextChunkGenerateGraphsResponse,
     CompleteGraphData,
     GraphDescriptionResponse,
@@ -59,12 +60,17 @@ class DeepRAG:
 
     async def delete_user(self, user_id: str):
         await self.user_service.delete_user(user_id)
+    
+    async def create_user(self, user_name: str):
+         return await self.user_service.create_user(user_name)
+
+    async def create_knowledge_space(self, knowledge_space_name: str):
 
     async def index(
         self,
         file_path: str,
         collection_name: str,
-        knowledge_scope: dict|list[dict[str,str]]|None = None,
+        knowledge_scope: InputKnowledgeScope|None = None,
         meta_data: str | list | None = None,
         deep_index_pattern: bool = False,
     ):

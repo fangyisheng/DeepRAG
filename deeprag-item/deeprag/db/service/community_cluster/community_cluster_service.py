@@ -7,4 +7,4 @@ class CommunityClusterService:
 
     async def get_community_cluster(self, id) -> dict[str, str]:
         community_cluster = await self.dao.get_community_cluster_by_id(id)
-        return community_cluster
+        return community_cluster.model_dump()
