@@ -7,11 +7,10 @@ class KnowledgeSpaceService:
     def __init__(self):
         self.dao = KnowledgeSpaceDAO()
 
-    async def create_knowledge_space(self, knowledge_space_title: str) -> dict:
+    async def create_knowledge_space(self, user_id, knowledge_space_title: str) -> dict:
         id = str(uuid.uuid4())
-        knowledge_space_id = str(uuid.uuid4())
         created_knowledge_space = await self.dao.create_knowledge_space(
-            id, knowledge_space_id, knowledge_space_title
+            id, user_id, knowledge_space_title
         )
         return created_knowledge_space.model_dump()
 
@@ -25,6 +24,32 @@ class KnowledgeSpaceService:
         return found_knowledge_space.model_dump()
 
     async def update_knowledge_space(self, id: str, data: dict):
-        updated_knowledge_space = await self.dao.knowledge_space.update(id, data)
+        updated_knowledge_space = await self.dao.update_knowledge_space(id, data)
 
         return updated_knowledge_space.model_dump()
+
+    async def get_knowledge_space_by_knowledge_space_name(
+        self, knowledge_space_name: str
+    ) -> list[dict]:
+        found_knowledge_space = (
+            await self.dao.get_knowledge_space_by_knowledge_space_name(
+                knowledge_space_name
+            )
+        )
+
+        return [
+            knowledge_space.model_dump() for knowledge_space in found_knowledge_space
+        ]
+
+    async def search_knowledge_space_by_knowledge_space_name(
+        self, knowledge_space_name: str
+    ) -> list[dict]:
+        found_knowledge_space = (
+            await self.dao.search_knowledge_space_by_knowledge_space_name(
+                knowledge_space_name
+            )
+        )
+
+        return [
+            knowledge_space.model_dump() for knowledge_space in found_knowledge_space
+        ]

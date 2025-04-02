@@ -47,3 +47,29 @@ class KnowledgeSpaceDAO:
         )
         await self.db.disconnect()
         return updated_knowledge_space
+
+    async def get_knowledge_space_by_knowledge_space_name(
+        self, knowledge_space_name: str
+    ) -> list[knowledge_space]:
+        """
+        对知识库空间进行知识库名字的精确检索
+        """
+        await self.db.connect()
+        found_knowledge_space = await self.db.knowledge_space.find_many(
+            where={"knowledge_space_title": knowledge_space_name}
+        )
+        await self.db.disconnect()
+        return found_knowledge_space
+
+    async def search_knowledge_space_by_knowledge_space_name(
+        self, knowledge_space_name: str
+    ) -> list[knowledge_space]:
+        """
+        对知识库空间进行知识库名字的模糊检索
+        """
+        await self.db.connect()
+        found_knowledge_space = await self.db.knowledge_space.find_many(
+            where={"knowledge_space_title": {"contains": knowledge_space_name}}
+        )
+        await self.db.disconnect()
+        return found_knowledge_space

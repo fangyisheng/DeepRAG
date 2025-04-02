@@ -28,6 +28,9 @@ from deeprag.db.service.knowledge_space.knowledge_space_service import (
 
 from deeprag.db.service.file.file_service import FileService
 from deeprag.db.service.user.user_service import UserService
+from deeprag.db.service.user_knowledge_space_file_service import (
+    UserKnowledgeSpaceFileService,
+)
 from deeprag.workflow.data_model import (
     CompleteTextUnit,
     KnowledgeScope,
@@ -51,6 +54,7 @@ class DeepRAG:
         self.file_service = FileService()
         self.knowledge_space_service = KnowledgeSpaceService()
         self.user_service = UserService()
+        self.user_knowledge_space_file_service = UserKnowledgeSpaceFileService()
 
     async def delete_file(self, file_id: str):
         await self.file_service.delete_file_in_knowledge_space(file_id)
@@ -62,10 +66,18 @@ class DeepRAG:
         await self.user_service.delete_user(user_id)
     
     async def create_user(self, user_name: str):
-         return await self.user_service.create_user(user_name)
+         await self.user_service.create_user(user_name)
 
-    async def create_knowledge_space(self, knowledge_space_name: str):
+    async def create_knowledge_space(self,user_id:str,knowledge_space_name: str):
+         await self.knowledge_space_service.create_knowledge_space(
+             user_id,knowledge_space_name
+         )
 
+    async def get_complete_knowledge_scope_structure(self):
+         complete_knowledge_scope_structure = await self.user_knowledge_space_file_service.get_complete_knowledge_scope_structure()
+         return complete_knowledge_scope_structure
+         
+         
     async def index(
         self,
         file_path: str,
@@ -81,7 +93,7 @@ class DeepRAG:
             "user_id":"",
             "knowledge_space_id":"",
             "file_id":""
-        }
+        }???这边还是存疑的，需要再思考一下
 
         meta_data 由用户自己定义啦！~
 
