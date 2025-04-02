@@ -29,4 +29,4 @@ class UserService:
 
     async def get_users_by_user_name(self, user_name: str) -> list[dict]:
         found_users = await self.dao.get_users_by_user_name(user_name)
-        return [dict(user) for user in found_users]
+        return [user.model_dump() for user in found_users]

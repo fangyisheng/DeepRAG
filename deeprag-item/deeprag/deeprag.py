@@ -92,10 +92,9 @@ class DeepRAG:
         {
             "user_id":"",
             "knowledge_space_id":"",
-            "file_id":""
         }???这边还是存疑的，需要再思考一下
 
-        meta_data 由用户自己定义啦！~
+        meta_data 由用户自己定义啦！~可能是用户或者开发者自己想分类的领域
 
         """
 
@@ -127,14 +126,15 @@ class DeepRAG:
                 meta_data = [meta_data for _ in range(len(embedding_vector))]
         if isinstance(knowledge_scope, str):
                 knowledge_scope = [knowledge_scope for _ in range(len(embedding_vector))]
+        knowledge_scope = InputKnowledgeScope(**knowledge_scope)
         if not deep_index_pattern:
             
             await data_insert_to_vector_db(
-                relation_description,
-                embedding_vector,
-                collection_name,
-                knowledge_scope,
-                meta_data,
+                text_list = relation_description,
+                vector = embedding_vector,
+                collection_name=collection_name,
+                knowledge_scope=knowledge_scope,
+                meta_data=meta_data
             )
         else:
             # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
@@ -151,9 +151,9 @@ class DeepRAG:
                 for value in community_report_with_community_id.values()
             ]
             await data_insert_to_vector_db(
-                community_report_content,
-                embedding_vector,
-                collection_name,
+                text_list = community_report_content,
+                vector = embedding_vector,
+                collection_name=collection_name,
                 knowledge_scope,
                 meta_data,
             )
