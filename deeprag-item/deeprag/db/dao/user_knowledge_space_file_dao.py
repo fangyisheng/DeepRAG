@@ -1,12 +1,13 @@
 from prisma import Prisma
 from prisma.models import user
-
+from deeprag.workflow.data_model import KnowledgeScopeLocator
 
 class UserKnowledgeSpaceFileDAO:
     def __init__(self):
         self.db = Prisma()
 
     async def get_complete_knowledge_scope_structure(self) -> list[user]:
+        await self.db.connect()
         complete_knowledge_scope_structure = await self.db.user.find_many(
             select={
                 "user_name": True,
@@ -22,4 +23,8 @@ class UserKnowledgeSpaceFileDAO:
                 },
             }
         )
+        await self.db.disconnect()
         return complete_knowledge_scope_structure
+    
+    async def get_knowledge_scope_by_name(self,knowledge_scope_locator:KnowledgeScopeLocator):
+        

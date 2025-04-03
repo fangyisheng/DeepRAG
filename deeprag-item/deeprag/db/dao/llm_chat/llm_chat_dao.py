@@ -45,3 +45,11 @@ class LLMChatDAO:
         found_message = await self.db.llm_chat.find_unique(where={"id": id})
         await self.db.disconnect()
         return found_message
+
+    async def get_message_by_session_id(self, session_id: str) -> list[llm_chat]:
+        await self.db.connect()
+        found_message = await self.db.llm_chat.find_many(
+            where={"session_id": session_id}
+        )
+        await self.db.disconnect()
+        return found_message

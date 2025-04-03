@@ -31,13 +31,16 @@ from deeprag.db.service.user.user_service import UserService
 from deeprag.db.service.user_knowledge_space_file_service import (
     UserKnowledgeSpaceFileService,
 )
+from deeprag.db.service.llm_chat.llm_chat_service import LLMChatService
+from deeprag.db.data_model import RoleMessage
 from deeprag.workflow.data_model import (
     CompleteTextUnit,
     KnowledgeScope,
     ChunkedTextUnit,
     User,
     KnowledgeSpace,
-    InputKnowledgeScope,
+    KnowledgeScopeLocator,
+    KnowledgeScopeLocatorBeforeIndex,
     BatchTextChunkGenerateGraphsResponse,
     CompleteGraphData,
     GraphDescriptionResponse,
@@ -47,6 +50,7 @@ from deeprag.workflow.data_model import (
     TokenListByTextChunk,
     SearchedTextResponse
 )
+import uuid
 
 
 class DeepRAG:
@@ -55,23 +59,29 @@ class DeepRAG:
         self.knowledge_space_service = KnowledgeSpaceService()
         self.user_service = UserService()
         self.user_knowledge_space_file_service = UserKnowledgeSpaceFileService()
+        self.llm_chat_service = LLMChatService()
 
     async def delete_file(self, file_id: str):
-        await self.file_service.delete_file_in_knowledge_space(file_id)
+        deleted_file = await self.file_service.delete_file_in_knowledge_space(file_id)
+        return deleted_file
 
     async def delete_knowledge_space(self, knowledge_space_id: str):
-        await self.knowledge_space_service.delete_knowledge_space(knowledge_space_id)
+        deleted_knowledge_space = await self.knowledge_space_service.delete_knowledge_space(knowledge_space_id)
+        return deleted_knowledge_space
 
     async def delete_user(self, user_id: str):
-        await self.user_service.delete_user(user_id)
+        deleted_user = await self.user_service.delete_user(user_id)
+        return deleted_user
     
     async def create_user(self, user_name: str):
-         await self.user_service.create_user(user_name)
+         stored_user = await self.user_service.create_user(user_name)
+         return stored_user
 
     async def create_knowledge_space(self,user_id:str,knowledge_space_name: str):
-         await self.knowledge_space_service.create_knowledge_space(
+         stored_knowledge_space = await self.knowledge_space_service.create_knowledge_space(
              user_id,knowledge_space_name
          )
+         return stored_knowledge_space
 
     async def get_complete_knowledge_scope_structure(self):
          complete_knowledge_scope_structure = await self.user_knowledge_space_file_service.get_complete_knowledge_scope_structure()
@@ -82,10 +92,10 @@ class DeepRAG:
         self,
         file_path: str,
         collection_name: str,
-        knowledge_scope: InputKnowledgeScope|None = None,
-        meta_data: str | list | None = None,
+        knowledge_scope: KnowledgeScopeLocatorBeforeIndex,
+        meta_data: str | None = None,
         deep_index_pattern: bool = False,
-    ):
+    )->KnowledgeScopeLocator:
         """index_pattern是一个很重要的概念，代表你要覆盖还是说要新增，这是一个需要区分的字段???这是存疑的。需要再讨论一下，
         不需要之前说的partition_name了
         knowledge_scope 是一个字典的列表，字典需要的形式为：
@@ -126,7 +136,9 @@ class DeepRAG:
                 meta_data = [meta_data for _ in range(len(embedding_vector))]
         if isinstance(knowledge_scope, str):
                 knowledge_scope = [knowledge_scope for _ in range(len(embedding_vector))]
-        knowledge_scope = InputKnowledgeScope(**knowledge_scope)
+        knowledge_scope["file_id"] = str(uuid.uuid4())
+        
+
         if not deep_index_pattern:
             
             await data_insert_to_vector_db(
@@ -150,16 +162,20 @@ class DeepRAG:
                 value.community_report
                 for value in community_report_with_community_id.values()
             ]
+            community_report_cluser = [
+                 key for key in community_report_with_community_id.keys()
+            ]
             await data_insert_to_vector_db(
                 text_list = community_report_content,
                 vector = embedding_vector,
                 collection_name=collection_name,
-                knowledge_scope,
-                meta_data,
+                knowledge_scope = knowledge_scope,
+                community_cluster= community_report_cluser,
+                meta_data = meta_data,
             )
-        return 
+        return KnowledgeScopeLocator(**knowledge_scope)
 
-    async def query(self,user_prompt:str,stream:bool,collection_name:str,knowledge_scope:KnowledgeScope,session_id:str,context:list |None = None):
+    async def query(self,user_prompt:str,stream:bool,collection_name:str,knowledge_scope:KnowledgeScopeLocator,session_id:str|None = None,context:list[RoleMessage] |None = None):
         """感觉这里的context参数是可以保留那种原始的历史记录，也可以让用户手动增加的，保留更多灵活性,
         session_id如果是空白的，那就是新开一个会话，这个逻辑是可通的"""
         
@@ -170,6 +186,8 @@ class DeepRAG:
             collection_name,
             knowledge_scope,
         )
+        if not context:
+             context = await self.llm_chat_service.construct_context(session_id)
         if stream:
              async for response in final_rag_answer_process_stream(
                 user_prompt,
@@ -179,6 +197,16 @@ class DeepRAG:
                 context
             ):
                 yield response
+
+    async def query_answer_by_stream(self,user_prompt:str,stream:bool,collection_name:str,knowledge_scope:KnowledgeScope,session_id:str,context:list |None = None):
+        searched_text: SearchedTextResponse = await query_vector_db_by_vector(
+            user_prompt,
+            collection_name,
+            knowledge_scope,
+        )
+        if stream:
+             response = final_rag_answer_process_not_stream(user_prompt)
+         
 
 
     async def index_and_query(self,file_path,user_prompt,context):

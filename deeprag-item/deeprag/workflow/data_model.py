@@ -454,7 +454,13 @@ class KnowledgeScope(BaseModel):
     file: File
 
 
-class InputKnowledgeScope(BaseModel):
+class KnowledgeScopeLocator(BaseModel):
+    user_id: str
+    knowledge_space_id: str
+    file_id: str
+
+
+class KnowledgeScopeLocatorBeforeIndex(BaseModel):
     user_id: str
     knowledge_space_id: str
 
@@ -502,80 +508,4 @@ class SystemPrompt(RootModel):
         ],
     )
 
-
-a = {
-    "entities": [
-        EntityIdStr(
-            text="深度求索（DeepSeek）",
-            type="组织",
-            id="7814ff17-a116-4d1e-af36-6cb63fdf116c",
-        ),
-        EntityIdStr(
-            text="全球 AI 领域", type="领域", id="3839eb8e-73af-4b24-96da-9c2197b7a1aa"
-        ),
-        EntityIdStr(
-            text="2023 年", type="时间", id="1fc58fb7-c56c-4037-8752-47b2d618deb5"
-        ),
-        EntityIdStr(
-            text="美股市场", type="地点", id="5613dd34-ba51-46fb-9e93-582253828dfd"
-        ),
-        EntityIdStr(
-            text="1 月 27 日", type="时间", id="40c60a69-7dda-4302-9d0f-e1bd1fc88784"
-        ),
-        EntityIdStr(
-            text="美股 AI、芯片股",
-            type="股票",
-            id="5202c246-bd22-460a-ae8a-d649e822c832",
-        ),
-        EntityIdStr(
-            text="英伟达", type="组织", id="b18fe663-db36-48ea-a8f9-4760d23682c9"
-        ),
-        EntityIdStr(
-            text="美国股市", type="地点", id="671c921d-c047-44b7-8b2d-7379702a80c7"
-        ),
-    ],
-    "relations": [
-        Relations(
-            head="7814ff17-a116-4d1e-af36-6cb63fdf116c",
-            tail="3839eb8e-73af-4b24-96da-9c2197b7a1aa",
-            type="在领域中崭露头角",
-            description="深度求索（DeepSeek）在全球 AI 领域成为众人瞩目的焦点。",
-        ),
-        Relations(
-            head="7814ff17-a116-4d1e-af36-6cb63fdf116c",
-            tail="1fc58fb7-c56c-4037-8752-47b2d618deb5",
-            type="成立于",
-            description="深度求索（DeepSeek）成立于2023年。",
-        ),
-        Relations(
-            head="7814ff17-a116-4d1e-af36-6cb63fdf116c",
-            tail="5613dd34-ba51-46fb-9e93-582253828dfd",
-            type="影响力体现在",
-            description="深度求索（DeepSeek）的影响力在美股市场有明显体现。",
-        ),
-        Relations(
-            head="40c60a69-7dda-4302-9d0f-e1bd1fc88784",
-            tail="5202c246-bd22-460a-ae8a-d649e822c832",
-            type="导致重挫",
-            description="1月27日，美股AI、芯片股重挫。",
-        ),
-        Relations(
-            head="5202c246-bd22-460a-ae8a-d649e822c832",
-            tail="b18fe663-db36-48ea-a8f9-4760d23682c9",
-            type="影响公司股价",
-            description="英伟达收盘大跌超过17%，单日市值蒸发5890亿美元。",
-        ),
-        Relations(
-            head="b18fe663-db36-48ea-a8f9-4760d23682c9",
-            tail="671c921d-c047-44b7-8b2d-7379702a80c7",
-            type="创历史纪录",
-            description="创下美国股市历史上最高纪录。",
-        ),
-        Relations(
-            head="7814ff17-a116-4d1e-af36-6cb63fdf116c",
-            tail="5202c246-bd22-460a-ae8a-d649e822c832",
-            type="被认为是重要因素",
-            description="深度求索（DeepSeek）被认为是美股AI、芯片股波动的重要因素之一。",
-        ),
-    ],
-}
+class 

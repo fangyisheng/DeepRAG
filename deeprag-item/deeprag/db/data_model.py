@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, RootModel
 
 """并不会在输入数据的时候进行强制的数据验证，只会静态地提醒你要输入什么结构的数据"""
 
@@ -110,3 +110,8 @@ class WorkFlow(BaseModel):
     workflow_start_time: str
     workflow_end_time: str
     workflow_duration_time: str
+
+
+class RoleMessage(BaseModel):
+    role: str
+    content: str
