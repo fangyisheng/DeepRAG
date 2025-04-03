@@ -53,6 +53,15 @@ class UserDAO:
         """
 
         await self.db.connect()
-        searced_users = await self.db.user.find_many(where={"user_name": user_name})
+        searced_users = await self.db.user.find_many(
+            where={"user_name": user_name}, select={"id": True}
+        )
         await self.db.disconnect()
         return searced_users
+
+
+# # 做一下select方法的测试,可能在Python的prisma客户端里没有select方法，还要做一下human_readable_id的序列增加
+
+# import asyncio
+
+# asyncio.run()

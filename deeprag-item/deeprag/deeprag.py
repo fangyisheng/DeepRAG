@@ -83,8 +83,8 @@ class DeepRAG:
          )
          return stored_knowledge_space
 
-    async def get_complete_knowledge_scope_structure(self):
-         complete_knowledge_scope_structure = await self.user_knowledge_space_file_service.get_complete_knowledge_scope_structure()
+    async def get_all_knowledge_scope_structure(self):
+         complete_knowledge_scope_structure = await self.user_knowledge_space_file_service.get_all_knowledge_scope_structure()
          return complete_knowledge_scope_structure
          
          
@@ -204,8 +204,11 @@ class DeepRAG:
             collection_name,
             knowledge_scope,
         )
+        if not context:
+             context = await self.llm_chat_service.construct_context(session_id)
+
         if stream:
-             response = final_rag_answer_process_not_stream(user_prompt)
+             response = final_rag_answer_process_not_stream(user_prompt,session_id)
          
 
 

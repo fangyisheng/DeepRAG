@@ -47,7 +47,7 @@ class WorkFlowDAO:
         return found_workflow
 
 
-# 编写测试代码
+# # 编写测试代码
 
 # import asyncio
 
@@ -55,18 +55,9 @@ class WorkFlowDAO:
 
 
 # async def test():
-#     data = await workflow_dao.create_workflow(
-#         id="8",
-#         status="1",
-#         action="1",
-#         workflow_start_time="1",
-#         workflow_end_time="1",
-#         workflow_duration_time="1",
-#     )
+#     data = await workflow_dao.get_workflow_by_id("1")
 #     print(data)
-#     print(data.id)
-#     print(type(data))
 
 
 # print(asyncio.run(test()))
-# 测试成功
+# # 测试成功
