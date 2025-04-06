@@ -82,6 +82,14 @@ class DeepRAG:
              user_id,knowledge_space_name
          )
          return stored_knowledge_space
+    
+    async def create_file_and_upload_to_minio(self, file_path: str, user_id:str, knowledge_space_id:str,bucket_name:str, object_name:str)->KnowledgeScopeLocator:
+         await self.file_service.upload_new_file_to_minio(file_path, bucket_name,object_name)
+         knowledge_scope = await self.file_service.create_new_file_identity(
+             knowledge_space_id,user_id
+         )
+         return knowledge_scope
+
 
     async def get_all_knowledge_scope_structure(self):
          complete_knowledge_scope_structure = await self.user_knowledge_space_file_service.get_all_knowledge_scope_structure()

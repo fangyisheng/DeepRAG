@@ -3,7 +3,7 @@ from deeprag.workflow.data_model import UploadFileToMinioResponse
 
 
 async def upload_file_to_minio_func(
-    bucket_name, file_path, object_name
+    bucket_name, file_path, object_name, custom_metadata
 ) -> UploadFileToMinioResponse:
     client = await create_minio_client()
 
@@ -15,9 +15,17 @@ async def upload_file_to_minio_func(
         print(f"Bucket '{bucket_name}' already exists.")
 
     # 上传文件
-    uploaded_file_object = client.fput_object(bucket_name, object_name, file_path)
+    uploaded_file_object = client.fput_object(
+        bucket_name, object_name, file_path, custom_metadata
+    )
     print(f"File '{file_path}' uploaded to bucket '{bucket_name}' as '{object_name}'.")
-    return {
-        "status": "sucess" if uploaded_file_object else "failed",
-        "result": uploaded_file_object,
-    }
+    # return {
+    #     "status": "sucess" if uploaded_file_object else "failed",
+    #     "result": uploaded_file_object,
+    # }
+    return UploadFileToMinioResponse(
+        **{
+            "status": "sucess" if uploaded_file_object else "failed",
+            "result": uploaded_file_object,
+        }
+    )

@@ -1,5 +1,6 @@
 import re
 from deeprag.workflow.data_model import CompleteTextUnit
+from deeprag.rag_core_utils.s3_api.s3_api_client import create_minio_client
 
 
 async def process_text(file_path: str) -> CompleteTextUnit:
