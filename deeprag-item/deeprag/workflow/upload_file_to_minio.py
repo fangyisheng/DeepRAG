@@ -25,7 +25,7 @@ async def upload_file_to_minio_func(
     # }
     return UploadFileToMinioResponse(
         **{
-            "status": "sucess" if uploaded_file_object else "failed",
+            "status": "success" if uploaded_file_object else "failed",
             "result": uploaded_file_object,
         }
     )

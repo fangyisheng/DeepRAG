@@ -9,9 +9,11 @@ class FileService:
     def __init__(self):
         self.dao = FileDAO()
 
-    async def upload_new_file_to_minio(self, bucket_name, file_path, object_name):
+    async def upload_new_file_to_minio(
+        self, bucket_name: str, file_path, object_name, custom_metadata
+    ):
         uploaded_file = await upload_file_to_minio_func(
-            bucket_name, file_path, object_name
+            bucket_name, file_path, object_name, custom_metadata
         )
         return uploaded_file
 
