@@ -22,6 +22,8 @@ model file {
   human_readable_id  String
   doc_title  String
   doc_text  String
+  minio_bucket_name String
+  minio_object_name  String
   knowledge_space_id    String 
   KnowledgeSpaceFile     knowledge_space @relation(fields: [knowledge_space_id], references: [id])
   text_chunks  text_chunk[]

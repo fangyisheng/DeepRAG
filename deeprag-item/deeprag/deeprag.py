@@ -37,8 +37,8 @@ from deeprag.workflow.data_model import (
     CompleteTextUnit,
     KnowledgeScope,
     ChunkedTextUnit,
-    User,
-    KnowledgeSpace,
+    KnowledgeScopeMinioMapping,
+    MinioObjectReference,
     KnowledgeScopeLocator,
     KnowledgeScopeRealName,
     BatchTextChunkGenerateGraphsResponse,
@@ -50,7 +50,7 @@ from deeprag.workflow.data_model import (
     TokenListByTextChunk,
     SearchedTextResponse,
 )
-import uuid
+
 from pathlib import Path
 
 
@@ -93,7 +93,6 @@ class DeepRAG:
     async def create_file_and_upload_to_minio(
         self,
         file_path: str,
-        user_id: str,
         knowledge_space_id: str,
         bucket_name: str,
         object_name: str,
@@ -105,7 +104,12 @@ class DeepRAG:
         await self.file_service.upload_new_file_to_minio(
             file_path, bucket_name, object_name
         )
-        return knowledge_scope
+        return KnowledgeScopeMinioMapping(
+            knowledge_scope=knowledge_scope,
+            minio_object_reference=MinioObjectReference(
+                bucket_name=bucket_name, object_name=object_name
+            ),
+        )
 
     # 这个get_all的函数还需要进行优化
     async def get_all_knowledge_scope_structure(self):
@@ -201,8 +205,10 @@ class DeepRAG:
         user_prompt: str,
         collection_name: str,
         knowledge_scope: KnowledgeScopeLocator,
+        deep_query_pattern: bool = False,
         session_id: str | None = None,
         context: list[RoleMessage] | None = None,
+        recalled_text_fragments_top_k: int = 5,
     ):
         """感觉这里的context参数是可以保留那种原始的历史记录，也可以让用户手动增加的，保留更多灵活性,
         可以用实际已经存在的session_id去调取context上下文，也可以开发者或者用户根据给定的数据结构手动构造上下文添加进来
@@ -215,7 +221,11 @@ class DeepRAG:
             )
         )
         searched_text: SearchedTextResponse = await query_vector_db_by_vector(
-            user_prompt, collection_name, knowledge_scope
+            user_prompt,
+            collection_name,
+            knowledge_scope,
+            recalled_text_fragments_top_k,
+            deep_query_pattern,
         )
         if not session_id:
             context = None
@@ -227,6 +237,7 @@ class DeepRAG:
             knowledge_scope_real_name=knowledge_scope_real_name,
             recalled_text_fragments=searched_text,
             session_id=session_id,
+            rag_pattern=deep_query_pattern,
             context=context,
         ):
             yield response
@@ -236,8 +247,10 @@ class DeepRAG:
         user_prompt: str,
         collection_name: str,
         knowledge_scope: KnowledgeScope,
+        deep_query_pattern: bool = False,
         session_id: str | None = None,
         context: list[RoleMessage] | None = None,
+        recalled_text_fragments_top_k: int = 5,
     ):
         knowledge_scope_real_name: KnowledgeScopeRealName = (
             await self.user_knowledge_space_file_service.get_knowledge_scope_by_id(
@@ -248,6 +261,8 @@ class DeepRAG:
             user_prompt,
             collection_name,
             knowledge_scope,
+            recalled_text_fragments_top_k,
+            deep_query_pattern,
         )
         if not session_id:
             context = None
@@ -258,6 +273,7 @@ class DeepRAG:
             knowledge_scope_real_name=knowledge_scope_real_name,
             recalled_text_fragments=searched_text,
             session_id=session_id,
+            deep_query_pattern=deep_query_pattern,
             context=context,
         )
         return answer

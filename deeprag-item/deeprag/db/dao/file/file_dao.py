@@ -11,7 +11,13 @@ class FileDAO:
         self.db = Prisma()
 
     async def upload_new_file_to_knowledge_space(
-        self, id: str, knowledge_space_id: str, doc_title: str, doc_text: str
+        self,
+        id: str,
+        knowledge_space_id: str,
+        doc_title: str,
+        doc_text: str,
+        minio_bucket_name: str,
+        minio_object_name: str,
     ) -> file:
         await self.db.connect()
         stored_file = await self.db.file.create(
@@ -20,6 +26,8 @@ class FileDAO:
                 "knowledge_space_id": knowledge_space_id,
                 "doc_title": doc_title,
                 "doc_text": doc_text,
+                "minio_bucket_name": minio_bucket_name,
+                "minio_object_name": minio_object_name,
             }
         )
         await self.db.disconnect()

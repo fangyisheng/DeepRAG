@@ -16,8 +16,10 @@ async def final_rag_answer_process_stream(
     knowledge_scope_real_name: KnowledgeScopeRealName,
     recalled_text_fragments_list: list[str],
     session_id: str,
+    deep_query_pattern: bool = False,
     context: list[RoleMessage] | None = None,
 ) -> AsyncGenerator[FinalRAGAnswerStreamResponse, None]:
+    recalled_text_fragments = "\n".join(recalled_text_fragments_list)
     system_prompt = rag_answer_prompt_content(
         knowledge_scope_real_name, recalled_text_fragments
     )
@@ -32,7 +34,9 @@ async def final_rag_answer_process_stream(
     async for answer in response:
         message = {
             "answer": answer,
-            "rag_pattern": "common",
+            "rag_pattern": "deep_query_pattern"
+            if deep_query_pattern
+            else "common_query_pattern",
             "session_id": session_id,
             "message_id": message_id,
         }
@@ -42,10 +46,12 @@ async def final_rag_answer_process_stream(
 async def final_rag_answer_process_not_stream(
     user_prompt: str,
     knowledge_scope_real_name: KnowledgeScopeRealName,
-    recalled_text_fragments: str,
+    recalled_text_fragments_list: list[str],
     session_id: str,
+    deep_query_pattern: bool = False,
     context: list[RoleMessage] | None = None,
 ) -> FinalRAGAnswerResponse:
+    recalled_text_fragments = "\n".join(recalled_text_fragments_list)
     system_prompt = rag_answer_prompt_content(
         knowledge_scope_real_name, recalled_text_fragments
     )
@@ -60,7 +66,9 @@ async def final_rag_answer_process_not_stream(
 
     message = {
         "answer": answer,
-        "rag_pattern": "common",
+        "rag_pattern": "deep_query_pattern"
+        if deep_query_pattern
+        else "common_query_pattern",
         "session_id": session_id,
         "message_id": message_id,
     }

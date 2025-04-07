@@ -32,10 +32,8 @@ async def data_insert_to_vector_db(
             "text": text_list[i],
             "dense": vector[i],
             "knowledge_scope": knowledge_scope[i],
-            **({"meta_data": meta_data[i]} if meta_data else {}),
-            **(
-                {"community_cluster": community_cluster[i]} if community_cluster else {}
-            ),
+            "meta_data": meta_data[i] if meta_data else "",
+            "community_id": community_cluster[i] if community_cluster else "",
         }
         for i in range(len(text_list))
     ]

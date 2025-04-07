@@ -2,7 +2,7 @@ from prisma import Prisma
 from deeprag.db.dao.file.file_dao import FileDAO
 from deeprag.workflow.upload_file_to_minio import upload_file_to_minio_func
 import uuid
-from deeprag.workflow.data_model import KnowledgeScopeLocator
+from deeprag.workflow.data_model import KnowledgeScopeLocator,MinioObjectReference
 
 
 class FileService:
@@ -19,14 +19,28 @@ class FileService:
 
     # 这里的dict[str,str]还是改一下吧，结合pydantic做好具体的键值对的数据验证，方便大型项目的开发
     async def upload_new_file_to_knowledge_space(
-        self, knowledge_space_id: str, doc_title: str, doc_text: str
+        self,
+        knowledge_space_id: str,
+        doc_title: str,
+        doc_text: str,
+        minio_bucket_name: str,
+        minio_object_name: str,
     ) -> dict[str, str]:
         id = str(uuid.uuid4())
         file = await self.dao.upload_new_file_to_knowledge_space(
-            id, knowledge_space_id, doc_title, doc_text
+            id,
+            knowledge_space_id,
+            doc_title,
+            doc_text,
+            minio_bucket_name,
+            minio_object_name,
         )
 
         return file.model_dump()
+    
+    async def get_minio_reference_by_id(self,id:str)->MinioObjectReference:
+        
+
 
     async def delete_file_in_knowledge_space(self, id: str) -> dict[str, str]:
         file = await self.dao.delete_file_in_knowledge_space(id)

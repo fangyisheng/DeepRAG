@@ -466,9 +466,14 @@ class KnowledgeScopeLocator(BaseModel):
     file_id: str
 
 
-class KnowledgeScopeLocatorBeforeIndex(BaseModel):
-    user_id: str
-    knowledge_space_id: str
+class MinioObjectReference(BaseModel):
+    bucket_name: str
+    object_name: str
+
+
+class KnowledgeScopeMinioMapping(BaseModel):
+    knowledge_scope: KnowledgeScopeLocator
+    minio_object_reference: MinioObjectReference
 
 
 class SystemPrompt(RootModel):
