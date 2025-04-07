@@ -1,4 +1,7 @@
 from deeprag.db.dao.user_knowledge_space_file_dao import UserKnowledgeSpaceFileDAO
+from deeprag.workflow.data_model import KnowledgeScopeLocator
+from deeprag.workflow.data_model import KnowledgeScopeRealName
+from prisma.models import user
 
 
 class UserKnowledgeSpaceFileService:
@@ -16,5 +19,22 @@ class UserKnowledgeSpaceFileService:
             knowledge_scope_structure.model_dump()
             for knowledge_scope_structure in complete_knowledge_scope_structure
         ]
-    
-    async def get
+
+    async def get_knowledge_scope_by_id(
+        self, knowledge_scope_locator: KnowledgeScopeLocator
+    ) -> KnowledgeScopeRealName:
+        """
+        根据知识空间id获取知识空间的真实名字
+        """
+        knowledge_scope: user = await self.dao.get_knowledge_scope_by_id(
+            knowledge_scope_locator
+        )
+        return KnowledgeScopeRealName(
+            **{
+                "user_name": knowledge_scope.user_name,
+                "knowledge_space_name": knowledge_scope.knowledge_spaces[
+                    0
+                ].knowledge_space_name,
+                "file_name": knowledge_scope.knowledge_spaces[0].files[0].doc_title,
+            }
+        )

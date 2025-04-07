@@ -10,19 +10,13 @@ class UserKnowledgeSpaceFileDAO:
     async def get_all_knowledge_scope_structure(self) -> list[user]:
         await self.db.connect()
         all_knowledge_scope_structure = await self.db.user.find_many(
-            select={
-                "user_name": True,
+            include={
                 "knowledge_spaces": {
-                    "select": {
-                        "knowledge_space_title": True,
-                        "files": {
-                            "select": {
-                                "doc_title": True,
-                            }
-                        },
+                    "include": {
+                        "files": True,
                     }
                 },
-            }
+            },
         )
         await self.db.disconnect()
         return all_knowledge_scope_structure
@@ -32,7 +26,27 @@ class UserKnowledgeSpaceFileDAO:
     ):
         await self.db.connect()
         found_knowledge_scope = await self.db.user.find_unique(
-            select = 
+            where={
+                "id": knowledge_scope_locator.user_id,
+                "knowledge_spaces": {
+                    "is": {
+                        "id": knowledge_scope_locator.knowledge_space_id,
+                        "files": {
+                            "is": {
+                                "id": knowledge_scope_locator.file_id,
+                            }
+                        },
+                    }
+                },
+            },
+            include={
+                "knowledge_spaces": {
+                    "include": {
+                        "files": True,
+                    }
+                },
+            },
         )
 
         await self.db.disconnect()
+        return found_knowledge_scope

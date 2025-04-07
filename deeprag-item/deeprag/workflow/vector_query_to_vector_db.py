@@ -8,7 +8,10 @@ from deeprag.workflow.data_model import SearchedTextResponse, KnowledgeScope
 
 
 async def query_vector_db_by_vector(
-    query: str, collection_name: str, knowledge_scope: KnowledgeScope
+    query: str,
+    collection_name: str,
+    knowledge_scope: KnowledgeScope,
+    recalled_text_fragments_top_k: int = 5,
 ) -> SearchedTextResponse:
     # user_id = knowledge_scope.get("user_id")
     # knowledge_space_id = knowledge_scope.get("knowledge_space_id")
@@ -30,14 +33,14 @@ async def query_vector_db_by_vector(
         "data": query_vector,
         "anns_field": "dense",
         "param": {"metric_type": "IP", "params": {"nprobe": 10}},
-        "limit": 2,
+        "limit": recalled_text_fragments_top_k,
     }
     request_1 = AnnSearchRequest(**search_param_1)
     search_param_2 = {
         "data": [query],
         "anns_field": "sparse",
         "param": {"metric_type": "BM25", "params": {"drop_ratio_build": 0.2}},
-        "limit": 2,
+        "limit": recalled_text_fragments_top_k,
     }
 
     request_2 = AnnSearchRequest(**search_param_2)
@@ -49,7 +52,7 @@ async def query_vector_db_by_vector(
         reqs=reqs,
         ranker=ranker,
         filter=filter,
-        limit=2,
+        limit=recalled_text_fragments_top_k,
         output_fields=["text", "meta_data"],
     )
     context = [item["entity"]["text"] for item in res[0]]

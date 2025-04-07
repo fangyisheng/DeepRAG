@@ -10,25 +10,18 @@ class FileService:
         self.dao = FileDAO()
 
     async def upload_new_file_to_minio(
-        self, bucket_name: str, file_path, object_name, custom_metadata
+        self, bucket_name: str, file_path: str, object_name: str
     ):
         uploaded_file = await upload_file_to_minio_func(
-            bucket_name, file_path, object_name, custom_metadata
+            bucket_name, file_path, object_name
         )
         return uploaded_file
 
-    async def create_new_file_identity(
-        self, knowledge_space_id: str, user_id: str
-    ) -> KnowledgeScopeLocator:
-        file_id = str(uuid.uuid4())
-        return KnowledgeScopeLocator(
-            file_id=file_id, knowledge_space_id=knowledge_space_id, user_id=user_id
-        )
-
     # 这里的dict[str,str]还是改一下吧，结合pydantic做好具体的键值对的数据验证，方便大型项目的开发
     async def upload_new_file_to_knowledge_space(
-        self, id: str, knowledge_space_id: str, doc_title: str, doc_text: str
+        self, knowledge_space_id: str, doc_title: str, doc_text: str
     ) -> dict[str, str]:
+        id = str(uuid.uuid4())
         file = await self.dao.upload_new_file_to_knowledge_space(
             id, knowledge_space_id, doc_title, doc_text
         )

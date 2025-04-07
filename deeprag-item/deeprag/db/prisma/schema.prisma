@@ -11,6 +11,7 @@ datasource db {
 model knowledge_space {
   id                    String @id
   human_readable_id     String 
+  knowledge_space_name  String
   user_id               String
   files  file[]
   UserKnowledgeSpace  user @relation(fields: [user_id], references:[id])
@@ -96,6 +97,7 @@ model user {
   llm_chats llm_chat[]
   knowledge_spaces knowledge_space[]
 }
+
 
 model llm_chat {
   id String @id  //这个相当于message_id

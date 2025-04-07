@@ -454,6 +454,12 @@ class KnowledgeScope(BaseModel):
     file: File
 
 
+class KnowledgeScopeRealName(BaseModel):
+    user_name: str
+    knowledge_space_name: str
+    file_name: str
+
+
 class KnowledgeScopeLocator(BaseModel):
     user_id: str
     knowledge_space_id: str
@@ -507,5 +513,3 @@ class SystemPrompt(RootModel):
             "You are a helpful assistant.",
         ],
     )
-
-class 

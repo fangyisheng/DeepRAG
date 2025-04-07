@@ -3,26 +3,32 @@ from deeprag.prompts.dynamic_prompts.rag_answer_prompt import rag_answer_prompt_
 from deeprag.workflow.data_model import (
     FinalRAGAnswerResponse,
     FinalRAGAnswerStreamResponse,
+    KnowledgeScopeRealName,
 )
 
 from deeprag.db.data_model import RoleMessage
 from typing import AsyncGenerator
+import uuid
 
 
 async def final_rag_answer_process_stream(
     user_prompt: str,
-    knowledge_space_name: str,
-    searched_file_name: str,
-    searched_file_context: str,
+    knowledge_scope_real_name: KnowledgeScopeRealName,
+    recalled_text_fragments_list: list[str],
     session_id: str,
-    message_id: str,
     context: list[RoleMessage] | None = None,
 ) -> AsyncGenerator[FinalRAGAnswerStreamResponse, None]:
     system_prompt = rag_answer_prompt_content(
-        knowledge_space_name, searched_file_name, searched_file_context
+        knowledge_scope_real_name, recalled_text_fragments
     )
+    if not context:
+        response = llm_chat(system_prompt, user_prompt=user_prompt)
+    else:
+        response = llm_chat(system_prompt, context, user_prompt)
+    if not session_id:
+        session_id = str(uuid.uuid4())
 
-    response = llm_chat(system_prompt, context, user_prompt)
+    message_id = str(uuid.uuid4())
     async for answer in response:
         message = {
             "answer": answer,
@@ -35,18 +41,22 @@ async def final_rag_answer_process_stream(
 
 async def final_rag_answer_process_not_stream(
     user_prompt: str,
-    knowledge_space_name: str,
-    searched_file_name: str,
-    searched_file_context: str,
+    knowledge_scope_real_name: KnowledgeScopeRealName,
+    recalled_text_fragments: str,
     session_id: str,
-    message_id: str,
-    context: list | None = None,
+    context: list[RoleMessage] | None = None,
 ) -> FinalRAGAnswerResponse:
     system_prompt = rag_answer_prompt_content(
-        knowledge_space_name, searched_file_name, searched_file_context
+        knowledge_scope_real_name, recalled_text_fragments
     )
 
-    answer = llm_chat_not_stream(system_prompt, context, user_prompt)
+    if not context:
+        answer = llm_chat_not_stream(system_prompt, user_prompt=user_prompt)
+    else:
+        answer = llm_chat_not_stream(system_prompt, context, user_prompt)
+    if not session_id:
+        session_id = str(uuid.uuid4())
+    message_id = str(uuid.uuid4())
 
     message = {
         "answer": answer,
