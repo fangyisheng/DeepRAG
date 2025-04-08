@@ -2,7 +2,8 @@ from prisma import Prisma
 from deeprag.db.dao.file.file_dao import FileDAO
 from deeprag.workflow.upload_file_to_minio import upload_file_to_minio_func
 import uuid
-from deeprag.workflow.data_model import KnowledgeScopeLocator,MinioObjectReference
+from deeprag.workflow.data_model import UploadFileToMinioResponse, MinioObjectReference
+from prisma.models import file
 
 
 class FileService:
@@ -11,7 +12,7 @@ class FileService:
 
     async def upload_new_file_to_minio(
         self, bucket_name: str, file_path: str, object_name: str
-    ):
+    ) -> UploadFileToMinioResponse:
         uploaded_file = await upload_file_to_minio_func(
             bucket_name, file_path, object_name
         )
@@ -25,9 +26,9 @@ class FileService:
         doc_text: str,
         minio_bucket_name: str,
         minio_object_name: str,
-    ) -> dict[str, str]:
+    ) -> file:
         id = str(uuid.uuid4())
-        file = await self.dao.upload_new_file_to_knowledge_space(
+        new_file = await self.dao.upload_new_file_to_knowledge_space(
             id,
             knowledge_space_id,
             doc_title,
@@ -36,11 +37,14 @@ class FileService:
             minio_object_name,
         )
 
-        return file.model_dump()
-    
-    async def get_minio_reference_by_id(self,id:str)->MinioObjectReference:
-        
+        return new_file
 
+    async def get_minio_reference_by_id(self, id: str) -> MinioObjectReference:
+        found_file = await self.dao.get_file_in_knowledge_space_by_doc_id(id)
+        return MinioObjectReference(
+            bucket_name=found_file.minio_bucket_name,
+            object_name=found_file.minio_object_name,
+        )
 
     async def delete_file_in_knowledge_space(self, id: str) -> dict[str, str]:
         file = await self.dao.delete_file_in_knowledge_space(id)

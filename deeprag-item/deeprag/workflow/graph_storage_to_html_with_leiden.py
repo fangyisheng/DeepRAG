@@ -14,14 +14,14 @@ from typing import Tuple
 
 # 在这里实现leiden算法之前，还需要将networkx图转换为igraph图，同时igraph图的id字段是整数，这个要非常注意，所以要做一个字典映射
 from deeprag.workflow.data_model import (
-    GraphDescriptionAddCommunityWithVisualization,
+    GraphDataAddCommunityWithVisualization,
     CompleteGraphData,
 )
 
 
 async def realize_leiden_community_algorithm(
     graph_data: CompleteGraphData,
-) -> GraphDescriptionAddCommunityWithVisualization:
+) -> GraphDataAddCommunityWithVisualization:
     """
 
     将leiden算法应用于
@@ -119,7 +119,7 @@ async def realize_leiden_community_algorithm(
     net.show(f"{prefix}_graph_with_leiden.html")
     html_content = net.generate_html()
 
-    return GraphDescriptionAddCommunityWithVisualization(
+    return GraphDataAddCommunityWithVisualization(
         graph_data=graph_data, html_content=html_content
     )
     # 这里函数的返回建议是个html的字符串

@@ -12,7 +12,6 @@ class MergedGraphDataDAO:
     async def create_merged_graph_data(
         self,
         id: str,
-        sub_graph_data_id: str,
         merged_graph_data: str,
         merged_graph_data_visualization_html: str,
     ) -> merged_graph_data:
@@ -20,7 +19,6 @@ class MergedGraphDataDAO:
         stored_merged_graph_data = await self.db.merged_graph_data.create(
             data={
                 "id": id,
-                "sub_graph_data_id": sub_graph_data_id,
                 "merged_graph_data": merged_graph_data,
                 "merged_graph_data_visualization_html": merged_graph_data_visualization_html,
             }

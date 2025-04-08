@@ -28,6 +28,30 @@ class SubGraphDataDAO:
         await self.db.disconnect()
         return stored_sub_graph_data
 
+    async def batch_create_sub_graph_data(
+        self,
+        id_list: str,
+        text_chunk_id_list: list[str],
+        sub_graph_data_list: list[str],
+        merged_graph_data_id: str,
+    ) -> int:
+        await self.db.connect()
+        stored_sub_graph_data_count = await self.db.sub_graph_data.create_many(
+            data=[
+                {
+                    "id": id,
+                    "text_chunk_id": text_chunk_id,
+                    "sub_graph_data": sub_graph_data,
+                    "merged_graph_data_id": merged_graph_data_id,
+                }
+                for (id, text_chunk_id, sub_graph_data) in zip(
+                    id_list, text_chunk_id_list, sub_graph_data_list
+                )
+            ]
+        )
+        await self.db.disconnect()
+        return stored_sub_graph_data_count
+
     async def get_sub_graph_data_by_id(self, id: str) -> sub_graph_data:
         await self.db.connect()
         found_sub_graph_data = await self.db.sub_graph_data.find_unique(

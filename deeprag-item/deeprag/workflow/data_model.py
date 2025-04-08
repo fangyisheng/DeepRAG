@@ -36,7 +36,7 @@ class TokenListByTextChunk(RootModel):
     )
 
 
-class GraphDescriptionAddCommunityWithVisualization(BaseModel):
+class GraphDataAddCommunityWithVisualization(BaseModel):
     """
     示例数据：
     html_content:str 是一对html和css和js的代码字符串，放在浏览器里可以可视化知识图谱
@@ -54,7 +54,7 @@ class GraphDescriptionAddCommunityWithVisualization(BaseModel):
     )
 
 
-class GraphDescriptionWithVisualization(RootModel):
+class GraphDataWithVisualization(RootModel):
     root: str = Field(..., description="这个数据模型是字符串，字符串是html_content")
 
 
@@ -430,7 +430,7 @@ class SearchedTextResponse(RootModel):
 class UploadFileToMinioResponse(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     status: str
-    object_name: ObjectWriteResult
+    minio_upload_result: ObjectWriteResult
 
 
 class User(BaseModel):

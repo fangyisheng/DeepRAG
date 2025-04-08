@@ -1,5 +1,6 @@
 from prisma import Prisma
 from deeprag.db.dao.merged_graph_data.merged_graph_data_dao import MergedGraphDataDAO
+import uuid
 
 
 class MergedGraphDataService:
@@ -9,14 +10,12 @@ class MergedGraphDataService:
     # 对于merged_service的创建是存疑的？这应该是程序内部创建的
     async def create_merged_graph_data(
         self,
-        id: str,
-        sub_graph_data_id: str,
         merged_graph_data: str,
         merged_graph_data_visualization_html: str,
     ) -> dict:
+        id = str(uuid.uuid4())
         stored_merged_graph_data = await self.dao.create_merged_graph_data(
             id,
-            sub_graph_data_id,
             merged_graph_data,
             merged_graph_data_visualization_html,
         )

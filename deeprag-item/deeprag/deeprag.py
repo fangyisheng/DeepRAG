@@ -31,7 +31,14 @@ from deeprag.db.service.user.user_service import UserService
 from deeprag.db.service.user_knowledge_space_file_service import (
     UserKnowledgeSpaceFileService,
 )
+from deeprag.db.service.sub_graph_data.sub_graph_data_service import (
+    SubGraphDataService,
+)
+from deeprag.db.service.text_chunk.text_chunk_service import TextChunkService
 from deeprag.db.service.llm_chat.llm_chat_service import LLMChatService
+from deeprag.db.service.merged_graph_data.merged_graph_data_service import (
+    MergedGraphDataService,
+)
 from deeprag.db.data_model import RoleMessage
 from deeprag.workflow.data_model import (
     CompleteTextUnit,
@@ -50,7 +57,7 @@ from deeprag.workflow.data_model import (
     TokenListByTextChunk,
     SearchedTextResponse,
 )
-
+from prisma.models import file
 from pathlib import Path
 
 
@@ -61,6 +68,9 @@ class DeepRAG:
         self.user_service = UserService()
         self.user_knowledge_space_file_service = UserKnowledgeSpaceFileService()
         self.llm_chat_service = LLMChatService()
+        self.text_chunk_service = TextChunkService()
+        self.sub_graph_data_service = SubGraphDataService()
+        self.merged_graph_data_service = MergedGraphDataService()
 
     async def delete_file(self, file_id: str):
         deleted_file = await self.file_service.delete_file_in_knowledge_space(file_id)
@@ -98,14 +108,18 @@ class DeepRAG:
         object_name: str,
     ) -> KnowledgeScopeLocator:
         doc_title = Path(file_path).name
-        knowledge_scope = await self.file_service.upload_new_file_to_knowledge_space(
+        stored_file: file = await self.file_service.upload_new_file_to_knowledge_space(
             knowledge_space_id=knowledge_space_id, doc_title=doc_title, doc_text=None
         )
         await self.file_service.upload_new_file_to_minio(
             file_path, bucket_name, object_name
         )
         return KnowledgeScopeMinioMapping(
-            knowledge_scope=knowledge_scope,
+            knowledge_scope=KnowledgeScopeLocator(
+                user_id=stored_file.KnowledgeSpaceFile.user_id,
+                knowledge_space_id=knowledge_space_id,
+                file_id=stored_file.id,
+            ),
             minio_object_reference=MinioObjectReference(
                 bucket_name=bucket_name, object_name=object_name
             ),
@@ -118,7 +132,6 @@ class DeepRAG:
 
     async def index(
         self,
-        file_path: str,
         collection_name: str,
         knowledge_scope: KnowledgeScopeLocator,
         meta_data: str | None = None,
@@ -136,12 +149,32 @@ class DeepRAG:
 
         """
 
+        # 通过file_id定位文件在Minio中的位置
+        minio_object_reference: MinioObjectReference = (
+            await self.file_service.get_minio_reference_by_id(knowledge_scope.file_id)
+        )
+
         # 首先提取干净的文本
-        cleaned_text: CompleteTextUnit = await process_text(file_path)
+        cleaned_text: CompleteTextUnit = await process_text(
+            minio_object_reference.bucket_name, minio_object_reference.object_name
+        )
+        # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放1000个字
+        # 涉及file的数据库模型
+        await self.file_service.update_existed_file_in_knowledge(
+            knowledge_scope.file_id,
+            {
+                "doc_text": cleaned_text,
+            },
+        )
         # 然后进行文本切分
         splitter = TextSplitter()
         chunks: ChunkedTextUnit = await splitter.split_text_by_token(cleaned_text)
         token_list: TokenListByTextChunk = splitter.tokens_by_chunk
+
+        # 涉及text_chunk的数据库模型
+        await self.text_chunk_service.batch_create_text_chunk(
+            knowledge_scope.file_id, chunks, token_list
+        )
         # 开始提取图结构
         graphs: BatchTextChunkGenerateGraphsResponse = (
             await batch_text_chunk_generate_graphs_process(chunks)
@@ -150,6 +183,14 @@ class DeepRAG:
         merged_graph: CompleteGraphData = await merge_sub_entity_relationship_graph(
             graphs
         )
+        # 对完整的图谱结构进行普通的可视化
+        graph_data_html = await store_graph_data_to_html_with_no_leiden(merged_graph)
+
+        # 涉及merged_graph_data的数据库模型
+        await self.merged_graph_data_service.create_merged_graph_data(
+            merged_graph_data,
+        )
+
         # 得到完整的图谱结构以后，要对其中的关系加以描述
         graph_description = GraphDescription()
         relation_description: GraphDescriptionResponse = (

@@ -28,7 +28,8 @@ class FileDAO:
                 "doc_text": doc_text,
                 "minio_bucket_name": minio_bucket_name,
                 "minio_object_name": minio_object_name,
-            }
+            },
+            include={"KnowledgeSpaceFile": True},
         )
         await self.db.disconnect()
         return stored_file
