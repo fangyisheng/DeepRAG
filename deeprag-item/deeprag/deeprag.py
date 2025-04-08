@@ -25,7 +25,9 @@ from deeprag.workflow.batch_generate_community_report import (
 from deeprag.db.service.knowledge_space.knowledge_space_service import (
     KnowledgeSpaceService,
 )
-
+from deeprag.db.service.community_report.community_report_service import (
+    CommunityReportService,
+)
 from deeprag.db.service.file.file_service import FileService
 from deeprag.db.service.user.user_service import UserService
 from deeprag.db.service.user_knowledge_space_file_service import (
@@ -71,6 +73,7 @@ class DeepRAG:
         self.text_chunk_service = TextChunkService()
         self.sub_graph_data_service = SubGraphDataService()
         self.merged_graph_data_service = MergedGraphDataService()
+        self.community_report_service = CommunityReportService()
 
     async def delete_file(self, file_id: str):
         deleted_file = await self.file_service.delete_file_in_knowledge_space(file_id)
@@ -139,15 +142,16 @@ class DeepRAG:
     ) -> KnowledgeScopeLocator:
         """index_pattern是一个很重要的概念，代表你要覆盖还是说要新增，这是一个需要区分的字段???这是存疑的。需要再讨论一下，
         不需要之前说的partition_name了
-        knowledge_scope 是一个字典的列表，字典需要的形式为：
-        {
-            "user_id":"",
-            "knowledge_space_id":"",
-        }???这边还是存疑的，需要再思考一下
+        knowledge_scope 是一个类对象，其形式为：
+        user_id
+        knowledge_space_id
+        file_id
 
         meta_data 由用户自己定义啦！~可能是用户或者开发者自己想分类的领域
 
         """
+        if knowledge_scope.file_id is None:
+            raise ValueError("knowledge_scope.file_id is Needed")
 
         # 通过file_id定位文件在Minio中的位置
         minio_object_reference: MinioObjectReference = (
@@ -158,12 +162,12 @@ class DeepRAG:
         cleaned_text: CompleteTextUnit = await process_text(
             minio_object_reference.bucket_name, minio_object_reference.object_name
         )
-        # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放1000个字
+        # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
         # 涉及file的数据库模型
         await self.file_service.update_existed_file_in_knowledge(
             knowledge_scope.file_id,
             {
-                "doc_text": cleaned_text,
+                "doc_text": cleaned_text[:300],
             },
         )
         # 然后进行文本切分
@@ -172,7 +176,7 @@ class DeepRAG:
         token_list: TokenListByTextChunk = splitter.tokens_by_chunk
 
         # 涉及text_chunk的数据库模型
-        await self.text_chunk_service.batch_create_text_chunk(
+        text_chunk_id_list = await self.text_chunk_service.batch_create_text_chunk(
             knowledge_scope.file_id, chunks, token_list
         )
         # 开始提取图结构
@@ -187,8 +191,16 @@ class DeepRAG:
         graph_data_html = await store_graph_data_to_html_with_no_leiden(merged_graph)
 
         # 涉及merged_graph_data的数据库模型
-        await self.merged_graph_data_service.create_merged_graph_data(
-            merged_graph_data,
+        merged_graph_data_id = (
+            await self.merged_graph_data_service.create_merged_graph_data(
+                merged_graph, graph_data_html
+            )
+        )
+        # 涉及到sub_graph_data的数据库模型
+        await self.sub_graph_data_service.batch_create_sub_graph_data(
+            text_chunk_id_list=text_chunk_id_list,
+            sub_graph_data_list=graphs,
+            merged_graph_data_id=merged_graph_data_id,
         )
 
         # 得到完整的图谱结构以后，要对其中的关系加以描述
@@ -224,6 +236,8 @@ class DeepRAG:
                     relation_description_with_community_id
                 )
             )
+            # 这里涉及community_report的数据库模型
+            await self.community_report_service.
             community_report_content = [
                 value.community_report
                 for value in community_report_with_community_id.values()
@@ -240,6 +254,15 @@ class DeepRAG:
                 meta_data=meta_data,
             )
         return KnowledgeScopeLocator(**knowledge_scope)
+    
+    async def batch_index(self,
+        collection_name: str,
+        knowledge_scope_list: list[KnowledgeScopeLocator],
+        meta_data: str | None = None,
+        deep_index_pattern: bool = False,):
+        
+
+
 
     async def query(
         self,

@@ -211,7 +211,7 @@ class GraphDescription:
     #     return relation_community_id_list
 
 
-# #测试数据
+# 测试数据
 # test_data = {
 #     "entities": [
 #         {

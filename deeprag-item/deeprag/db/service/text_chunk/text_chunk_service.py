@@ -21,7 +21,7 @@ class TextChunkService:
         stored_text_chunks_count = await self.dao.batch_create_text_chunk(
             id_list, doc_id, text_chunk_list, n_tokens_list
         )
-        return stored_text_chunks_count
+        return id_list
 
     async def get_text_chunk_by_id(self, id: str):
         found_text_chunk = await self.dao.get_text_chunk_by_id(id)
