@@ -2,7 +2,11 @@ import tiktoken
 import os
 from dotenv import load_dotenv
 from loguru import logger
-from deeprag.workflow.data_model import ChunkedTextUnit
+from deeprag.workflow.data_model import (
+    ChunkedTextUnit,
+    CompleteTextUnit,
+    TokenListByTextChunk,
+)
 
 load_dotenv()
 
@@ -15,7 +19,7 @@ class TextSplitter:
     # 在读取环境文件中的数字时，其实读到的是str
     async def split_text_by_token(
         self,
-        text: str,
+        text: CompleteTextUnit,
         max_tokens: int = int(os.getenv("EMBEDDING_MODEL_MAX_TOKEN")),
         model_name: str = "gpt-4o",
     ) -> ChunkedTextUnit:
@@ -34,16 +38,19 @@ class TextSplitter:
         encoding = tiktoken.encoding_for_model(model_name)
 
         # 将文本编码为token
-        tokens = encoding.encode(text)
+        tokens = encoding.encode(text.root)
         logger.info(f"文本的token数量为:{len(tokens)}")
 
         # 分块
+
+        tokens_by_chunk = []
 
         for i in range(0, len(tokens), max_tokens):
             chunk_tokens = tokens[i : i + max_tokens]
             chunk_text = encoding.decode(chunk_tokens)
             self.chunks.append(chunk_text)
-            self.tokens_by_chunk.append(len(chunk_tokens))
+            tokens_by_chunk.append(len(chunk_tokens))
+        self.tokens_by_chunk = TokenListByTextChunk(root=self.chunks)
 
         return ChunkedTextUnit(root=self.chunks)
 

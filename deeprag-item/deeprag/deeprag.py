@@ -167,7 +167,7 @@ class DeepRAG:
         await self.file_service.update_existed_file_in_knowledge(
             knowledge_scope.file_id,
             {
-                "doc_text": cleaned_text[:300],
+                "doc_text": cleaned_text.root[:300],
             },
         )
         # 然后进行文本切分
@@ -236,6 +236,8 @@ class DeepRAG:
                     relation_description_with_community_id
                 )
             )
+            # 这里涉及community_cluster的数据库模型
+
             # 这里涉及community_report的数据库模型
             await self.community_report_service.
             community_report_content = [

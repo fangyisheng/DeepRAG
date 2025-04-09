@@ -2,11 +2,14 @@ from deeprag.agent.index.extract_entity_relationship_graph import (
     extract_entity_relationship_agent,
 )
 import asyncio
-from deeprag.workflow.data_model import BatchTextChunkGenerateGraphsResponse
+from deeprag.workflow.data_model import (
+    BatchTextChunkGenerateGraphsResponse,
+    ChunkedTextUnit,
+)
 
 
 async def batch_text_chunk_generate_graphs_process(
-    chunked_text_array: list,
+    chunked_text_array: ChunkedTextUnit,
 ) -> BatchTextChunkGenerateGraphsResponse:
     """_summary_
 
@@ -18,7 +21,7 @@ async def batch_text_chunk_generate_graphs_process(
     """
     tasks = [
         extract_entity_relationship_agent(text_chunk)
-        for text_chunk in chunked_text_array
+        for text_chunk in chunked_text_array.root
     ]
     results = await asyncio.gather(*tasks)
     return BatchTextChunkGenerateGraphsResponse(root=results)

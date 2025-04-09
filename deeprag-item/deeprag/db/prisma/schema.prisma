@@ -36,7 +36,7 @@ model text_chunk {
   text_chunk  String
   n_tokens  String
   FileTextChunk    file @relation(fields: [doc_id], references: [id])
-  sub_graph_datas  sub_graph_data?
+  sub_graph_datas  sub_graph_data[]
 }
 
 model sub_graph_data {
@@ -65,21 +65,22 @@ model flatten_entity_relation {
   human_readable_id String
   head_entity  String
   end_entity  String
-  relation  String 
+  relation_description  String 
   merged_graph_data_id  String
-  community_id  String
+  community_id  String?
   FlattenEntityRelationMergedGraphData merged_graph_data @relation(fields: [merged_graph_data_id], references: [id])
-  FlattenEntityRelationCommunity community_cluster @relation(fields: [community_id], references: [id])
+  FlattenEntityRelationCommunityCluster community_cluster @relation(fields: [community_id], references: [id])
+ 
 
 }
 
 model community_cluster {
   id String @id
   human_readable_id String
-  community String
   community_title String
   flatten_entity_relations flatten_entity_relation[]
-  community_report_fk community_report?
+  community_report community_report
+
 }
 
 model community_report {

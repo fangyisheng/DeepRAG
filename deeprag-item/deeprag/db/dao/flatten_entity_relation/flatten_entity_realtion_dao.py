@@ -32,6 +32,17 @@ class FlattenEntityRelationDAO:
         await self.db.disconnect()
         return stored_flatten_entity_relation
 
+    async def batch_create_flatten_entity_relation(
+        self,
+        id: str,
+        head_entity: str,
+        tail_entity: str,
+        relation: str,
+        merged_graph_data_id: str,
+        community_id: str | None = None,
+    ) -> flatten_entity_relation:
+        await self.db.connect()
+
     async def get_flatten_entity_relation_by_id(
         self, id: str
     ) -> flatten_entity_relation:

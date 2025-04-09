@@ -12,11 +12,11 @@ from deeprag.workflow.data_model import (
 
 async def store_graph_data_to_html_with_no_leiden(
     entity_relationship: CompleteGraphData,
-) -> GraphDescriptionWithVisualization:
+) -> GraphDataWithVisualization:
     # 创建有向关系图 如果是nx.Graph()则是创建了无向图，(u,v)和(v,u)等价
     G = nx.DiGraph()
     # 存储实体和实体之间的关系
-    for entity in entity_relationship["entities"]:
+    for entity in entity_relationship.["entities"]:
         G.add_node(entity["id"], text=entity["text"], type=entity["type"])
 
     for relation in entity_relationship["relations"]:

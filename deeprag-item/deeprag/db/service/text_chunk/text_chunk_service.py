@@ -1,5 +1,6 @@
 from deeprag.db.dao.text_chunk.text_chunk_dao import TextChunkDAO
 import uuid
+from deeprag.workflow.data_model import ChunkedTextUnit, TokenListByTextChunk
 
 
 class TextChunkService:
@@ -15,11 +16,14 @@ class TextChunkService:
         return stored_text_chunk.model_dump()
 
     async def batch_create_text_chunk(
-        self, doc_id: str, text_chunk_list: list[str], n_tokens_list: list[int]
+        self,
+        doc_id: str,
+        text_chunk_list: ChunkedTextUnit,
+        n_tokens_list: TokenListByTextChunk,
     ):
         id_list = [str(uuid.uuid4()) for _ in text_chunk_list]
         stored_text_chunks_count = await self.dao.batch_create_text_chunk(
-            id_list, doc_id, text_chunk_list, n_tokens_list
+            id_list, doc_id, text_chunk_list.root, n_tokens_list.root
         )
         return id_list
 
