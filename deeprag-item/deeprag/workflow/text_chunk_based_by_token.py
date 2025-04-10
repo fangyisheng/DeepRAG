@@ -39,7 +39,8 @@ class TextSplitter:
             切分后的文本片段列表 (list[str]).
         """
 
-        # encoding = tiktoken.get_encoding("cl100k_base")
+        # encoding = tiktoken.get_encoding("o200k_base")
+        # gpt4o对应的分词器模型是o200k_base,注意哦，分词器不一样，差异还挺大的。。
         encoding = tiktoken.encoding_for_model("gpt-4o")
 
         # 将文本编码为token
