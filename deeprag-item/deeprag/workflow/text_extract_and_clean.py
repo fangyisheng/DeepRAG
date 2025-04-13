@@ -30,7 +30,7 @@ async def process_text(bucket_name: str, object_name: str) -> CompleteTextUnit:
     return CompleteTextUnit(root=cleaned_content)
 
 
-# #测试成功
-# import asyncio
+# 测试成功
+import asyncio
 
-# print(asyncio.run(process_text("mybucket", "test2.txt")))
+print(asyncio.run(process_text("mybucket", "test2.txt")))

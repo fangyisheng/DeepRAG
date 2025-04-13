@@ -4,6 +4,7 @@ from deeprag.prompts.dynamic_prompts.generate_community_report_prompt import (
 from deeprag.rag_core_utils.llm_api.llm_api_client import llm_service
 import json
 from pydantic import BaseModel
+from loguru import logger
 
 
 class CommunityReportStructedData(BaseModel):
@@ -45,6 +46,7 @@ async def generate_community_report_agent(
         user_prompt=user_prompt,
         cot_prompt=cot_prompt,
     )
+    logger.info(f"这是community_report_agent的输出：{final_response}")
     final_response_dict = json.loads(final_response)
     community_report = f"""社区标题：{final_response_dict["title"]}，原来的知识图谱描述：{final_response_dict["origin_description"]}，总结：{final_response_dict["summary"]}"""
     return GenerateCommunityReportResponse(
@@ -53,7 +55,7 @@ async def generate_community_report_agent(
     )
 
 
-# #现在测试一下这个功能
+# # 现在测试一下这个功能
 
 # import asyncio
 

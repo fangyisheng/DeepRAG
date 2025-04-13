@@ -73,13 +73,5 @@ messages = [
         "role": "user",
         "content": "过去几周，深度求索（DeepSeek）在全球 AI 领域掀起了一场风暴，成为众人瞩目的焦点。",
     },
-    {
-        "role": "user",
-        "content": '请用JSON结构化生成内容。输出格式参考如下：{ "entities": [ { "id": 0, "text": "Microsoft", "type": "company" }, { "id": 1, "text": "Satya Nadella", "type": "person" }, { "id": 2, "text": "Azure AI", "type": "product", } ], "relations": [ { "head": 1, "tail": 0, "type": "CEO of","description":"Satya Nadella serves as the Chief Executive Officer of Microsoft, leading the company\'s overall strategy and direction." }, { "head": "0, "tail": 2, "type": "developed","description":"Microsoft developed Azure AI, a suite of cloud-based artificial intelligence services and tools aimed at empowering developers and organizations." } ] }\n给定语料如果是中文，那么提取的实体类型是中文的，提取的关系也是中文的',
-    },
-    {
-        "role": "user",
-        "content": "请仅输出紧凑格式Compact Format的JSON，不要输出其余解释性内容",
-    },
 ]
 print(test(messages))

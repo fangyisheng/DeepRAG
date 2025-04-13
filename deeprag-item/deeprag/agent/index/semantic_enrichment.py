@@ -18,5 +18,11 @@ async def semantic_enrichment_agent(user_prompt):
     )
     return response + user_prompt
 
+
 # import asyncio
-# asyncio.run(semantic_enrichment_agent("Satya Nadella和Microsoft的关系是Satya NadellaCEO ofMicrosoft"))
+
+# asyncio.run(
+#     semantic_enrichment_agent(
+#         "Satya Nadella和Microsoft的关系是Satya NadellaCEO ofMicrosoft"
+#     )
+# )

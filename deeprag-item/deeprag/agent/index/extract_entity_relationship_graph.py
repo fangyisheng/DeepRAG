@@ -1,8 +1,13 @@
-from deeprag.rag_core_utils.llm_api.llm_api_client import llm_service
+from deeprag.rag_core_utils.llm_api.llm_api_client import (
+    llm_service,
+    llm_service_stream,
+)
 from importlib import resources
 import asyncio
 import json
 from loguru import logger
+from deeprag.workflow.data_model import FirstExtractedGraphData, EntityIdInt, Relations
+
 
 with (
     resources.files("deeprag.prompts.fixed_prompts")
@@ -31,15 +36,36 @@ cot_prompt_chain2 = [
 cot_prompt = cot_prompt_chain1 + cot_prompt_chain2
 
 
-async def extract_entity_relationship_agent(user_prompt: str) -> dict:
-    response = await llm_service(
+async def extract_entity_relationship_agent(
+    user_prompt: str,
+) -> FirstExtractedGraphData:
+    logger.info(f"这是系统提示词：{system_prompt}")
+    # response = await llm_service(
+    #     system_prompt=system_prompt, user_prompt=user_prompt, cot_prompt=cot_prompt
+    # )
+    # logger.info(f"这是提取的关系：{response}")
+    async for response in llm_service_stream(
         system_prompt=system_prompt, user_prompt=user_prompt, cot_prompt=cot_prompt
-    )
-    logger.info(f"这是提取的关系：{response}")
-    return json.loads(response)
+    ):
+        yield response
+    # response_dict_data = json.loads(response)
+    # extracted_entity_relationship_graph = FirstExtractedGraphData(
+    #     entities=[EntityIdInt(**entity) for entity in response_dict_data["entities"]],
+    #     relations=[
+    #         Relations(**relation) for relation in response_dict_data["relations"]
+    #     ],
+    # )
+    # return extracted_entity_relationship_graph
+    # return json.loads(response)
 
 
-# # 测试代码
-# user_prompt = """过去几周，深度求索（DeepSeek）在全球 AI 领域掀起了一场风暴，成为众人瞩目的焦点。这家成立于 2023 年的年轻大模型公司，宛如一匹黑马，迅速在行业中崭露头角，其影响力甚至在美股市场都有明显体现。1 月 27 日，美股 AI、芯片股重挫，英伟达收盘大跌超过 17%，单日市值蒸发 5890 亿美元 ，创下美国股市历史上最高纪录，这一波动背后，DeepSeek 被认为是重要因素之一。"""
+# 测试代码
+user_prompt = """过去几周，深度求索（DeepSeek）在全球 AI 领域掀起了一场风暴，成为众人瞩目的焦点。"""
 
-# print(asyncio.run(extract_entity_relationship_agent(user_prompt)))
+
+async def main():
+    async for item in extract_entity_relationship_agent(user_prompt):
+        print(item)
+
+
+print(asyncio.run(main()))
