@@ -13,12 +13,12 @@ from deeprag.workflow.data_model import BatchTextChunkGenerateEmbeddingsResponse
 
 
 async def batch_text_chunk_generate_embeddings_process(
-    chunked_text_array: list,
+    chunked_text_array: list[str],
     embedding_model_input_string_array_length: int = embedding_model_input_string_array_length,
 ) -> BatchTextChunkGenerateEmbeddingsResponse:
     if len(chunked_text_array) <= embedding_model_input_string_array_length:
         vector_array = await text_to_vector(chunked_text_array)
-        return vector_array
+        return BatchTextChunkGenerateEmbeddingsResponse(root=vector_array)
     else:
         batches = [
             chunked_text_array[i : i + embedding_model_input_string_array_length]
@@ -37,4 +37,15 @@ async def batch_text_chunk_generate_embeddings_process(
         #          results = await asyncio.gather(*batch)
         tasks = [text_to_vector(batch) for batch in batches]
         results = await asyncio.gather(*tasks)
-        return [item for sublist in results for item in sublist]
+        final_result = [item for sublist in results for item in sublist]
+        return BatchTextChunkGenerateEmbeddingsResponse(root=final_result)
+
+
+# 编写测试代码,测试成功
+# import asyncio
+
+
+# a = asyncio.run(
+#     batch_text_chunk_generate_embeddings_process(["你好", "我是", "一个", "机器人"])
+# )
+# print(a)

@@ -36,24 +36,6 @@ class TokenListByTextChunk(RootModel):
     )
 
 
-class GraphDataAddCommunityWithVisualization(BaseModel):
-    """
-    示例数据：
-    html_content:str 是一对html和css和js的代码字符串，放在浏览器里可以可视化知识图谱
-
-    graph_data:dict 在原来的graph_data的entity这个键下面的列表中的元素（字典）添加了一个键为community_id
-
-
-    """
-
-    html_content: str
-    graph_data: dict = Field(
-        ...,
-        description="这个数据模型是字典，和原来的graph_data相比，只不过就是在原来的graph_data的entity这个键下面的列表中的元素（字典）添加了一个键为community_id",
-        examples=[],
-    )
-
-
 class GraphDataWithVisualization(RootModel):
     root: str = Field(..., description="这个数据模型是字符串，字符串是html_content")
 
@@ -84,7 +66,7 @@ class BaseEntity(BaseModel):
     """
 
     text: str
-    type: str
+    type: str | list[str]
 
 
 class EntityIdInt(BaseEntity):
@@ -109,7 +91,11 @@ class EntityIdStr(BaseEntity):
     id: str
 
 
-class Relations(BaseModel):
+class EntityIdStrWithCommunityId(EntityIdStr):
+    community_id: str
+
+
+class BaseRelations(BaseModel):
     """
     示例数据：
     {"head": "深度求索（DeepSeek） ",
@@ -118,10 +104,23 @@ class Relations(BaseModel):
      "description": "深度求索和英伟达的关系是深度求索影响了英伟达"}
     """
 
-    head: str
-    tail: str
     type: str
     description: str
+
+
+class RelationsInt(BaseRelations):
+    head: int
+    tail: int
+
+
+class RelationsStr(BaseRelations):
+    id: str
+    head: str
+    tail: str
+
+
+class RelationsStrWithCommunityId(RelationsStr):
+    community_id: str
 
 
 class FirstExtractedGraphData(BaseModel):
@@ -187,7 +186,7 @@ class FirstExtractedGraphData(BaseModel):
     """
 
     entities: list[EntityIdInt]
-    relations: list[Relations]
+    relations: list[RelationsInt]
 
 
 class CompleteGraphData(BaseModel):
@@ -230,49 +229,79 @@ class CompleteGraphData(BaseModel):
                 tail="3839eb8e-73af-4b24-96da-9c2197b7a1aa",
                 type="在领域中崭露头角",
                 description="深度求索（DeepSeek）在全球 AI 领域成为众人瞩目的焦点。",
+                id=""
             ),
             Relations(
                 head="7814ff17-a116-4d1e-af36-6cb63fdf116c",
                 tail="1fc58fb7-c56c-4037-8752-47b2d618deb5",
                 type="成立于",
                 description="深度求索（DeepSeek）成立于2023年。",
+                id=""
             ),
             Relations(
                 head="7814ff17-a116-4d1e-af36-6cb63fdf116c",
                 tail="5613dd34-ba51-46fb-9e93-582253828dfd",
                 type="影响力体现在",
                 description="深度求索（DeepSeek）的影响力在美股市场有明显体现。",
+                id = ""
             ),
             Relations(
                 head="40c60a69-7dda-4302-9d0f-e1bd1fc88784",
                 tail="5202c246-bd22-460a-ae8a-d649e822c832",
                 type="导致重挫",
                 description="1月27日，美股AI、芯片股重挫。",
+                id = ""
             ),
             Relations(
                 head="5202c246-bd22-460a-ae8a-d649e822c832",
                 tail="b18fe663-db36-48ea-a8f9-4760d23682c9",
                 type="影响公司股价",
                 description="英伟达收盘大跌超过17%，单日市值蒸发5890亿美元。",
+                id = ""
             ),
             Relations(
                 head="b18fe663-db36-48ea-a8f9-4760d23682c9",
                 tail="671c921d-c047-44b7-8b2d-7379702a80c7",
                 type="创历史纪录",
                 description="创下美国股市历史上最高纪录。",
+                id = ""
             ),
             Relations(
                 head="7814ff17-a116-4d1e-af36-6cb63fdf116c",
                 tail="5202c246-bd22-460a-ae8a-d649e822c832",
                 type="被认为是重要因素",
                 description="深度求索（DeepSeek）被认为是美股AI、芯片股波动的重要因素之一。",
+                id = ""
             ),
         ],
     }
     """
 
     entities: list[EntityIdStr]
-    relations: list[Relations]
+    relations: list[RelationsStr]
+
+
+class CompleteGraphDataWithCommunityId(BaseModel):
+    entities: list[EntityIdStrWithCommunityId]
+    relations: list[RelationsStrWithCommunityId]
+
+
+class GraphDataAddCommunityWithVisualization(BaseModel):
+    """
+    示例数据：
+    html_content:str 是一对html和css和js的代码字符串，放在浏览器里可以可视化知识图谱
+
+    graph_data:dict 在原来的graph_data的entity这个键下面的列表中的元素（字典）添加了一个键为community_id
+
+
+    """
+
+    html_content: str
+    graph_data: CompleteGraphDataWithCommunityId = Field(
+        ...,
+        description="这个数据模型是字典，和原来的graph_data相比，只不过就是在原来的graph_data的entity这个键下面的列表中的元素（字典）添加了一个键为community_id",
+        examples=[],
+    )
 
 
 class BatchGenerateCommunityReportResponse(RootModel):
