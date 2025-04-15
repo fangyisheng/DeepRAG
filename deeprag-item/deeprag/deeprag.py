@@ -64,6 +64,8 @@ from deeprag.workflow.data_model import (
 )
 from prisma.models import file
 from pathlib import Path
+import uuid
+
 
 
 class DeepRAG:
@@ -192,6 +194,9 @@ class DeepRAG:
         )
         # 对完整的图谱结构进行普通的可视化
         graph_data_html = await store_graph_data_to_html_with_no_leiden(merged_graph)
+        
+        # 然后将可视化的html文件上传到Minio中方便查看
+        await upload_file_to_minio_func(bucket_name=minio_object_reference.bucket_name,object_name = f"html_content/{str(uuid.uuid4())}_graph_data_with_no_leiden.html",string_data=graph_data_html)
 
         # 涉及merged_graph_data的数据库模型
         merged_graph_data_id = (
@@ -234,6 +239,9 @@ class DeepRAG:
             graph_data_with_community_id:GraphDataAddCommunityWithVisualization = await realize_leiden_community_algorithm(
                 merged_graph
             )
+            #将带有社区标签的可视化html保存到Minio中，方便后续查看
+            await upload_file_to_minio_func(bucket_name=minio_object_reference.bucket_name,object_name = f"html_content/{str(uuid.uuid4())}_graph_data_with_leiden.html",string_data=graph_data_with_community_id.html_content)
+
             relation_description_with_community_id: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
                 graph_data_with_community_id.graph_data
             )
@@ -268,6 +276,8 @@ class DeepRAG:
         knowledge_scope_list: list[KnowledgeScopeLocator],
         meta_data: str | None = None,
         deep_index_pattern: bool = False,):
+        # 这个batch index的行为有三种情况，一个是对不同的file_id进行batch index,另外一个是对相同的知识库id下面的文件做batch index，第三个行为是对用户空间下不同知识库id下面的所有的file id进行index
+        if any()
         
 
 

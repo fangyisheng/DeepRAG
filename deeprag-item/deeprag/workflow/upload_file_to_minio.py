@@ -8,6 +8,7 @@ async def upload_file_to_minio_func(
     object_name: str,
     file_path: str | None = None,
     string_data: str | None = None,
+    metadata: dict | None = None,
 ) -> UploadFileToMinioResponse:
     client = await create_minio_client()
 
@@ -18,7 +19,10 @@ async def upload_file_to_minio_func(
     # 上传文件
     if file_path and not string_data:
         uploaded_file_object = client.fput_object(
-            bucket_name=bucket_name, object_name=object_name, file_path=file_path
+            bucket_name=bucket_name,
+            object_name=object_name,
+            file_path=file_path,
+            metadata=metadata,
         )
 
     if string_data and not file_path:
@@ -27,6 +31,7 @@ async def upload_file_to_minio_func(
             object_name=object_name,
             data=BytesIO(string_data.encode("utf-8")),
             length=len(string_data.encode("utf-8")),
+            metadata=metadata,
         )
 
     return UploadFileToMinioResponse(
@@ -50,15 +55,15 @@ async def upload_file_to_minio_func(
 #     )
 # )
 
-# # 测试上传数据流的代码
-# import asyncio
+# 测试上传数据流的代码
+import asyncio
 
-# print(
-#     asyncio.run(
-#         upload_file_to_minio_func(
-#             bucket_name="mybucket",
-#             object_name="test3.txt",
-#             string_data="nihao",
-#         )
-#     )
-# )
+print(
+    asyncio.run(
+        upload_file_to_minio_func(
+            bucket_name="mybucket",
+            object_name="test4.txt",
+            string_data="nihao",
+        )
+    )
+)
