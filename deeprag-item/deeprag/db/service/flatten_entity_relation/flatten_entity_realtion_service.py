@@ -1,11 +1,20 @@
 from deeprag.db.dao.flatten_entity_relation.flatten_entity_realtion_dao import (
     FlattenEntityRelationDAO,
 )
-
+import uuid
 
 class FlattenEntityRelationService:
     def __init__(self):
         self.dao = FlattenEntityRelationDAO()
+    
+    async def create_flatten_entity_relation(
+        self, flatten_entity_relation: dict
+    ) -> dict:
+        id = str(uuid.uuid4())
+        stored_flatten_entity_relation = (
+            await self.dao.create_flatten_entity_relation(flatten_entity_relation)
+        )
+        return stored_flatten_entity_relation.
 
     async def get_flatten_entity_relation_by_community_id(
         self, community_id: str

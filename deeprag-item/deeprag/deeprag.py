@@ -216,6 +216,13 @@ class DeepRAG:
         relation_description: GraphDescriptionResponse = (
             await graph_description.describe_graph(merged_graph)
         )
+
+        # 涉及到flattedend_entity_relation的数据库模型的IO
+        await 
+
+
+
+
         # 利用embedding模型生成embedding向量
         embedding_vector: BatchTextChunkGenerateEmbeddingsResponse = (
             await batch_text_chunk_generate_embeddings_process(relation_description)
@@ -242,9 +249,13 @@ class DeepRAG:
             #将带有社区标签的可视化html保存到Minio中，方便后续查看
             await upload_file_to_minio_func(bucket_name=minio_object_reference.bucket_name,object_name = f"html_content/{str(uuid.uuid4())}_graph_data_with_leiden.html",string_data=graph_data_with_community_id.html_content)
 
+
+             # 生成带有社区id的关系描述
             relation_description_with_community_id: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
                 graph_data_with_community_id.graph_data
             )
+
+            # 生成带有社区id的社区报告
             community_report_with_community_id: BatchGenerateCommunityReportResponse = (
                 await batch_generate_community_report_func(
                     relation_description_with_community_id
