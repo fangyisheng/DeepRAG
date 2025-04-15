@@ -21,7 +21,9 @@ from deeprag.workflow.final_rag_answer import (
 from deeprag.workflow.batch_generate_community_report import (
     batch_generate_community_report_func,
 )
-
+from deeprag.workflow.graph_storage_to_html_with_leiden import (
+    realize_leiden_community_algorithm,
+)
 from deeprag.db.service.knowledge_space.knowledge_space_service import (
     KnowledgeSpaceService,
 )
@@ -58,6 +60,7 @@ from deeprag.workflow.data_model import (
     GraphDescriptionWithCommunityClusterResponse,
     TokenListByTextChunk,
     SearchedTextResponse,
+    GraphDataAddCommunityWithVisualization
 )
 from prisma.models import file
 from pathlib import Path
@@ -228,8 +231,11 @@ class DeepRAG:
             )
         else:
             # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
-            relation_description_with_community_id: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
+            graph_data_with_community_id:GraphDataAddCommunityWithVisualization = await realize_leiden_community_algorithm(
                 merged_graph
+            )
+            relation_description_with_community_id: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
+                graph_data_with_community_id.graph_data
             )
             community_report_with_community_id: BatchGenerateCommunityReportResponse = (
                 await batch_generate_community_report_func(

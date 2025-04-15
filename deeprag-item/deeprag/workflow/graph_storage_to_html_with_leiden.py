@@ -20,6 +20,7 @@ from deeprag.workflow.data_model import (
     RelationsStr,
     CompleteGraphDataWithCommunityId,
 )
+from deeprag.workflow.upload_file_to_minio import upload_file_to_minio_func
 
 
 async def realize_leiden_community_algorithm(
@@ -50,7 +51,28 @@ async def realize_leiden_community_algorithm(
             community_id_map[community_membership_id] = str(uuid.uuid4())
 
         entity["community_id"] = community_id_map[community_membership_id]
-    print(graph_data)
+    # entity有了community_id之后，relation也要添加对应的commuity_id
+    for relation in graph_data["relations"]:
+        relation_head_community_id = next(
+            (
+                entity["community_id"]
+                for entity in graph_data["entities"]
+                if relation["head"] == entity["id"]
+            ),
+            None,
+        )
+        relation_tail_community_id = next(
+            (
+                entity["community_id"]
+                for entity in graph_data["entities"]
+                if relation["tail"] == entity["id"]
+            ),
+            None,
+        )
+        if relation_head_community_id == relation_tail_community_id:
+            relation["community_id"] = relation_head_community_id
+        else:
+            relation["community_id"] = relation_head_community_id
 
     # 使用 PyVis 可视化社区分布
 
@@ -123,6 +145,7 @@ async def realize_leiden_community_algorithm(
     # 这块net.show先暂时保留了，方便做测试
     net.show(f"{prefix}_graph_with_leiden.html")
     html_content = net.generate_html()
+    await upload_file_to_minio_func()
 
     return GraphDataAddCommunityWithVisualization(
         graph_data=CompleteGraphDataWithCommunityId(**graph_data),
