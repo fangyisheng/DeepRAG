@@ -10,7 +10,7 @@ from deeprag.workflow.graph_storage_to_html_with_no_leiden import (
     store_graph_data_to_html_with_no_leiden,
 )
 from deeprag.workflow.merge_sub_graph import merge_sub_entity_relationship_graph
-from deeprag.workflow.graph_description import describe_graph
+from deeprag.workflow.graph_description_enrichment import describe_graph
 
 
 import asyncio

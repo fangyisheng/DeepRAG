@@ -393,7 +393,7 @@ class FinalRAGAnswerResponse(RootModel):
     )
 
 
-class GraphDescriptionResponse(RootModel):
+class GraphDescriptionResponse(BaseModel):
     """
     list[str]
     示例数据：
@@ -401,7 +401,7 @@ class GraphDescriptionResponse(RootModel):
 
     """
 
-    root: list[str] = Field(
+    graph_description_list: list[str] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是一个关系描述的文本字符串",
         examples=[
@@ -411,10 +411,11 @@ class GraphDescriptionResponse(RootModel):
             "The stock price of NVIDIA dropped significantly on January 27th, 2023.",
         ],
     )
+    graph_data_with_enriched_description: CompleteGraphData
 
 
-class GraphDescriptionWithCommunityClusterResponse(RootModel):
-    root: dict[str, list] = Field(
+class GraphDescriptionWithCommunityClusterResponse(BaseModel):
+    graph_description_dict_by_community_id: dict[str, list] = Field(
         ...,
         description="这个数据模型是字典，键是动态的社区id,值为社区id对应的关系描述文本块的列表",
         examples=[
@@ -425,6 +426,7 @@ class GraphDescriptionWithCommunityClusterResponse(RootModel):
             {},
         ],
     )
+    graph_data_with_enriched_description: CompleteGraphDataWithCommunityId
 
 
 class TextExtractAndCleanResponse(RootModel):
@@ -547,3 +549,17 @@ class SystemPrompt(RootModel):
             "You are a helpful assistant.",
         ],
     )
+
+
+class FlattenEntityRelation(BaseModel):
+    """
+    示例数据：
+
+    """
+
+    id: str
+    head_entity: str
+    tail_entity: str
+    relation: str
+    merged_graph_data_id: str
+    commuity_id: str | None = None

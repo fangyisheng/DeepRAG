@@ -11,7 +11,7 @@ from deeprag.workflow.graph_storage_to_html_with_no_leiden import (
     store_graph_data_to_html_with_no_leiden,
 )  # 可视化的函数方法
 from deeprag.workflow.merge_sub_graph import merge_sub_entity_relationship_graph
-from deeprag.workflow.graph_description import GraphDescription
+from deeprag.workflow.graph_description_enrichment import GraphDescriptionEnrichment
 from deeprag.workflow.vector_with_text_to_vector_db import data_insert_to_vector_db
 from deeprag.workflow.vector_query_to_vector_db import query_vector_db_by_vector
 from deeprag.workflow.final_rag_answer import (
@@ -23,6 +23,9 @@ from deeprag.workflow.batch_generate_community_report import (
 )
 from deeprag.workflow.graph_storage_to_html_with_leiden import (
     realize_leiden_community_algorithm,
+)
+from deeprag.workflow.flatten_entity_relation import (
+    flatten_entity_relation_func,
 )
 from deeprag.db.service.knowledge_space.knowledge_space_service import (
     KnowledgeSpaceService,
@@ -43,6 +46,9 @@ from deeprag.db.service.llm_chat.llm_chat_service import LLMChatService
 from deeprag.db.service.merged_graph_data.merged_graph_data_service import (
     MergedGraphDataService,
 )
+from deeprag.db.service.flatten_entity_relation.flatten_entity_relation_service    import (
+    FlattenEntityRelationService,
+)
 from deeprag.db.data_model import RoleMessage
 from deeprag.workflow.data_model import (
     CompleteTextUnit,
@@ -60,7 +66,8 @@ from deeprag.workflow.data_model import (
     GraphDescriptionWithCommunityClusterResponse,
     TokenListByTextChunk,
     SearchedTextResponse,
-    GraphDataAddCommunityWithVisualization
+    GraphDataAddCommunityWithVisualization,
+    FlattenEntityRelation
 )
 from prisma.models import file
 from pathlib import Path
@@ -79,6 +86,7 @@ class DeepRAG:
         self.sub_graph_data_service = SubGraphDataService()
         self.merged_graph_data_service = MergedGraphDataService()
         self.community_report_service = CommunityReportService()
+        self.flatten_entity_relation_service = FlattenEntityRelationService()
 
     async def delete_file(self, file_id: str):
         deleted_file = await self.file_service.delete_file_in_knowledge_space(file_id)
@@ -200,7 +208,7 @@ class DeepRAG:
         await upload_file_to_minio_func(bucket_name=minio_object_reference.bucket_name,object_name = f"html_content/{str(uuid.uuid4())}_graph_data_with_no_leiden.html",string_data=graph_data_html)
 
         # 涉及merged_graph_data的数据库模型
-        merged_graph_data_id = (
+        stored_merged_graph_data = (
             await self.merged_graph_data_service.create_merged_graph_data(
                 merged_graph, graph_data_html
             )
@@ -209,25 +217,30 @@ class DeepRAG:
         await self.sub_graph_data_service.batch_create_sub_graph_data(
             text_chunk_id_list=text_chunk_id_list,
             sub_graph_data_list=graphs,
-            merged_graph_data_id=merged_graph_data_id,
+            merged_graph_data_id=stored_merged_graph_data.id,
         )
 
         # 得到完整的图谱结构以后，要对其中的关系加以描述
-        graph_description = GraphDescription()
-        relation_description: GraphDescriptionResponse = (
+        graph_description = GraphDescriptionEnrichment()
+        gra: GraphDescriptionResponse = (
             await graph_description.describe_graph(merged_graph)
         )
         # 先将完整的图谱结构进行平铺展开变成一个列表
+        flattened_entity_relation: list[FlattenEntityRelation] = (
+            await flatten_entity_relation_func(merged_graph,stored_merged_graph_data.id)
+        )
 
         # 涉及到flattedend_entity_relation的数据库模型的IO
-        await 
+        await self.flatten_entity_relation_service.batch_create_flatten_entity_relation(
+            head_entity_list=
+        )
 
 
 
 
         # 利用embedding模型生成embedding向量
         embedding_vector: BatchTextChunkGenerateEmbeddingsResponse = (
-            await batch_text_chunk_generate_embeddings_process(relation_description)
+            await batch_text_chunk_generate_embeddings_process(relation_description.graph_description_list)
         )
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if isinstance(meta_data, str):

@@ -1,6 +1,7 @@
 from prisma import Prisma
 from prisma.models import flatten_entity_relation
 from dotenv import load_dotenv
+from deeprag.workflow.data_model import FlattenEntityRelation
 
 load_dotenv()
 
@@ -34,33 +35,13 @@ class FlattenEntityRelationDAO:
 
     async def batch_create_flatten_entity_relation(
         self,
-        id_list: list[str],
-        head_entity_list: list[str],
-        tail_entity_list: list[str],
-        relation_description_list: list[str],
-        merged_graph_data_id_list: list[str],
-        community_id_list: list[str] | None = None,
+        flatten_entity_relations: list[FlattenEntityRelation],
     ) -> int:
         await self.db.connect()
-        stored_flatten_entity_relation_count = await self.db.flatten_entity_relation.create_many(
-            data=[
-                {
-                    "id": id,
-                    "head_entity": head_entity,
-                    "tail_entity": tail_entity,
-                    "relation_description": relation_description,
-                    "merged_graph_data_id": merged_graph_data_id,
-                    "community_id": community_id,
-                }
-                for id, head_entity, tail_entity, relation_description, merged_graph_data_id, community_id in zip(
-                    id_list,
-                    head_entity_list,
-                    tail_entity_list,
-                    relation_description_list,
-                    merged_graph_data_id_list,
-                    community_id_list,
-                )
-            ]
+        stored_flatten_entity_relation_count = (
+            await self.db.flatten_entity_relation.create_many(
+                data=flatten_entity_relations
+            )
         )
         return stored_flatten_entity_relation_count
 

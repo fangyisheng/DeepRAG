@@ -11,7 +11,7 @@ from deeprag.workflow.data_model import (
 )
 
 
-class GraphDescription:
+class GraphDescriptionEnrichment:
     # 今天3月7日要改完这个bug
     def __init__(self):
         pass
@@ -22,10 +22,13 @@ class GraphDescription:
         """_summary_
 
         Args:
-            graph (dict): 图的结构是个dict
+            graph :Pydantic数据对象为 CompleteGraphDatas
+
 
         Returns:
-            list[str]: 由图的结构扩展出来的关系描述文本列表
+            Pydantic数据对象为 GraphDescriptionResponse(
+            graph_description_list=graph_description_list,
+            graph_data_with_enriched_description=graph,
         """
         graph = graph.model_dump()
         graph_description_list = []
@@ -50,12 +53,19 @@ class GraphDescription:
             if isinstance(relation["type"], str):
                 graph_description = f"{relation_head_text}和{relation_tail_text}的关系是{relation_head_text}{relation['type']}{relation_tail_text},{relation['description']}"
                 graph_description_list.append(graph_description)
+                relation["description"] = graph_description
+
             else:
                 for type in relation["type"]:
                     graph_description = f"{relation_head_text}和{relation_tail_text}的关系是{relation_head_text}{type}{relation_tail_text},{relation['description']}"
                     graph_description_list.append(graph_description)
+                graph_description = ",".join(graph_description_list)
+                relation["description"] = graph_description
 
-        return GraphDescriptionResponse(root=graph_description_list)
+        return GraphDescriptionResponse(
+            graph_description_list=graph_description_list,
+            graph_data_with_enriched_description=graph,
+        )
 
     # 这个函数负责搞定给关系描述的文本块提供属于哪个社区的信息
     """ 怎么去区分这个描述文本块属于哪个社区的逻辑是：如果一个关系中的两个实体是来自同一个社区id的，那么这个描述文本块也来自同一个社区id，如果遇到
@@ -108,7 +118,8 @@ class GraphDescription:
                 print(graph_description_list)
 
         return GraphDescriptionWithCommunityClusterResponse(
-            root=graph_description_by_community_id
+            graph_description_dict_by_community_id=graph_description_by_community_id,
+            graph_data_with_enriched_description=graph,
         )
 
 
@@ -766,7 +777,7 @@ class GraphDescription:
 #         ),
 #     ],
 # )
-# graph_description = GraphDescription()
+# graph_description = GraphDescriptionEnrichment()
 # # print(asyncio.run(graph_description.describe_graph_with_community_cluster(test_data)))
 # print(asyncio.run(graph_description.describe_graph(test_data)))
 # print(asyncio.run(graph_description.describe_graph_with_community_cluster(test_data_2)))

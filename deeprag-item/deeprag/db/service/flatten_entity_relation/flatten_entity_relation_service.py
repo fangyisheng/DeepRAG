@@ -3,6 +3,9 @@ from deeprag.db.dao.flatten_entity_relation.flatten_entity_realtion_dao import (
 )
 import uuid
 from prisma.models import flatten_entity_relation
+from deeprag.workflow.data_model import (
+    FlattenEntityRelation,
+)
 
 
 class FlattenEntityRelationService:
@@ -25,21 +28,11 @@ class FlattenEntityRelationService:
 
     async def batch_create_flatten_entity_relation(
         self,
-        head_entity_list: list[str],
-        tail_entity_list: list[str],
-        relation_description_list: list[str],
-        merged_graph_data_id_list: list[str],
-        community_id_list: list[str] | None = None,
+        flatten_entity_relation_list: list[FlattenEntityRelation],
     ) -> int:
-        id_list = [str(uuid.uuid4()) for _ in range(len(community_id_list))]
         stored_flatten_entity_relation_count = (
             await self.dao.batch_create_flatten_entity_relation(
-                id_list,
-                head_entity_list,
-                tail_entity_list,
-                relation_description_list,
-                merged_graph_data_id_list,
-                community_id_list,
+                flatten_entity_relation_list
             )
         )
         return stored_flatten_entity_relation_count
