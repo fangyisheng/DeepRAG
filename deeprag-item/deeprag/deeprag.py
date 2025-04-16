@@ -222,17 +222,17 @@ class DeepRAG:
 
         # 得到完整的图谱结构以后，要对其中的关系加以描述
         graph_description = GraphDescriptionEnrichment()
-        gra: GraphDescriptionResponse = (
+        graph_data_with_description_enrichment: GraphDescriptionResponse = (
             await graph_description.describe_graph(merged_graph)
         )
         # 先将完整的图谱结构进行平铺展开变成一个列表
         flattened_entity_relation: list[FlattenEntityRelation] = (
-            await flatten_entity_relation_func(merged_graph,stored_merged_graph_data.id)
+            await flatten_entity_relation_func(graph_data_with_description_enrichment.graph_data_with_enriched_description,stored_merged_graph_data.id)
         )
 
         # 涉及到flattedend_entity_relation的数据库模型的IO
         await self.flatten_entity_relation_service.batch_create_flatten_entity_relation(
-            head_entity_list=
+            flattened_entity_relation
         )
 
 
@@ -240,7 +240,7 @@ class DeepRAG:
 
         # 利用embedding模型生成embedding向量
         embedding_vector: BatchTextChunkGenerateEmbeddingsResponse = (
-            await batch_text_chunk_generate_embeddings_process(relation_description.graph_description_list)
+            await batch_text_chunk_generate_embeddings_process(graph_data_with_description_enrichment.graph_description_list)
         )
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if isinstance(meta_data, str):

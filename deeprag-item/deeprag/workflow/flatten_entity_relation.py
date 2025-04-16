@@ -1,4 +1,4 @@
-from deeprag.workflow.data_model import CompleteGraphData, FlattenEntityRelation
+from deeprag.workflow.data_model import FlattenEntityRelation, CompleteGraphData
 
 
 async def flatten_entity_relation_func(
@@ -27,13 +27,13 @@ async def flatten_entity_relation_func(
                 merged_graph_data_id=merged_graph_data_id,
             )
         )
-        return flatten_entity_relation_list
+    return flatten_entity_relation_list
 
 
 # 编写测试代码
 
 from deeprag.workflow.data_model import (
-    CompleteGraphData
+    CompleteGraphData,
     RelationsStr,
     EntityIdStr,
 )

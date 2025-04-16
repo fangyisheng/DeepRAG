@@ -395,9 +395,13 @@ class FinalRAGAnswerResponse(RootModel):
 
 class GraphDescriptionResponse(BaseModel):
     """
-    list[str]
+    graph_description_list: list[str]
     示例数据：
     ["深度求索和英伟达之间的关系是xxxx","xxxx和xxxx的关系是xxxxxxx"]
+
+    graph_data_with_enriched_description: CompleteGraphData
+    示例数据：
+
 
     """
 
