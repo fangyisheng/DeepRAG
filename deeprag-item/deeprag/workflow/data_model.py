@@ -104,7 +104,7 @@ class BaseRelations(BaseModel):
      "description": "深度求索和英伟达的关系是深度求索影响了英伟达"}
     """
 
-    type: str
+    type: str | list[str]
     description: str
 
 

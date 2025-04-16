@@ -119,6 +119,7 @@ class DeepRAG:
         stored_file: file = await self.file_service.upload_new_file_to_knowledge_space(
             knowledge_space_id=knowledge_space_id, doc_title=doc_title, doc_text=None
         )
+        # 这里就对应着doc_text这个字段在数据库表file中是可选的，因为业务逻辑的需求，所以这里doc_text为空
         await self.file_service.upload_new_file_to_minio(
             file_path, bucket_name, object_name
         )
@@ -216,6 +217,7 @@ class DeepRAG:
         relation_description: GraphDescriptionResponse = (
             await graph_description.describe_graph(merged_graph)
         )
+        # 先将完整的图谱结构进行平铺展开变成一个列表
 
         # 涉及到flattedend_entity_relation的数据库模型的IO
         await 

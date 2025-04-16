@@ -21,7 +21,7 @@ model file {
   id  String @id
   human_readable_id  String
   doc_title  String
-  doc_text  String
+  doc_text  String?
   minio_bucket_name String
   minio_object_name  String
   knowledge_space_id    String 
@@ -69,7 +69,7 @@ model flatten_entity_relation {
   merged_graph_data_id  String
   community_id  String?
   FlattenEntityRelationMergedGraphData merged_graph_data @relation(fields: [merged_graph_data_id], references: [id])
-  FlattenEntityRelationCommunityCluster community_cluster @relation(fields: [community_id], references: [id])
+  FlattenEntityRelationCommunityCluster community_cluster? @relation(fields: [community_id], references: [id])
  
 
 }
@@ -78,8 +78,8 @@ model community_cluster {
   id String @id
   human_readable_id String
   community_title String
-  flatten_entity_relations flatten_entity_relation[]
-  community_report community_report
+  flatten_entity_relations flatten_entity_relation[] //数组也可以表示为空数组，所以这里不需要设置可选的符号
+  community_report community_report? //这样表示一对一的关系
 
 }
 
@@ -88,7 +88,7 @@ model community_report {
   human_readable_id String
   community_report String
   community_id String @unique
-  CommunityReportCommunityCluster community_cluster @relation(fields:[community_id], references:[id])
+  CommunityReportCommunityCluster community_cluster? @relation(fields:[community_id], references:[id])
 
 }
 
