@@ -1,13 +1,5 @@
-def add(c, d):
-    a = None
-    b = None
-    minus(a=c, b=d)
+from pathlib import Path
 
-    return a, b
+P = Path(__file__).parent
 
-
-def minus(a, b):
-    return a - b
-
-
-print(add(2, 3))
+print(P)
