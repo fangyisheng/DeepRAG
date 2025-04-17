@@ -77,10 +77,10 @@ class GraphDescriptionEnrichment:
         """_summary_
 
         Args:
-            graph (dict): 完整的图的结构(带有community_id)
+            graph : 完整的图的结构(带有community_id)  CompleteGraphDataWithCommunityId
 
         Returns:
-            dict[str, list]: 带有community_id为键，关系描述文本列表为值的dict
+            GraphDescriptionWithCommunityClusterResponse: 带有community_id为键，关系描述文本列表为值的dict
         """
         graph = graph.model_dump()
         graph_description_by_community_id = {}

@@ -286,6 +286,14 @@ class CompleteGraphDataWithCommunityId(BaseModel):
     relations: list[RelationsStrWithCommunityId]
 
 
+class CompleteGraphDataWithDescriptionEnrichment(CompleteGraphData):
+    pass
+
+
+class CompleteGraphDataWithCommunityIdAndDescriptionEnrichment(CompleteGraphData):
+    pass
+
+
 class GraphDataAddCommunityWithVisualization(BaseModel):
     """
     示例数据：
@@ -415,10 +423,30 @@ class GraphDescriptionResponse(BaseModel):
             "The stock price of NVIDIA dropped significantly on January 27th, 2023.",
         ],
     )
-    graph_data_with_enriched_description: CompleteGraphData
+    graph_data_with_enriched_description: CompleteGraphDataWithDescriptionEnrichment
 
 
 class GraphDescriptionWithCommunityClusterResponse(BaseModel):
+    """
+    示例数据：
+    graph_description_dict_by_community_id: dict[str, list] = Field(
+        ...,
+        description="这个数据模型是字典，键是动态的社区id,值为社区id对应的关系描述文本块的列表",
+        examples=[
+            {
+                "community_id_1": ["关系描述文本块1", "关系描述文本块2"],
+                "community_id_2": ["关系描述文本块1", "关系描述文本块2"],
+            }
+        ]
+    )
+
+    graph_data_with_enriched_description: (
+        CompleteGraphDataWithCommunityIdAndDescriptionEnrichment
+    )
+
+
+    """
+
     graph_description_dict_by_community_id: dict[str, list] = Field(
         ...,
         description="这个数据模型是字典，键是动态的社区id,值为社区id对应的关系描述文本块的列表",
@@ -430,7 +458,9 @@ class GraphDescriptionWithCommunityClusterResponse(BaseModel):
             {},
         ],
     )
-    graph_data_with_enriched_description: CompleteGraphDataWithCommunityId
+    graph_data_with_enriched_description: (
+        CompleteGraphDataWithCommunityIdAndDescriptionEnrichment
+    )
 
 
 class TextExtractAndCleanResponse(RootModel):
@@ -496,9 +526,9 @@ class KnowledgeScopeRealName(BaseModel):
 
 
 class KnowledgeScopeLocator(BaseModel):
-    user_id: str
-    knowledge_space_id: str
-    file_id: str
+    user_id: str | None = None
+    knowledge_space_id: str | None = None
+    file_id: str | None = None
 
 
 class MinioObjectReference(BaseModel):
@@ -567,3 +597,8 @@ class FlattenEntityRelation(BaseModel):
     relation: str
     merged_graph_data_id: str
     commuity_id: str | None = None
+
+
+class BatchCreateCommunityReportResponse(BaseModel):
+    community_report_list: list[str]
+    community_id_list: list[str]

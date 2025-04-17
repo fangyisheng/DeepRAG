@@ -43,6 +43,7 @@ class FlattenEntityRelationDAO:
                 data=flatten_entity_relations
             )
         )
+        await self.db.disconnect()
         return stored_flatten_entity_relation_count
 
     async def get_flatten_entity_relation_by_id(

@@ -54,6 +54,12 @@ class FileDAO:
         await self.db.disconnect()
         return found_file
 
+    async def get_file_in_knowledge_space_by_knowledge_space_id(self, id: str) -> file:
+        await self.db.connect()
+        found_file_list = await self.db.file.find_many(where={"knowledge_space_id": id})
+        await self.db.disconnect()
+        return found_file_list
+
 
 # # 撰写测试代码
 # import asyncio

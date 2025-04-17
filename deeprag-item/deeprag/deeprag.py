@@ -33,6 +33,9 @@ from deeprag.db.service.knowledge_space.knowledge_space_service import (
 from deeprag.db.service.community_report.community_report_service import (
     CommunityReportService,
 )
+from deeprag.db.service.community_cluster.community_cluster_service import (
+    CommunityClusterService,
+)
 from deeprag.db.service.file.file_service import FileService
 from deeprag.db.service.user.user_service import UserService
 from deeprag.db.service.user_knowledge_space_file_service import (
@@ -46,7 +49,7 @@ from deeprag.db.service.llm_chat.llm_chat_service import LLMChatService
 from deeprag.db.service.merged_graph_data.merged_graph_data_service import (
     MergedGraphDataService,
 )
-from deeprag.db.service.flatten_entity_relation.flatten_entity_relation_service    import (
+from deeprag.db.service.flatten_entity_relation.flatten_entity_relation_service import (
     FlattenEntityRelationService,
 )
 from deeprag.db.data_model import RoleMessage
@@ -67,12 +70,13 @@ from deeprag.workflow.data_model import (
     TokenListByTextChunk,
     SearchedTextResponse,
     GraphDataAddCommunityWithVisualization,
-    FlattenEntityRelation
+    FlattenEntityRelation,
+    CompleteGraphDataWithDescriptionEnrichment,
 )
 from prisma.models import file
 from pathlib import Path
 import uuid
-
+import asyncio
 
 
 class DeepRAG:
@@ -87,9 +91,11 @@ class DeepRAG:
         self.merged_graph_data_service = MergedGraphDataService()
         self.community_report_service = CommunityReportService()
         self.flatten_entity_relation_service = FlattenEntityRelationService()
+        self.community_cluster_service = CommunityClusterService()
 
     async def delete_file(self, file_id: str):
         deleted_file = await self.file_service.delete_file_in_knowledge_space(file_id)
+
         return deleted_file
 
     async def delete_knowledge_space(self, knowledge_space_id: str):
@@ -203,14 +209,18 @@ class DeepRAG:
         )
         # 对完整的图谱结构进行普通的可视化
         graph_data_html = await store_graph_data_to_html_with_no_leiden(merged_graph)
-        
+
         # 然后将可视化的html文件上传到Minio中方便查看
-        await upload_file_to_minio_func(bucket_name=minio_object_reference.bucket_name,object_name = f"html_content/{str(uuid.uuid4())}_graph_data_with_no_leiden.html",string_data=graph_data_html)
+        await upload_file_to_minio_func(
+            bucket_name=minio_object_reference.bucket_name,
+            object_name=f"html_content/{str(uuid.uuid4())}_graph_data_with_no_leiden.html",
+            string_data=graph_data_html.root,
+        )
 
         # 涉及merged_graph_data的数据库模型
         stored_merged_graph_data = (
             await self.merged_graph_data_service.create_merged_graph_data(
-                merged_graph, graph_data_html
+                merged_graph.model_dump(), graph_data_html.root
             )
         )
         # 涉及到sub_graph_data的数据库模型
@@ -220,27 +230,29 @@ class DeepRAG:
             merged_graph_data_id=stored_merged_graph_data.id,
         )
 
-        # 得到完整的图谱结构以后，要对其中的关系加以描述
+        # 得到完整的图谱结构以后，要对其中的关系描述进行加强
         graph_description = GraphDescriptionEnrichment()
         graph_data_with_description_enrichment: GraphDescriptionResponse = (
             await graph_description.describe_graph(merged_graph)
         )
         # 先将完整的图谱结构进行平铺展开变成一个列表
-        flattened_entity_relation: list[FlattenEntityRelation] = (
-            await flatten_entity_relation_func(graph_data_with_description_enrichment.graph_data_with_enriched_description,stored_merged_graph_data.id)
+        flattened_entity_relation: list[
+            FlattenEntityRelation
+        ] = await flatten_entity_relation_func(
+            graph_data_with_description_enrichment.graph_data_with_enriched_description,
+            stored_merged_graph_data.id,
         )
 
-        # 涉及到flattedend_entity_relation的数据库模型的IO
+        # 涉及到flattend_entity_relation的数据库模型的IO
         await self.flatten_entity_relation_service.batch_create_flatten_entity_relation(
             flattened_entity_relation
         )
 
-
-
-
         # 利用embedding模型生成embedding向量
         embedding_vector: BatchTextChunkGenerateEmbeddingsResponse = (
-            await batch_text_chunk_generate_embeddings_process(graph_data_with_description_enrichment.graph_description_list)
+            await batch_text_chunk_generate_embeddings_process(
+                graph_data_with_description_enrichment.graph_description_list
+            )
         )
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if isinstance(meta_data, str):
@@ -250,7 +262,7 @@ class DeepRAG:
 
         if not deep_index_pattern:
             await data_insert_to_vector_db(
-                text_list=relation_description,
+                text_list=graph_data_with_description_enrichment.graph_description_list,
                 vector=embedding_vector,
                 collection_name=collection_name,
                 knowledge_scope=knowledge_scope,
@@ -258,55 +270,80 @@ class DeepRAG:
             )
         else:
             # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
-            graph_data_with_community_id:GraphDataAddCommunityWithVisualization = await realize_leiden_community_algorithm(
-                merged_graph
+            graph_data_with_community_id: GraphDataAddCommunityWithVisualization = (
+                await realize_leiden_community_algorithm(merged_graph)
             )
-            #将带有社区标签的可视化html保存到Minio中，方便后续查看
-            await upload_file_to_minio_func(bucket_name=minio_object_reference.bucket_name,object_name = f"html_content/{str(uuid.uuid4())}_graph_data_with_leiden.html",string_data=graph_data_with_community_id.html_content)
+            # 将带有社区标签的可视化html保存到Minio中，方便后续查看
+            await upload_file_to_minio_func(
+                bucket_name=minio_object_reference.bucket_name,
+                object_name=f"html_content/{str(uuid.uuid4())}_graph_data_with_leiden.html",
+                string_data=graph_data_with_community_id.html_content,
+            )
 
-
-             # 生成带有社区id的关系描述
-            relation_description_with_community_id: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
+            # 生成带有社区id的graph_data, 并对其中的关系描述进行增强
+            graph_data_with_community_id_and_description_enrichment: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
                 graph_data_with_community_id.graph_data
             )
 
             # 生成带有社区id的社区报告
             community_report_with_community_id: BatchGenerateCommunityReportResponse = (
                 await batch_generate_community_report_func(
-                    relation_description_with_community_id
+                    graph_data_with_community_id_and_description_enrichment
                 )
             )
-            # 这里涉及community_cluster的数据库模型
 
+            # 这里涉及community_cluster的数据库模型
             # 这里涉及community_report的数据库模型
-            await self.community_report_service.
-            community_report_content = [
-                value.community_report
-                for value in community_report_with_community_id.values()
-            ]
-            community_report_cluser = [
-                key for key in community_report_with_community_id.keys()
-            ]
+            batch_create_community_report_response = (
+                await self.community_report_service.batch_create_community_report(
+                    community_report_with_community_id
+                )
+            )
             await data_insert_to_vector_db(
-                text_list=community_report_content,
+                text_list=batch_create_community_report_response.community_report_list,
                 vector=embedding_vector,
                 collection_name=collection_name,
                 knowledge_scope=knowledge_scope,
-                community_cluster=community_report_cluser,
+                community_cluster=batch_create_community_report_response.community_id_list,
                 meta_data=meta_data,
             )
-        return KnowledgeScopeLocator(**knowledge_scope)
-    
-    async def batch_index(self,
+            return KnowledgeScopeLocator(**knowledge_scope)
+
+    async def batch_index(
+        self,
         collection_name: str,
-        knowledge_scope_list: list[KnowledgeScopeLocator],
+        knowledge_scope: list[KnowledgeScopeLocator] | KnowledgeScopeLocator,
         meta_data: str | None = None,
-        deep_index_pattern: bool = False,):
+        deep_index_pattern: bool = False,
+    ):
         # 这个batch index的行为有三种情况，一个是对不同的file_id进行batch index,另外一个是对相同的知识库id下面的文件做batch index，第三个行为是对用户空间下不同知识库id下面的所有的file id进行index
-        if any()
-        
-
-
+        if isinstance(knowledge_scope, list[KnowledgeScopeLocator]):
+            if all(knowledge_scope.file_id for knowledge_scope in knowledge_scope):
+                tasks = [
+                    self.index(
+                        collection_name=collection_name,
+                        knowledge_scope=knowledge_scope,
+                        meta_data=meta_data,
+                        deep_index_pattern=deep_index_pattern,
+                    )
+                    for knowledge_scope in knowledge_scope
+                ]
+                await asyncio.gather(*tasks)
+        if isinstance(knowledge_scope, KnowledgeScopeLocator):
+            if knowledge_scope.knowledge_space_id and not knowledge_scope.file_id:
+                found_file_list = await self.file_service.get_file_in_knowledge_space_by_knowledge_space_id(
+                    knowledge_scope.knowledge_space_id
+                )
+                tasks = [
+                    self.index(
+                        collection_name=collection_name,
+                        knowledge_scope=knowledge_scope.__setattr__("file_id", file.id),
+                        meta_data=meta_data,
+                        deep_index_pattern=deep_index_pattern,
+                    )
+                    for file in found_file_list
+                ]
+                await asyncio.gather(**tasks)
 
     async def query(
         self,

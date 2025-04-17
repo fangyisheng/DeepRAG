@@ -62,3 +62,14 @@ class FileService:
         file = await self.dao.get_file_in_knowledge_space_by_doc_id(id)
 
         return file.model_dump()
+
+    async def get_file_in_knowledge_space_by_knowledge_space_id(
+        self, knowledge_space_id: str
+    ) -> list[file]:
+        found_file_list = (
+            await self.dao.get_file_in_knowledge_space_by_knowledge_space_id(
+                knowledge_space_id
+            )
+        )
+
+        return found_file_list
