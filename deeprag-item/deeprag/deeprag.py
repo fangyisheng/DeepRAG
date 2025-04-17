@@ -71,12 +71,12 @@ from deeprag.workflow.data_model import (
     SearchedTextResponse,
     GraphDataAddCommunityWithVisualization,
     FlattenEntityRelation,
-    CompleteGraphDataWithDescriptionEnrichment,
 )
 from prisma.models import file
 from pathlib import Path
 import uuid
 import asyncio
+from loguru import logger
 
 
 class DeepRAG:
@@ -182,6 +182,7 @@ class DeepRAG:
         cleaned_text: CompleteTextUnit = await process_text(
             minio_object_reference.bucket_name, minio_object_reference.object_name
         )
+        logger.info("数据提取和清洗完成")
         # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
         # 涉及file的数据库模型
         await self.file_service.update_existed_file_in_knowledge(
