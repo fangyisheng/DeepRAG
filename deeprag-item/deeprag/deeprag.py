@@ -159,7 +159,7 @@ class DeepRAG:
         knowledge_scope: KnowledgeScopeLocator,
         meta_data: str | None = None,
         deep_index_pattern: bool = False,
-    ) -> KnowledgeScopeLocator:
+    ):
         """index_pattern是一个很重要的概念，代表你要覆盖还是说要新增，这是一个需要区分的字段???这是存疑的。需要再讨论一下，
         不需要之前说的partition_name了
         knowledge_scope 是一个类对象，其形式为：
@@ -307,7 +307,6 @@ class DeepRAG:
                 community_cluster=batch_create_community_report_response.community_id_list,
                 meta_data=meta_data,
             )
-            return KnowledgeScopeLocator(**knowledge_scope)
 
     async def batch_index(
         self,
