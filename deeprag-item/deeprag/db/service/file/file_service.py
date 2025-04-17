@@ -46,22 +46,20 @@ class FileService:
             object_name=found_file.minio_object_name,
         )
 
-    async def delete_file_in_knowledge_space(self, id: str) -> dict[str, str]:
+    async def delete_file_in_knowledge_space(self, id: str) -> file:
         file = await self.dao.delete_file_in_knowledge_space(id)
 
-        return file.model_dump()
+        return file
 
-    async def update_existed_file_in_knowledge(
-        self, id: str, data: dict
-    ) -> dict[str, str]:
+    async def update_existed_file_in_knowledge(self, id: str, data: dict) -> file:
         file = await self.dao.update_existed_file_in_knowledge_space(id, data)
 
-        return file.model_dump()
+        return file
 
-    async def get_file_in_knowledge_space_by_doc_id(self, id: str) -> dict[str, str]:
+    async def get_file_in_knowledge_space_by_doc_id(self, id: str) -> file:
         file = await self.dao.get_file_in_knowledge_space_by_doc_id(id)
 
-        return file.model_dump()
+        return file
 
     async def get_file_in_knowledge_space_by_knowledge_space_id(
         self, knowledge_space_id: str

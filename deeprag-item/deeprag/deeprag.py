@@ -128,7 +128,7 @@ class DeepRAG:
         knowledge_space_id: str,
         bucket_name: str,
         object_name: str,
-    ) -> KnowledgeScopeLocator:
+    ) -> KnowledgeScopeMinioMapping:
         doc_title = Path(file_path).name
         stored_file: file = await self.file_service.upload_new_file_to_knowledge_space(
             knowledge_space_id=knowledge_space_id, doc_title=doc_title, doc_text=None
@@ -386,7 +386,7 @@ class DeepRAG:
         ):
             yield response
 
-    async def query_answer_by_stream(
+    async def query_answer_non_stream(
         self,
         user_prompt: str,
         collection_name: str,
