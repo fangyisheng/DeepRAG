@@ -42,7 +42,7 @@ async def upload_file_to_minio_func(
     )
 
 
-# # 测试上传本地文件路径的代码
+# # 测试上传本地文件路径的代码,测试成功
 # import asyncio
 
 # print(
@@ -55,15 +55,15 @@ async def upload_file_to_minio_func(
 #     )
 # )
 
-# 测试上传数据流的代码
-import asyncio
+# # 测试上传数据流的代码,测试成功
+# import asyncio
 
-print(
-    asyncio.run(
-        upload_file_to_minio_func(
-            bucket_name="mybucket",
-            object_name="test4.txt",
-            string_data="nihao",
-        )
-    )
-)
+# print(
+#     asyncio.run(
+#         upload_file_to_minio_func(
+#             bucket_name="mybucket",
+#             object_name="test4.txt",
+#             string_data="nihao",
+#         )
+#     )
+# )

@@ -55,7 +55,6 @@ from deeprag.db.service.flatten_entity_relation.flatten_entity_relation_service 
 from deeprag.db.data_model import RoleMessage
 from deeprag.workflow.data_model import (
     CompleteTextUnit,
-    KnowledgeScope,
     ChunkedTextUnit,
     KnowledgeScopeMinioMapping,
     MinioObjectReference,
@@ -77,6 +76,8 @@ from pathlib import Path
 import uuid
 import asyncio
 from loguru import logger
+import json
+from datetime import datetime
 
 
 class DeepRAG:
@@ -195,6 +196,7 @@ class DeepRAG:
         splitter = TextSplitter()
         chunks: ChunkedTextUnit = await splitter.split_text_by_token(cleaned_text)
         token_list: TokenListByTextChunk = splitter.tokens_by_chunk
+        logger.info("文本切分完成")
 
         # 涉及text_chunk的数据库模型
         text_chunk_id_list = await self.text_chunk_service.batch_create_text_chunk(
@@ -204,12 +206,14 @@ class DeepRAG:
         graphs: BatchTextChunkGenerateGraphsResponse = (
             await batch_text_chunk_generate_graphs_process(chunks)
         )
+        logger.info("图结构提取完成")
         # 开始合并每个文本分块得到的子图结构变成一张完整的图谱结构
         merged_graph: CompleteGraphData = await merge_sub_entity_relationship_graph(
             graphs
         )
         # 对完整的图谱结构进行普通的可视化
         graph_data_html = await store_graph_data_to_html_with_no_leiden(merged_graph)
+        logger.info("图结构可视化完成")
 
         # 然后将可视化的html文件上传到Minio中方便查看
         await upload_file_to_minio_func(
@@ -217,6 +221,7 @@ class DeepRAG:
             object_name=f"html_content/{str(uuid.uuid4())}_graph_data_with_no_leiden.html",
             string_data=graph_data_html.root,
         )
+        logger.info("图结构可视化的HTML文件上传完成")
 
         # 涉及merged_graph_data的数据库模型
         stored_merged_graph_data = (
@@ -236,6 +241,7 @@ class DeepRAG:
         graph_data_with_description_enrichment: GraphDescriptionResponse = (
             await graph_description.describe_graph(merged_graph)
         )
+        logger.info("图谱结构的关系描述加强完成")
         # 先将完整的图谱结构进行平铺展开变成一个列表
         flattened_entity_relation: list[
             FlattenEntityRelation
@@ -243,6 +249,7 @@ class DeepRAG:
             graph_data_with_description_enrichment.graph_data_with_enriched_description,
             stored_merged_graph_data.id,
         )
+        logger.info("图谱结构平铺展开完成")
 
         # 涉及到flattend_entity_relation的数据库模型的IO
         await self.flatten_entity_relation_service.batch_create_flatten_entity_relation(
@@ -255,6 +262,7 @@ class DeepRAG:
                 graph_data_with_description_enrichment.graph_description_list
             )
         )
+        logger.info("图谱结构embedding向量生成完成")
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if isinstance(meta_data, str):
             meta_data = [meta_data for _ in range(len(embedding_vector))]
@@ -269,6 +277,7 @@ class DeepRAG:
                 knowledge_scope=knowledge_scope,
                 meta_data=meta_data,
             )
+            logger.info("向量数据库插入完成")
         else:
             # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
             graph_data_with_community_id: GraphDataAddCommunityWithVisualization = (
@@ -360,11 +369,10 @@ class DeepRAG:
         session_id如果是空白的，那就是新开一个会话，这个逻辑是可通的"""
 
         # 首先利用输入的query对向量数据库进行有筛选的检索
-        knowledge_scope_real_name: KnowledgeScopeRealName = (
-            await self.user_knowledge_space_file_service.get_knowledge_scope_by_id(
-                knowledge_scope
-            )
+        knowledge_scope_real_name: KnowledgeScopeRealName = await self.user_knowledge_space_file_service.get_knowledge_scope_real_name_by_id(
+            knowledge_scope
         )
+        logger.info(f"本次查询的知识范围的真实范围是{knowledge_scope_real_name}")
         searched_text: SearchedTextResponse = await query_vector_db_by_vector(
             user_prompt,
             collection_name,
@@ -372,11 +380,13 @@ class DeepRAG:
             recalled_text_fragments_top_k,
             deep_query_pattern,
         )
+        logger.info(f"本次检索到的文本是{searched_text}")
         if not session_id:
             context = None
         else:
             context = await self.llm_chat_service.construct_context(session_id)
-
+        complete_response = None
+        message_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         async for response in final_rag_answer_process_stream(
             user_prompt=user_prompt,
             knowledge_scope_real_name=knowledge_scope_real_name,
@@ -386,22 +396,40 @@ class DeepRAG:
             context=context,
         ):
             yield response
+            real_response_dict = json.loads(response.split(":", 1)[1].strip())
+            complete_response += real_response_dict["answer"]
+        message_end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        message_duration_time = str(
+            datetime.strptime(message_end_time, "%Y-%m-%d %H:%M:%S")
+            - datetime.strptime(message_start_time, "%Y-%m-%d %H:%M:%S")
+        )
+
+        await self.llm_chat_service.create_message(
+            id=real_response_dict["message_id"],
+            user_id=knowledge_scope.user_id,
+            user_prompt=user_prompt,
+            user_context=context,
+            llm_answer=complete_response,
+            message_start_time=message_start_time,
+            message_end_time=message_end_time,
+            message_duration_time=message_duration_time,
+            session_id=real_response_dict["session_id"],
+        )
 
     async def query_answer_non_stream(
         self,
         user_prompt: str,
         collection_name: str,
-        knowledge_scope: KnowledgeScope,
+        knowledge_scope: KnowledgeScopeLocator,
         deep_query_pattern: bool = False,
         session_id: str | None = None,
         context: list[RoleMessage] | None = None,
         recalled_text_fragments_top_k: int = 5,
     ):
-        knowledge_scope_real_name: KnowledgeScopeRealName = (
-            await self.user_knowledge_space_file_service.get_knowledge_scope_by_id(
-                knowledge_scope
-            )
+        knowledge_scope_real_name: KnowledgeScopeRealName = await self.user_knowledge_space_file_service.get_knowledge_scope_real_name_by_id(
+            knowledge_scope
         )
+        logger.info(f"本次查询的知识范围的真实范围是{knowledge_scope_real_name}")
         searched_text: SearchedTextResponse = await query_vector_db_by_vector(
             user_prompt,
             collection_name,
@@ -409,10 +437,14 @@ class DeepRAG:
             recalled_text_fragments_top_k,
             deep_query_pattern,
         )
+        logger.info(f"本次检索到的文本是{searched_text}")
         if not session_id:
             context = None
         else:
             context = await self.llm_chat_service.construct_context(session_id)
+
+        message_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         answer = await final_rag_answer_process_not_stream(
             user_prompt=user_prompt,
             knowledge_scope_real_name=knowledge_scope_real_name,
@@ -421,4 +453,21 @@ class DeepRAG:
             deep_query_pattern=deep_query_pattern,
             context=context,
         )
+        message_end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        message_duration_time = str(
+            datetime.strptime(message_end_time, "%Y-%m-%d %H:%M:%S")
+            - datetime.strptime(message_start_time, "%Y-%m-%d %H:%M:%S")
+        )
+        await self.llm_chat_service.create_message(
+            id=answer["message_id"],
+            user_id=knowledge_scope.user_id,
+            user_prompt=user_prompt,
+            user_context=context,
+            llm_answer=answer["answer"],
+            message_start_time=message_start_time,
+            message_end_time=message_end_time,
+            message_duration_time=message_duration_time,
+            session_id=answer["session_id"],
+        )
+
         return answer

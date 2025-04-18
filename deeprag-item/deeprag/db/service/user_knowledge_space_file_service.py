@@ -20,7 +20,7 @@ class UserKnowledgeSpaceFileService:
             for knowledge_scope_structure in complete_knowledge_scope_structure
         ]
 
-    async def get_knowledge_scope_by_id(
+    async def get_knowledge_scope_real_name_by_id(
         self, knowledge_scope_locator: KnowledgeScopeLocator
     ) -> KnowledgeScopeRealName:
         """

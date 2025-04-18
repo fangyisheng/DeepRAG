@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-py"
-   interface = "asyncio"
+  provider  = "prisma-client-py"
+  interface = "asyncio"
 }
 
 datasource db {
@@ -9,129 +9,120 @@ datasource db {
 }
 
 model knowledge_space {
-  id                    String @id
-  human_readable_id     String 
-  knowledge_space_name  String
-  user_id               String
-  files  file[]
-  UserKnowledgeSpace  user @relation(fields: [user_id], references:[id])
+  id                   String @id
+  human_readable_id    String 
+  user_id              String
+  knowledge_space_name String
+  files                file[]
+  UserKnowledgeSpace   user   @relation(fields: [user_id], references: [id])
 }
 
 model file {
-  id  String @id
+  id                 String          @id
   human_readable_id  String
-  doc_title  String
-  doc_text  String?
-  minio_bucket_name String
+  doc_title          String
+  doc_text           String?
+  knowledge_space_id String
+  minio_bucket_name  String
   minio_object_name  String
-  knowledge_space_id    String 
-  KnowledgeSpaceFile     knowledge_space @relation(fields: [knowledge_space_id], references: [id])
-  text_chunks  text_chunk[]
+  KnowledgeSpaceFile knowledge_space @relation(fields: [knowledge_space_id], references: [id])
+  text_chunks        text_chunk[]
 }
 
 model text_chunk {
-  id String @id
-  human_readable_id  String
-  doc_id  String
-  text_chunk  String
-  n_tokens  String
-  FileTextChunk    file @relation(fields: [doc_id], references: [id])
-  sub_graph_datas  sub_graph_data[]
+  id                String          @id
+  human_readable_id String
+  doc_id            String
+  text_chunk        String
+  n_tokens          String
+  sub_graph_datas   sub_graph_data?
+  FileTextChunk     file            @relation(fields: [doc_id], references: [id])
 }
 
 model sub_graph_data {
-  id String @id
-  human_readable_id  String
-  text_chunk_id String @unique
-  sub_graph_data   String
-  merged_graph_data_id String
-  TextChunkSubGraphData  text_chunk @relation(fields: [text_chunk_id], references: [id])
+  id                          String            @id
+  human_readable_id           String
+  text_chunk_id               String            @unique
+  sub_graph_data              String
+  merged_graph_data_id        String
   SubGraphDataMergedGraphData merged_graph_data @relation(fields: [merged_graph_data_id], references: [id])
-  
+  TextChunkSubGraphData       text_chunk        @relation(fields: [text_chunk_id], references: [id])
 }
 
 model merged_graph_data {
-  id String @id
-  human_readable_id  String
-  merged_graph_data  String
-  merged_graph_data_visualization_html  String  
-  sub_graph_datas sub_graph_data[]
-  flatten_entity_relations flatten_entity_relation[]
-  
+  id                                   String                    @id
+  human_readable_id                    String
+  merged_graph_data                    String
+  merged_graph_data_visualization_html String
+  flatten_entity_relations             flatten_entity_relation[]
+  sub_graph_datas                      sub_graph_data[]
 }
 
 model flatten_entity_relation {
-  id String @id
-  human_readable_id String
-  head_entity  String
-  end_entity  String
-  relation_description  String 
-  merged_graph_data_id  String
-  community_id  String?
-  FlattenEntityRelationMergedGraphData merged_graph_data @relation(fields: [merged_graph_data_id], references: [id])
+  id                                    String             @id
+  human_readable_id                     String
+  head_entity                           String
+  end_entity                            String
+  merged_graph_data_id                  String
+  community_id                          String?
+  relation_description                  String
   FlattenEntityRelationCommunityCluster community_cluster? @relation(fields: [community_id], references: [id])
- 
-
+  FlattenEntityRelationMergedGraphData  merged_graph_data  @relation(fields: [merged_graph_data_id], references: [id])
 }
 
 model community_cluster {
-  id String @id
-  human_readable_id String
-  community_title String
-  flatten_entity_relations flatten_entity_relation[] //数组也可以表示为空数组，所以这里不需要设置可选的符号
-  community_report community_report? //这样表示一对一的关系
-
+  id                       String                    @id
+  human_readable_id        String
+  community_title          String
+  community_report         community_report?
+  flatten_entity_relations flatten_entity_relation[]
 }
 
 model community_report {
-  id String @id
-  human_readable_id String
-  community_report String
-  community_id String @unique
-  CommunityReportCommunityCluster community_cluster? @relation(fields:[community_id], references:[id])
-
+  id                              String            @id
+  human_readable_id               String
+  community_report                String
+  community_id                    String            @unique
+  CommunityReportCommunityCluster community_cluster @relation(fields: [community_id], references: [id])
 }
-
 
 model user {
-  id  String @id //这个相当于user_id
+  id                String            @id
   human_readable_id String
-  user_name String
-  llm_chats llm_chat[]
-  knowledge_spaces knowledge_space[]
+  user_name         String
+  knowledge_spaces  knowledge_space[]
+  llm_chats         llm_chat[]
 }
 
-
 model llm_chat {
-  id String @id  //这个相当于message_id
-  user_id String
-  human_readable_id String
-  user_prompt String
-  user_context String
-  llm_answer String
-  message_start_time String
-  message_end_time String
+  id                    String     @id
+  user_id               String
+  human_readable_id     String
+  user_prompt           String
+  user_context          String
+  llm_answer            String
+  message_start_time    String
+  message_end_time      String
   message_duration_time String
-  session_id String
-  cost_tokens String
-  LLLMChatUser user @relation(fields: [user_id], references: [id])
-  rag_params rag_param?
+  session_id            String
+  cost_tokens           String
+  LLLMChatUser          user       @relation(fields: [user_id], references: [id])
+  rag_params            rag_param?
 }
 
 model rag_param {
-  id String @id  //这个相当于rag_param_id
-  human_readable_id String
-  grounds_for_response String 
-  message_id String @unique
-  RagParamLLMChat llm_chat @relation(fields: [message_id], references: [id])
+  id                   String   @id
+  human_readable_id    String
+  grounds_for_response String
+  message_id           String   @unique
+  RagParamLLMChat      llm_chat @relation(fields: [message_id], references: [id])
 }
 
-
 model workflow {
-  id String @id //这个相当于workflow_id
-  status String
-  action String
-  workflow_start_time String
-  workflow_end_time String
+  id                     String @id
+  status                 String
+  action                 String
+  workflow_start_time    String
+  workflow_end_time      String
   workflow_duration_time String
 }
