@@ -1,4 +1,4 @@
-from deeprag.deeprag import DeepRAG
+from deeprag import samples
 import asyncio
 
 deeprag = DeepRAG()
