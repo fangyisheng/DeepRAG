@@ -70,6 +70,7 @@ from deeprag.workflow.data_model import (
     SearchedTextResponse,
     GraphDataAddCommunityWithVisualization,
     FlattenEntityRelation,
+    BatchCreateCommunityReportResponse,
 )
 from prisma.models import file
 from pathlib import Path
@@ -132,11 +133,15 @@ class DeepRAG:
     ) -> KnowledgeScopeMinioMapping:
         doc_title = Path(file_path).name
         stored_file: file = await self.file_service.upload_new_file_to_knowledge_space(
-            knowledge_space_id=knowledge_space_id, doc_title=doc_title, doc_text=None
+            knowledge_space_id=knowledge_space_id,
+            doc_title=doc_title,
+            doc_text=None,
+            minio_bucket_name=bucket_name,
+            minio_object_name=object_name,
         )
         # 这里就对应着doc_text这个字段在数据库表file中是可选的，因为业务逻辑的需求，所以这里doc_text为空
         await self.file_service.upload_new_file_to_minio(
-            file_path, bucket_name, object_name
+            file_path=file_path, bucket_name=bucket_name, object_name=object_name
         )
         return KnowledgeScopeMinioMapping(
             knowledge_scope=KnowledgeScopeLocator(
@@ -304,10 +309,8 @@ class DeepRAG:
 
             # 这里涉及community_cluster的数据库模型
             # 这里涉及community_report的数据库模型
-            batch_create_community_report_response = (
-                await self.community_report_service.batch_create_community_report(
-                    community_report_with_community_id
-                )
+            batch_create_community_report_response: BatchCreateCommunityReportResponse = await self.community_report_service.batch_create_community_report(
+                community_report_with_community_id
             )
             await data_insert_to_vector_db(
                 text_list=batch_create_community_report_response.community_report_list,

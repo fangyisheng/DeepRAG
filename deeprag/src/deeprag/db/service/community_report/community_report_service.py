@@ -17,13 +17,17 @@ class CommunityReportService:
 
     async def batch_create_community_report(
         self,
-        community_report_with_id_dict: BatchGenerateCommunityReportResponse,
+        community_report_with_id: BatchGenerateCommunityReportResponse,
     ) -> BatchCreateCommunityReportResponse:
-        community_id_list = [key for key in community_report_with_id_dict.keys()]
-        community_report_list = [
-            report for report in community_report_with_id_dict.values()
+        community_id_list = [
+            key for key in community_report_with_id.community_reports.keys()
         ]
-        id_list = [str(uuid.uuid4()) for _ in community_report_with_id_dict.keys()]
+        community_report_list = [
+            report for report in community_report_with_id.community_reports.values()
+        ]
+        id_list = [
+            str(uuid.uuid4()) for _ in community_report_with_id.community_reports.keys()
+        ]
         await self.dao.batch_create_community_report(
             community_id_list=community_id_list, id_list=id_list
         )

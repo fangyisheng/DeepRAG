@@ -2,11 +2,13 @@ from deeprag.agent.index.generate_community_report import (
     generate_community_report_agent,
 )
 import asyncio
-from deeprag.workflow.data_model import BatchGenerateCommunityReportResponse
+from deeprag.workflow.data_model import (
+    BatchGenerateCommunityReportResponse,
+)
 
 
 async def batch_generate_community_report_func(
-    graph_description_list_with_community_id: dict,
+    graph_description_list_with_community_id: dict[str, str],
 ) -> BatchGenerateCommunityReportResponse:
     """这个函数是用来批量生成社区检测报告的
 
@@ -27,12 +29,21 @@ async def batch_generate_community_report_func(
         tasks.append((community_id, task))
     result = await asyncio.gather(*(task for _, task in tasks))
     community_reports = {
-        community_id: report for (community_id, _), report in zip(tasks, result)
+        community_id: report.community_report
+        for (community_id, _), report in zip(tasks, result)
     }
-    return community_reports
+    community_reports_structed_data = {
+        community_id: report.community_report_structed_data
+        for (community_id, _), report in zip(tasks, result)
+    }
+
+    return BatchGenerateCommunityReportResponse(
+        community_reports == community_reports,
+        community_reports_structed_data=community_reports_structed_data,
+    )
 
 
-# # 编写测试代码
+# # 编写测试代码 测试通过
 
 # test_data = {
 #     "610e61ad-5ed5-4514-8a8b-6158d8356cbf": [

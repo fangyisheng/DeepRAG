@@ -22,7 +22,7 @@ class GenerateCommunityReportResponse(BaseModel):
 # 根据输入的属于某个特定社区的关系描述，得到社区检测报告
 async def generate_community_report_agent(
     entity_relation_description: list,
-) -> dict[str, str]:
+) -> GenerateCommunityReportResponse:
     entity_relation_description_string = "。".join(entity_relation_description)
 
     system_prompt = generate_community_report_prompt_content(

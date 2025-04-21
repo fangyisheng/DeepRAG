@@ -11,14 +11,14 @@ class KnowledgeSpaceDAO:
         self.db = Prisma()
 
     async def create_knowledge_space(
-        self, id: str, user_id: str, knowledge_space_title: str
+        self, id: str, user_id: str, knowledge_space_name: str
     ) -> knowledge_space:
         await self.db.connect()
         stored_knowledge_space = await self.db.knowledge_space.create(
             data={
                 "user_id": user_id,
                 "id": id,
-                "knowledge_space_title": knowledge_space_title,
+                "knowledge_space_name": knowledge_space_name,
             }
         )
         await self.db.disconnect()

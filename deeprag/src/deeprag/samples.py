@@ -6,12 +6,12 @@ deeprag = DeepRAG()
 
 async def main(file_path: str):
     created_user = await deeprag.create_user("test_user")
-    # created_knowledge_space = await deeprag.create_knowledge_space(
-    #     created_user.id, "test_knowledge_space"
-    # )
-    # created_file = await deeprag.create_file_and_upload_to_minio(
-    #     file_path, created_knowledge_space.id, "mybucket", "test1.txt"
-    # )
+    created_knowledge_space = await deeprag.create_knowledge_space(
+        created_user.id, "test_knowledge_space"
+    )
+    created_file = await deeprag.create_file_and_upload_to_minio(
+        file_path, created_knowledge_space.id, "mybucket", "test1.txt"
+    )
     # await deeprag.index(
     #     collection_name="test_collection",
     #     knowledge_scope=created_file.knowledge_scope,

@@ -312,9 +312,9 @@ class GraphDataAddCommunityWithVisualization(BaseModel):
     )
 
 
-class BatchGenerateCommunityReportResponse(RootModel):
+class BatchGenerateCommunityReportResponse(BaseModel):
     """
-    dict[str, list]
+    dict[str, str]
     示例数据：
     {"community_id_1": "社区检测报告的文字",
      "community_id_2": "社区检测报告的文字",
@@ -322,7 +322,7 @@ class BatchGenerateCommunityReportResponse(RootModel):
 
     """
 
-    root: dict[str, list] = Field(
+    community_reports: dict[str, str] = Field(
         ...,
         description="这个数据模型是字典，键是动态的社区id,值为社区id对应的社区报告的列表",
         examples=[
@@ -337,6 +337,8 @@ class BatchGenerateCommunityReportResponse(RootModel):
             },
         ],
     )
+
+    community_reports_structed_data: dict[str, str]
 
 
 class BatchTextChunkGenerateEmbeddingsResponse(RootModel):

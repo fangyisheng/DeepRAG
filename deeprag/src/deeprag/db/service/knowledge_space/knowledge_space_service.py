@@ -9,11 +9,11 @@ class KnowledgeSpaceService:
         self.dao = KnowledgeSpaceDAO()
 
     async def create_knowledge_space(
-        self, user_id: str, knowledge_space_title: str
+        self, user_id: str, knowledge_space_name: str
     ) -> knowledge_space:
         id = str(uuid.uuid4())
         created_knowledge_space = await self.dao.create_knowledge_space(
-            id, user_id, knowledge_space_title
+            id, user_id, knowledge_space_name
         )
         return created_knowledge_space
 
