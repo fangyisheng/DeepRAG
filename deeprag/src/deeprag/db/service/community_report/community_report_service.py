@@ -20,13 +20,16 @@ class CommunityReportService:
         community_report_with_id: BatchGenerateCommunityReportResponse,
     ) -> BatchCreateCommunityReportResponse:
         community_id_list = [
-            key for key in community_report_with_id.community_reports.keys()
+            key
+            for key in community_report_with_id.community_reports_with_community_id.keys()
         ]
         community_report_list = [
-            report for report in community_report_with_id.community_reports.values()
+            report
+            for report in community_report_with_id.community_reports_with_community_id.values()
         ]
         id_list = [
-            str(uuid.uuid4()) for _ in community_report_with_id.community_reports.keys()
+            str(uuid.uuid4())
+            for _ in community_report_with_id.community_reports_with_community_id.keys()
         ]
         await self.dao.batch_create_community_report(
             community_id_list=community_id_list, id_list=id_list

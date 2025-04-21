@@ -28,18 +28,18 @@ async def batch_generate_community_report_func(
         )
         tasks.append((community_id, task))
     result = await asyncio.gather(*(task for _, task in tasks))
-    community_reports = {
+    community_reports_with_community_id = {
         community_id: report.community_report
         for (community_id, _), report in zip(tasks, result)
     }
-    community_reports_structed_data = {
+    community_reports_structed_data_with_community_id = {
         community_id: report.community_report_structed_data
         for (community_id, _), report in zip(tasks, result)
     }
 
     return BatchGenerateCommunityReportResponse(
-        community_reports == community_reports,
-        community_reports_structed_data=community_reports_structed_data,
+        community_reports_with_community_id=community_reports_with_community_id,
+        community_reports_structed_data_with_community_id=community_reports_structed_data_with_community_id,
     )
 
 

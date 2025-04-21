@@ -307,11 +307,17 @@ class DeepRAG:
                 )
             )
 
-            # 这里涉及community_cluster的数据库模型
             # 这里涉及community_report的数据库模型
             batch_create_community_report_response: BatchCreateCommunityReportResponse = await self.community_report_service.batch_create_community_report(
                 community_report_with_community_id
             )
+            # 这里涉及community_cluster的数据库模型
+            batch_create_community_cluster_response = (
+                await self.community_cluster_service.batch_create_community_cluster(
+                    community_report_with_community_id
+                )
+            )
+
             await data_insert_to_vector_db(
                 text_list=batch_create_community_report_response.community_report_list,
                 vector=embedding_vector,

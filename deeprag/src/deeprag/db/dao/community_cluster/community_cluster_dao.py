@@ -28,7 +28,7 @@ class CommunityClusterDAO:
         return found_community_cluster
 
     async def batch_create_community_cluster(
-        self, community_cluster_list: list[dict]
+        self, community_cluster_list: list[community_cluster]
     ) -> int:
         await self.db.connect()
         stored_community_cluster_list = await self.db.community_cluster.create_many(

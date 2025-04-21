@@ -322,7 +322,7 @@ class BatchGenerateCommunityReportResponse(BaseModel):
 
     """
 
-    community_reports: dict[str, str] = Field(
+    community_reports_with_community_id: dict[str, str] = Field(
         ...,
         description="这个数据模型是字典，键是动态的社区id,值为社区id对应的社区报告的列表",
         examples=[
@@ -338,7 +338,21 @@ class BatchGenerateCommunityReportResponse(BaseModel):
         ],
     )
 
-    community_reports_structed_data: dict[str, str]
+    community_reports_structed_data_with_community_id: dict[str, str]
+
+
+class CommunityReportStructedData(BaseModel):
+    title: str
+    origin_description: str
+    summary: str
+
+
+class GenerateCommunityReportResponse(BaseModel):
+    community_report: str
+    community_report_structed_data: CommunityReportStructedData
+
+
+# class BatchGenerateCommunityClusterResponse(BaseModel):
 
 
 class BatchTextChunkGenerateEmbeddingsResponse(RootModel):
@@ -603,4 +617,9 @@ class FlattenEntityRelation(BaseModel):
 
 class BatchCreateCommunityReportResponse(BaseModel):
     community_report_list: list[str]
+    community_id_list: list[str]
+
+
+class BatchCreateCommunityClusterResponse(BaseModel):
+    community_cluster_list: list[str]
     community_id_list: list[str]
