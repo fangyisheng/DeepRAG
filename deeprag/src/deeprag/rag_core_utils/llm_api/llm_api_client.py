@@ -67,6 +67,8 @@ async def llm_service_stream(
     user_prompt: Optional[str] = "",
     cot_prompt: Optional[str] = [],
 ):
+    logger.info(f"大模型的输入：{user_prompt}")
+    logger.info(f"大模型的输入的类型为：{type(user_prompt)}")
     chat_completion = await client.chat.completions.create(
         model=llm_model,
         messages=[{"role": "system", "content": system_prompt}]
