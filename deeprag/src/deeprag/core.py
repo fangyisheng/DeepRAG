@@ -237,6 +237,8 @@ class DeepRAG:
                 str(merged_graph.model_dump()), graph_data_html.root
             )
         )
+        # 这里在函数调用的外面仍然加了一个括号的作用是为了隐式续行，放心，不会变成元组
+
         logger.info("merged_graph_data数据模型落盘完成")
         # 涉及到sub_graph_data的数据库模型
         await self.sub_graph_data_service.batch_create_sub_graph_data(
