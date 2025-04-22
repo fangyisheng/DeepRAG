@@ -21,7 +21,7 @@ class SubGraphDataDAO:
             data={
                 "id": id,
                 "text_chunk_id": text_chunk_id,
-                "sub_graph_data": sub_graph_data,
+                "graph_data": sub_graph_data,
                 "merged_graph_data_id": merged_graph_data_id,
             }
         )
@@ -41,10 +41,10 @@ class SubGraphDataDAO:
                 {
                     "id": id,
                     "text_chunk_id": text_chunk_id,
-                    "sub_graph_data": sub_graph_data,
+                    "graph_data": graph_data,
                     "merged_graph_data_id": merged_graph_data_id,
                 }
-                for (id, text_chunk_id, sub_graph_data) in zip(
+                for (id, text_chunk_id, graph_data) in zip(
                     id_list, text_chunk_id_list, sub_graph_data_list
                 )
             ]

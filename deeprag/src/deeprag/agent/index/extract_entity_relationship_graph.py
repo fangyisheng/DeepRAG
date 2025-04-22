@@ -25,8 +25,8 @@ with (
 cot_prompt_chain1 = [
     {
         "role": "user",
-        "content": """请用JSON结构化生成内容。输出格式参考如下：{ "entities": [ { "id": 0, "text": "Microsoft", "type": "company" }, { "id": 1, "text": "Satya Nadella", "type": "person" }, { "id": 2, "text": "Azure AI", "type": "product", } ], "relations": [ { "head": 1, "tail": 0, "type": "CEO of","description":"Satya Nadella serves as the Chief Executive Officer of Microsoft, leading the company's overall strategy and direction." }, { "head": "0, "tail": 2, "type": "developed","description":"Microsoft developed Azure AI, a suite of cloud-based artificial intelligence services and tools aimed at empowering developers and organizations." } ] }
-给定语料如果是中文，那么提取的实体类型是中文的，提取的关系也是中文的。请仅输出紧凑格式Compact Format的JSON，不要输出其余解释性内容。
+        "content": """请按照参考下面的输出格式：{ "entities": [ { "id": 0, "text": "Microsoft", "type": "company" }, { "id": 1, "text": "Satya Nadella", "type": "person" }, { "id": 2, "text": "Azure AI", "type": "product", } ], "relations": [ { "head": 1, "tail": 0, "type": "CEO of","description":"Satya Nadella serves as the Chief Executive Officer of Microsoft, leading the company's overall strategy and direction." }, { "head": "0, "tail": 2, "type": "developed","description":"Microsoft developed Azure AI, a suite of cloud-based artificial intelligence services and tools aimed at empowering developers and organizations." } ] }
+给定语料如果是中文，那么提取的实体类型是中文的，提取的关系也是中文的。不要输出其余解释性内容。
 Warnings:关系字段必须包含head/tail/type/description四个字段。实体字段必须包含id/text/type三个字段。""",
     }
 ]

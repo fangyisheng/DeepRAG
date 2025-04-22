@@ -26,12 +26,12 @@ class SubGraphDataService:
     async def batch_create_sub_graph_data(
         self,
         text_chunk_id_list: list[str],
-        sub_graph_data_list: list[BatchTextChunkGenerateGraphsResponse],
+        sub_graph_data_list: BatchTextChunkGenerateGraphsResponse,
         merged_graph_data_id: str,
     ) -> int:
         id_list = [str(uuid.uuid4()) for _ in range(len(text_chunk_id_list))]
         sub_graph_data_list = [
-            sub_graph_data.model_dump() for sub_graph_data in sub_graph_data_list
+            sub_graph_data.model_dump() for sub_graph_data in sub_graph_data_list.root
         ]
         stored_sub_graph_data_count = await self.dao.batch_create_sub_graph_data(
             id_list, text_chunk_id_list, sub_graph_data_list, merged_graph_data_id
