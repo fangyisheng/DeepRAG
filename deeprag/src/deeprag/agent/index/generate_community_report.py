@@ -44,7 +44,7 @@ async def generate_community_report_agent(
     return GenerateCommunityReportResponse(
         community_report=community_report,
         community_report_structed_data=CommunityReportStructedData(
-            title=final_response_dict["title "],
+            title=final_response_dict["title"],
             origin_description=final_response_dict["origin_description"],
             summary=final_response_dict["summary"],
         ),

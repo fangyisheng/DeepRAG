@@ -22,14 +22,14 @@ with (
 
 # cot_prompt_chain1 = [{"role":"user","content":"""请用JSON结构化生成内容。输出格式参考如下：{ "entities": [ { "id": 0, "text": "Microsoft", "type": "company" }, { "id": 1, "text": "Satya Nadella", "type": "person" }, { "id": 2, "text": "Azure AI", "type": "product", } ], "relations": [ { "head": 1, "tail": 0, "type": "CEO of" }, { "head": "0, "tail": 2, "type": "developed" } ] }
 # 注意，可能会有同名的实体，请关注上下文正确区分同名的实体。给定语料如果是中文，那么提取的实体类型是中文的，提取的关系也是中文的"""}]
-# cot_prompt_chain1 = [
-#     {
-#         "role": "user",
-#         "content": """请按照参考下面的输出格式：{ "entities": [ { "id": 0, "text": "Microsoft", "type": "company" }, { "id": 1, "text": "Satya Nadella", "type": "person" }, { "id": 2, "text": "Azure AI", "type": "product", } ], "relations": [ { "head": 1, "tail": 0, "type": "CEO of","description":"Satya Nadella serves as the Chief Executive Officer of Microsoft, leading the company's overall strategy and direction." }, { "head": 0, "tail": 2, "type": "developed","description":"Microsoft developed Azure AI, a suite of cloud-based artificial intelligence services and tools aimed at empowering developers and organizations." } ] }
-# 给定语料如果是中文，那么提取的实体类型是中文的，提取的关系也是中文的。不要输出其余解释性内容。
-# 注意事项:关系字段必须包含head/tail/type/description这四个字段。实体字段必须包含id/text/type这三个字段。""",
-#     }
-# ]
+cot_prompt_chain1 = [
+    {
+        "role": "user",
+        "content": """请按照参考下面的输出格式：{ "entities": [ { "id": 0, "text": "Microsoft", "type": "company" }, { "id": 1, "text": "Satya Nadella", "type": "person" }, { "id": 2, "text": "Azure AI", "type": "product", } ], "relations": [ { "head": 1, "tail": 0, "type": "CEO of","description":"Satya Nadella serves as the Chief Executive Officer of Microsoft, leading the company's overall strategy and direction." }, { "head": 0, "tail": 2, "type": "developed","description":"Microsoft developed Azure AI, a suite of cloud-based artificial intelligence services and tools aimed at empowering developers and organizations." } ] }
+给定语料如果是中文，那么提取的实体类型是中文的，提取的关系也是中文的。不要输出其余解释性内容。
+注意事项:关系字段必须包含head/tail/type/description这四个字段。实体字段必须包含id/text/type这三个字段。""",
+    }
+]
 
 # cot_prompt_chain2 = [
 #     {
@@ -38,7 +38,7 @@ with (
 #     }
 # ]
 
-# cot_prompt = cot_prompt_chain1
+cot_prompt = cot_prompt_chain1
 
 
 async def extract_entity_relationship_agent(
@@ -66,5 +66,6 @@ async def extract_entity_relationship_agent(
 # 在市场合作方面，DeepSeek 动作频频。2 月 12 日，周鸿祎在纳米 AI 搜索 “百车行动” 活动中提到，去年 8 月纳米 AI 搜索就和 DeepSeek 建立联系并进行了接入和本地化部署，搭建高速机房、采购上万块算力卡，集成了 DeepSeek 满血版和高速版。纳米 AI 搜索手机版加入 DeepSeek 后，在不到两周时间获得 2000 万用户。此外，包括华为、阿里、百度、腾讯、京东等在内的多家云平台宣布接入 DeepSeek 大模型，三家基础电信企业均全面接入，金融行业的多家券商、银行、公募基金等也纷纷接入。小鹏汽车董事长何小鹏也表示对于小鹏汽车接入 DeepSeek 大模型 “可以期待”。
 # DeepSeek 的出现，为 AI 行业带来了新的活力和思考。它的技术创新、独特的发展路径以及市场上的广泛合作，都使其成为 AI 领域不可忽视的力量。未来，随着 AI 行业的持续发展，DeepSeek 能否保持优势，不断突破，值得持续关注。同时，其发展模式也为其他企业提供了借鉴，在追求技术创新与商业落地之间，如何找到平衡，探索出属于自己的发展道路。
 # """
+
 
 # print(asyncio.run(extract_entity_relationship_agent(user_prompt)))
