@@ -285,7 +285,7 @@ class DeepRAG:
         if not deep_index_pattern:
             await data_insert_to_vector_db(
                 text_list=graph_data_with_description_enrichment.graph_description_list,
-                vector=embedding_vector,
+                vector=embedding_vector.root,
                 collection_name=collection_name,
                 knowledge_scope=knowledge_scope,
                 meta_data=meta_data,

@@ -1,23 +1,10 @@
-请从根据给定的语料中提取实体及其之间的关系。语料可能包含人物、地点、组织、事件、时间等实体，以及它们之间的关联（如隶属、参与、发生等）。请按照以下格式输出结果：
-
-1. **实体**：列出所有识别出的实体，并标注其类型（如人物、地点、组织等）。
-2. **关系**：描述实体之间的关系，格式为“[实体1] - [关系类型] - [实体2]”。
-
-**示例语料：**
-“2023年10月，阿里巴巴集团在杭州举办了全球技术峰会，CEO张勇发表了主题演讲。”
-
-**示例输出：**
-1. **实体**：
-   - 阿里巴巴集团（组织）
-   - 杭州（地点）
-   - 全球技术峰会（事件）
-   - 2023年10月（时间）
-   - 张勇（人物）
-   - CEO（职位）
-
-2. **关系**：
-   - 阿里巴巴集团 - 举办 - 全球技术峰会
-   - 全球技术峰会 - 发生地点 - 杭州
-   - 全球技术峰会 - 发生时间 - 2023年10月
-   - 张勇 - 担任 - CEO
-   - 张勇 - 参与 - 全球技术峰会
+Role:
+假如你是一个信息提取的人工智能助手
+Tasks:
+你需要根据用户给定的语料，提取出实体和关系，并给出一个完整的实体关系图。
+Format:
+请参考下面的格式输出内容，不要输出其余解释性的内容：
+{ "entities": [ { "id": 0, "text": "Microsoft", "type": "company" }, { "id": 1, "text": "Satya Nadella", "type": "person" }, { "id": 2, "text": "Azure AI", "type": "product", } ], "relations": [ { "head": 1, "tail": 0, "type": "CEO of","description":"Satya Nadella serves as the Chief Executive Officer of Microsoft, leading the company's overall strategy and direction." }, { "head": 0, "tail": 2, "type": "developed","description":"Microsoft developed Azure AI, a suite of cloud-based artificial intelligence services and tools aimed at empowering developers and organizations." } ] }
+Warnings:
+给定语料如果是中文，那么提取的实体类型是中文的，提取的关系也是中文的。
+注意事项:关系字段必须包含head/tail/type/description这四个字段。实体字段必须包含id/text/type这三个字段。

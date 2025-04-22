@@ -11,7 +11,7 @@ async def flatten_entity_relation_func(
             for entity in entity_relationship.entities
             if relation.head == entity.id
         )
-        end_entity = next(
+        tail_entity = next(
             entity.text
             for entity in entity_relationship.entities
             if relation.tail == entity.id
@@ -22,8 +22,8 @@ async def flatten_entity_relation_func(
             FlattenEntityRelation(
                 id=id,
                 head_entity=head_entity,
-                tail_entity=end_entity,
-                relation=relation_description,
+                tail_entity=tail_entity,
+                relation_description=relation_description,
                 merged_graph_data_id=merged_graph_data_id,
             )
         )

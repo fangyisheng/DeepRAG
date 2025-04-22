@@ -609,9 +609,9 @@ class FlattenEntityRelation(BaseModel):
     id: str
     head_entity: str
     tail_entity: str
-    relation: str
+    relation_description: str
     merged_graph_data_id: str
-    commuity_id: str | None = None
+    community_id: str | None = None
 
 
 class BatchCreateCommunityReportResponse(BaseModel):

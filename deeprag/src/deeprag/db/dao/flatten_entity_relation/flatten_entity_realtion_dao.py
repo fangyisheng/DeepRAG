@@ -40,9 +40,13 @@ class FlattenEntityRelationDAO:
         await self.db.connect()
         stored_flatten_entity_relation_count = (
             await self.db.flatten_entity_relation.create_many(
-                data=flatten_entity_relations
+                data=[
+                    flatten_entity_relation.model_dump()
+                    for flatten_entity_relation in flatten_entity_relations
+                ]
             )
         )
+
         await self.db.disconnect()
         return stored_flatten_entity_relation_count
 

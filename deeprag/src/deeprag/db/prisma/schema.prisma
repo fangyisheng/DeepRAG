@@ -45,8 +45,8 @@ model sub_graph_data {
   text_chunk_id               String            @unique
   graph_data                  String
   merged_graph_data_id        String
-  SubGraphDataMergedGraphData merged_graph_data @relation(fields: [merged_graph_data_id], references: [id])
-  TextChunkSubGraphData       text_chunk        @relation(fields: [text_chunk_id], references: [id])
+  SubGraphDataMergedGraphData merged_graph_data? @relation(fields: [merged_graph_data_id], references: [id])
+  TextChunkSubGraphData       text_chunk?        @relation(fields: [text_chunk_id], references: [id])
 }
 
 model merged_graph_data {
@@ -62,7 +62,7 @@ model flatten_entity_relation {
   id                                    String             @id
   human_readable_id                     String?            @default(dbgenerated("nextval('flatten_entity_relation_human_readable_id_seq'::regclass)"))
   head_entity                           String
-  end_entity                            String
+  tail_entity                            String
   merged_graph_data_id                  String
   community_id                          String?
   relation_description                  String
