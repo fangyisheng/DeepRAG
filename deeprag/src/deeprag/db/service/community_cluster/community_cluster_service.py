@@ -14,7 +14,7 @@ class CommunityClusterService:
     async def batch_create_community_cluster(
         self,
         community_reports_structed_data_with_community_id: BatchGenerateCommunityReportResponse,
-    ) -> BatchCreateCommunityReportResponse:
+    ) -> int:
         community_cluster_list = []
 
         for key in community_reports_structed_data_with_community_id.community_reports_structed_data_with_community_id.keys():

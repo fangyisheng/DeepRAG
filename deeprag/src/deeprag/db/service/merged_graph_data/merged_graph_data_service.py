@@ -11,13 +11,13 @@ class MergedGraphDataService:
     # 对于merged_service的创建是存疑的？这应该是程序内部创建的
     async def create_merged_graph_data(
         self,
-        merged_graph_data: str,
+        graph_data: str,
         merged_graph_data_visualization_html: str,
     ) -> merged_graph_data:
         id = str(uuid.uuid4())
         stored_merged_graph_data = await self.dao.create_merged_graph_data(
             id,
-            merged_graph_data,
+            graph_data,
             merged_graph_data_visualization_html,
         )
 

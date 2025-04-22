@@ -141,9 +141,9 @@ async def realize_leiden_community_algorithm(
             edge["label"] = edge["type"]
         edge["color"] = color
 
-    prefix = str(uuid.uuid4())
-    # 这块net.show先暂时保留了，方便做测试
-    net.show(f"{prefix}_graph_with_leiden.html")
+    # prefix = str(uuid.uuid4())
+    # # 这块net.show先暂时保留了，方便做测试
+    # net.show(f"{prefix}_graph_with_leiden.html")
     html_content = net.generate_html()
 
     return GraphDataAddCommunityWithVisualization(

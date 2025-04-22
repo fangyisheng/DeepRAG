@@ -48,9 +48,9 @@ async def upload_file_to_minio_func(
 # print(
 #     asyncio.run(
 #         upload_file_to_minio_func(
-#             "mybucket",
-#             "/home/easonfang/DeepRAG/deeprag-item/deeprag/knowledge_file/test.txt",
-#             "test.txt",
+#             bucket_name="mybucket",
+#             file_path="/home/easonfang/DeepRAG/deeprag/src/deeprag/knowledge_file/test.txt",
+#             object_name="test.txt",
 #         )
 #     )
 # )

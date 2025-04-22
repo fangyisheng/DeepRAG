@@ -19,7 +19,7 @@ class MergedGraphDataDAO:
         stored_merged_graph_data = await self.db.merged_graph_data.create(
             data={
                 "id": id,
-                "merged_graph_data": merged_graph_data,
+                "graph_data": merged_graph_data,
                 "merged_graph_data_visualization_html": merged_graph_data_visualization_html,
             }
         )

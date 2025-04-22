@@ -141,7 +141,7 @@ class DeepRAG:
         )
         # 这里就对应着doc_text这个字段在数据库表file中是可选的，因为业务逻辑的需求，所以这里doc_text为空
         await self.file_service.upload_new_file_to_minio(
-            file_path=file_path, bucket_name=bucket_name, object_name=object_name
+            bucket_name=bucket_name, file_path=file_path, object_name=object_name
         )
         return KnowledgeScopeMinioMapping(
             knowledge_scope=KnowledgeScopeLocator(
@@ -197,6 +197,7 @@ class DeepRAG:
                 "doc_text": cleaned_text.root[:300],
             },
         )
+        logger.info("file数据模型落盘成功")
         # 然后进行文本切分
         splitter = TextSplitter()
         chunks: ChunkedTextUnit = await splitter.split_text_by_token(cleaned_text)
@@ -207,18 +208,20 @@ class DeepRAG:
         text_chunk_id_list = await self.text_chunk_service.batch_create_text_chunk(
             knowledge_scope.file_id, chunks, token_list
         )
+        logger.info("text_chunk数据模型落盘成功")
         # 开始提取图结构
         graphs: BatchTextChunkGenerateGraphsResponse = (
             await batch_text_chunk_generate_graphs_process(chunks)
         )
-        logger.info("图结构提取完成")
+        logger.info("子图结构提取完成")
         # 开始合并每个文本分块得到的子图结构变成一张完整的图谱结构
         merged_graph: CompleteGraphData = await merge_sub_entity_relationship_graph(
             graphs
         )
+        logger.info("子图结构合并完成一张完整的图")
         # 对完整的图谱结构进行普通的可视化
         graph_data_html = await store_graph_data_to_html_with_no_leiden(merged_graph)
-        logger.info("图结构可视化完成")
+        logger.info("对完整的图结构可视化完成")
 
         # 然后将可视化的html文件上传到Minio中方便查看
         await upload_file_to_minio_func(
@@ -226,27 +229,29 @@ class DeepRAG:
             object_name=f"html_content/{str(uuid.uuid4())}_graph_data_with_no_leiden.html",
             string_data=graph_data_html.root,
         )
-        logger.info("图结构可视化的HTML文件上传完成")
+        logger.info("完整的图结构可视化的HTML文件上传到Minio完成")
 
         # 涉及merged_graph_data的数据库模型
         stored_merged_graph_data = (
             await self.merged_graph_data_service.create_merged_graph_data(
-                merged_graph.model_dump(), graph_data_html.root
+                str(merged_graph.model_dump()), graph_data_html.root
             )
         )
+        logger.info("merged_graph_data数据模型落盘完成")
         # 涉及到sub_graph_data的数据库模型
         await self.sub_graph_data_service.batch_create_sub_graph_data(
             text_chunk_id_list=text_chunk_id_list,
             sub_graph_data_list=graphs,
             merged_graph_data_id=stored_merged_graph_data.id,
         )
+        logger.info("sub_graph_data数据模型落盘完成")
 
         # 得到完整的图谱结构以后，要对其中的关系描述进行加强
         graph_description = GraphDescriptionEnrichment()
         graph_data_with_description_enrichment: GraphDescriptionResponse = (
             await graph_description.describe_graph(merged_graph)
         )
-        logger.info("图谱结构的关系描述加强完成")
+        logger.info("对完整的图谱结构的关系描述加强完成")
         # 先将完整的图谱结构进行平铺展开变成一个列表
         flattened_entity_relation: list[
             FlattenEntityRelation
@@ -254,12 +259,13 @@ class DeepRAG:
             graph_data_with_description_enrichment.graph_data_with_enriched_description,
             stored_merged_graph_data.id,
         )
-        logger.info("图谱结构平铺展开完成")
+        logger.info("完整的图谱结构平铺展开完成，得到head_entity和tail_entity")
 
         # 涉及到flattend_entity_relation的数据库模型的IO
         await self.flatten_entity_relation_service.batch_create_flatten_entity_relation(
             flattened_entity_relation
         )
+        logger.info("flattened_entity_relation数据模型落盘完成")
 
         # 利用embedding模型生成embedding向量
         embedding_vector: BatchTextChunkGenerateEmbeddingsResponse = (
@@ -267,7 +273,7 @@ class DeepRAG:
                 graph_data_with_description_enrichment.graph_description_list
             )
         )
-        logger.info("图谱结构embedding向量生成完成")
+        logger.info("对完整的图谱结构增强过的关系描述的embedding向量生成完成")
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if isinstance(meta_data, str):
             meta_data = [meta_data for _ in range(len(embedding_vector))]

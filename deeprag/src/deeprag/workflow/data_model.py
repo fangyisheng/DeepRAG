@@ -29,7 +29,7 @@ class TokenListByTextChunk(RootModel):
     [123,123,123,124]
     """
 
-    root: list[str] = Field(
+    root: list[int] = Field(
         ...,
         description="这个数据模型是列表，列表中的每个元素是对应的文本块消耗的Token数量",
         examples=[[123, 123, 123, 124], [89, 89, 89, 89]],
@@ -371,10 +371,9 @@ class BatchTextChunkGenerateEmbeddingsResponse(RootModel):
 
 class BatchTextChunkGenerateGraphsResponse(RootModel):
     """
-    list[dict]
+    list[FirstExtractedGraphData]
     示例数据：
-    [ {"entities": [], "relations": []},
-     {"entities": [], "relations": []} ]
+    [FirstExtractedGraphData(entities=[EntityIdInt(text='深度求索', type='公司', id=0), EntityIdInt(text='DeepSeek', type='产品', id=1), EntityIdInt(text='幻方量化', type='公司', id=2), EntityIdInt(text='英伟达', type='公司', id=3), EntityIdInt(text='OpenAI', type='公司', id=4), EntityIdInt(text='GPT-4o', type='产品', id=5), EntityIdInt(text='华为云', type='产品', id=6), EntityIdInt(text='腾讯云', type='产品', id=7), EntityIdInt(text='百度云', type='产品', id=8), EntityIdInt(text='MLA', type='技术', id=9), EntityIdInt(text='MHA', type='技术', id=10), EntityIdInt(text='DeepSeek MoEs Parse', type='技术', id=11), EntityIdInt(text='CUDA', type='技术', id=12), EntityIdInt(text='PTX', type='技术', id=13), EntityIdInt(text='萤火二号', type='产品', id=14), EntityIdInt(text='A100', type='产品', id=15), EntityIdInt(text='美股', type='市场', id=16), EntityIdInt(text='2023年', type='时间', id=17), EntityIdInt(text='1月27日', type='时间', id=18), EntityIdInt(text='1月31日', type='时间', id=19), EntityIdInt(text='2月5日', type='时间', id=20), EntityIdInt(text='硅谷', type='地点', id=21)], relations=[RelationsInt(type='开发', description='深度求索开发了DeepSeek系列模型。', head=0, tail=1), RelationsInt(type='隶属', description='深度求索是从幻方量化孵化的公司。', head=0, tail=2), RelationsInt(type='影响', description='深度求索的发展对美股市场产生重大影响。', head=0, tail=16), RelationsInt(type='对比', description='DeepSeek-V3与OpenAI的GPT-4o进行性能和成本对比。', head=1, tail=5), RelationsInt(type='竞争', description='DeepSeek被认为是导致英伟达股价大跌的重要因素之一。', head=1, tail=3), RelationsInt(type='合作', description='DeepSeek模型被部署在华为云等国内云服务上。', head=1, tail=6), RelationsInt(type='合作', description='DeepSeek模型被部署在腾讯云等国内云服务上。', head=1, tail=7), RelationsInt(type='合作', description='DeepSeek模型被部署在百度云等国内云服务上。', head=1, tail=8), RelationsInt(type='采用', description='DeepSeek使用MLA架构降低内存消耗。', head=1, tail=9), RelationsInt(type='替代', description='MLA架构相较于MHA架构显著降低了内存使用率。', head=9, tail=10), RelationsInt(type='采用', description='DeepSeek通过DeepSeek MoEs Parse结构进一步优化计算成本。', head=1, tail=11), RelationsInt(type='挑战', description='DeepSeek被认为可能冲击英伟达CUDA生态的优势地位。', head=1, tail=12), RelationsInt(type='采用', description='DeepSeek在其论文中提到使用PTX语言编程以提高硬件性能。', head=1, tail=13), RelationsInt(type='开发', description='幻方量化早在2019年就开发了深度学习训练平台萤火二号。', head=2, tail=14), RelationsInt(type='搭载', description='萤火二号搭载了约1万张英伟达A100显卡。', head=14, tail=15), RelationsInt(type='成立时间', description='深度求索成立于2023年。', head=18, tail=0), RelationsInt(type='发生时间', description='1月27日美股AI、芯片股重挫。', head=19, tail=16), RelationsInt(type='上线时间', description='2月5日起，华为云等国内云厂商陆续上线DeepSeek模型。', head=20, tail=6), RelationsInt(type='认可', description='在硅谷，深度求索被称为‘来自东方的神秘力量’。', head=21, tail=0)]), FirstExtractedGraphData(entities=[EntityIdInt(text='OpenAI', type='组织', id=0), EntityIdInt(text='o1模型', type='产品', id=1), EntityIdInt(text='DeepSeek-R1模型', type='产品', id=2), EntityIdInt(text='DeepSeek', type='组织', id=3), EntityIdInt(text='周鸿祎', type='人物', id=4), EntityIdInt(text='纳米AI搜索', type='组织', id=5), EntityIdInt(text='小鹏汽车', type='组织', id=6), EntityIdInt(text='何小鹏', type='人物', id=7), EntityIdInt(text='华为', type='组织', id=8), EntityIdInt(text='阿里', type='组织', id=9), EntityIdInt(text='百度', type='组织', id=10), EntityIdInt(text='腾讯', type='组织', id=11), EntityIdInt(text='京东', type='组织', id=12)], relations=[RelationsInt(type='隶属于', description='o1模型是OpenAI开发的产品。', head=1, tail=0), RelationsInt(type='开发了', description='DeepSeek开发了DeepSeek-R1模型。', head=2, tail=3), RelationsInt(type='参与了', description='周鸿祎参与了纳米AI搜索的活动。', head=4, tail=5), RelationsInt(type='合作了', description='纳米AI搜索与DeepSeek建立了合作关系。', head=5, tail=3), RelationsInt(type='担任', description='何小鹏担任小鹏汽车的董事长。', head=7, tail=6), RelationsInt(type='接入了', description='华为接入了DeepSeek的大模型。', head=8, tail=3), RelationsInt(type='接入了', description='阿里接入了DeepSeek的大模型。', head=9, tail=3), RelationsInt(type='接入了', description='百度接入了DeepSeek的大模型。', head=10, tail=3), RelationsInt(type='接入了', description='腾讯接入了DeepSeek的大模型。', head=11, tail=3), RelationsInt(type='接入了', description='京东接入了DeepSeek的大模型。', head=12, tail=3)])]
     """
 
     root: list[FirstExtractedGraphData] = Field(
@@ -617,9 +616,4 @@ class FlattenEntityRelation(BaseModel):
 
 class BatchCreateCommunityReportResponse(BaseModel):
     community_report_list: list[str]
-    community_id_list: list[str]
-
-
-class BatchCreateCommunityClusterResponse(BaseModel):
-    community_cluster_list: list[str]
     community_id_list: list[str]

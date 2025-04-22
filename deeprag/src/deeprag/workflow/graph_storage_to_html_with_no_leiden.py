@@ -75,9 +75,9 @@ async def store_graph_data_to_html_with_no_leiden(
             edge["label"] = edge["type"]
         edge["color"] = color
 
-    prefix = str(uuid.uuid4())
-    # 这块net.show先保留了，方便以后做测试
-    net.show(f"{prefix}_graph_with_no_leiden.html")
+    # prefix = str(uuid.uuid4())
+    # # 这块net.show先保留了，方便以后做测试
+    # net.show(f"{prefix}_graph_with_no_leiden.html")
     html_content = net.generate_html()
 
     # 然后需要把这点字符串上传到minio中，方便下载查看

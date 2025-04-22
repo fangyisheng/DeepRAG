@@ -55,7 +55,7 @@ class TextSplitter:
             chunk_text = encoding.decode(chunk_tokens)
             self.chunks.append(chunk_text)
             tokens_by_chunk.append(len(chunk_tokens))
-        self.tokens_by_chunk = TokenListByTextChunk(root=self.chunks)
+        self.tokens_by_chunk = TokenListByTextChunk(root=tokens_by_chunk)
 
         return ChunkedTextUnit(root=self.chunks)
 
@@ -68,7 +68,8 @@ class TextSplitter:
 #     splitter = TextSplitter()
 #     max_token = 1000
 #     chunk = await splitter.split_text_by_token(text=text, max_tokens=max_token)
-#     return chunk
+#     tokens = splitter.tokens_by_chunk
+#     return chunk, tokens
 
 
 # if __name__ == "__main__":
@@ -76,4 +77,3 @@ class TextSplitter:
 
 #     result = asyncio.run(main())
 #     print(result)
-#     print(len(result.root))
