@@ -72,7 +72,7 @@ from deeprag.workflow.data_model import (
     FlattenEntityRelation,
     BatchCreateCommunityReportResponse,
 )
-from prisma.models import file
+from prisma.models import file, knowledge_space, user
 from pathlib import Path
 import uuid
 import asyncio
@@ -94,13 +94,15 @@ class DeepRAG:
         self.community_report_service = CommunityReportService()
         self.flatten_entity_relation_service = FlattenEntityRelationService()
         self.community_cluster_service = CommunityClusterService()
+        self.cost_llm_tokens = 0
+        self.cost_embedding_tokens = 0
 
-    async def delete_file(self, file_id: str):
+    async def delete_file(self, file_id: str) -> file:
         deleted_file = await self.file_service.delete_file_in_knowledge_space(file_id)
 
         return deleted_file
 
-    async def delete_knowledge_space(self, knowledge_space_id: str):
+    async def delete_knowledge_space(self, knowledge_space_id: str) -> knowledge_space:
         deleted_knowledge_space = (
             await self.knowledge_space_service.delete_knowledge_space(
                 knowledge_space_id
@@ -108,15 +110,17 @@ class DeepRAG:
         )
         return deleted_knowledge_space
 
-    async def delete_user(self, user_id: str):
+    async def delete_user(self, user_id: str) -> user:
         deleted_user = await self.user_service.delete_user(user_id)
         return deleted_user
 
-    async def create_user(self, user_name: str):
+    async def create_user(self, user_name: str) -> user:
         stored_user = await self.user_service.create_user(user_name)
         return stored_user
 
-    async def create_knowledge_space(self, user_id: str, knowledge_space_name: str):
+    async def create_knowledge_space(
+        self, user_id: str, knowledge_space_name: str
+    ) -> knowledge_space:
         stored_knowledge_space = (
             await self.knowledge_space_service.create_knowledge_space(
                 user_id, knowledge_space_name
@@ -154,7 +158,7 @@ class DeepRAG:
             ),
         )
 
-    # 这个get_all的函数还需要进行优化
+    # 这个get_all的函数还需要进行优化,暂时先不管了
     async def get_all_knowledge_scope_structure(self):
         complete_knowledge_scope_structure = await self.user_knowledge_space_file_service.get_all_knowledge_scope_structure()
         return complete_knowledge_scope_structure
@@ -279,8 +283,10 @@ class DeepRAG:
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if isinstance(meta_data, str):
             meta_data = [meta_data for _ in range(len(embedding_vector))]
-        if isinstance(knowledge_scope, str):
-            knowledge_scope = [knowledge_scope for _ in range(len(embedding_vector))]
+        if isinstance(knowledge_scope, KnowledgeScopeLocator):
+            knowledge_scope = [
+                knowledge_scope for _ in range(len(embedding_vector.root))
+            ]
 
         if not deep_index_pattern:
             await data_insert_to_vector_db(
@@ -465,7 +471,7 @@ class DeepRAG:
         answer = await final_rag_answer_process_not_stream(
             user_prompt=user_prompt,
             knowledge_scope_real_name=knowledge_scope_real_name,
-            recalled_text_fragments=searched_text,
+            recalled_text_fragments_list=searched_text.root,
             session_id=session_id,
             deep_query_pattern=deep_query_pattern,
             context=context,

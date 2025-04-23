@@ -1,6 +1,6 @@
 from prisma import Prisma
 from prisma.models import user
-from deeprag.workflow.data_model import KnowledgeScopeLocator
+from deeprag.workflow.data_model import KnowledgeScopeLocator, KnowledgeScopeRealName
 
 
 class UserKnowledgeSpaceFileDAO:
@@ -21,32 +21,30 @@ class UserKnowledgeSpaceFileDAO:
         await self.db.disconnect()
         return all_knowledge_scope_structure
 
-    async def get_knowledge_scope_by_id(
+    async def get_knowledge_scope_real_name_by_id(
         self, knowledge_scope_locator: KnowledgeScopeLocator
-    ):
+    ) -> KnowledgeScopeRealName:
         await self.db.connect()
-        found_knowledge_scope = await self.db.user.find_unique(
+        found_user_name = await self.db.user.find_unique(
             where={
                 "id": knowledge_scope_locator.user_id,
-                "knowledge_spaces": {
-                    "is": {
-                        "id": knowledge_scope_locator.knowledge_space_id,
-                        "files": {
-                            "is": {
-                                "id": knowledge_scope_locator.file_id,
-                            }
-                        },
-                    }
-                },
+            }
+        )
+        found_knowledge_space_name = await self.db.knowledge_space.find_unique(
+            where={
+                "id": knowledge_scope_locator.knowledge_space_id,
             },
-            include={
-                "knowledge_spaces": {
-                    "include": {
-                        "files": True,
-                    }
-                },
+        )
+
+        found_file_name = await self.db.file.find_unique(
+            where={
+                "id": knowledge_scope_locator.file_id,
             },
         )
 
         await self.db.disconnect()
-        return found_knowledge_scope
+        return KnowledgeScopeRealName(
+            user_name=found_user_name.user_name,
+            knowledge_space_name=found_knowledge_space_name.knowledge_space_name,
+            file_name=found_file_name.doc_title,
+        )

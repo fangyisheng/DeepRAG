@@ -617,3 +617,8 @@ class FlattenEntityRelation(BaseModel):
 class BatchCreateCommunityReportResponse(BaseModel):
     community_report_list: list[str]
     community_id_list: list[str]
+
+
+class AssistantResponseWithCostTokens(BaseModel):
+    assistant_response: str
+    cost_tokens: int

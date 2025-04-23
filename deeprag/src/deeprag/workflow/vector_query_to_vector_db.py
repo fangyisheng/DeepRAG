@@ -19,10 +19,11 @@ async def query_vector_db_by_vector(
     # file_id = knowledge_scope.get("file_id")
     valid_keys = []
     for key in ("user_id", "knowledge_space_id", "file_id"):
-        value = knowledge_scope.get(key)
+        value = knowledge_scope.model_dump().get(key)
         if value:
             valid_keys.append(key)
-    last_key, last_value = valid_keys[-1]
+    last_key = valid_keys[-1]
+    last_value = knowledge_scope.model_dump().get(last_key)
     if last_key == "user_id":
         filter = f"""json_contains(knowledge_scope[{last_value}])"""
     elif last_key == "knowledge_space_id":
@@ -39,7 +40,6 @@ async def query_vector_db_by_vector(
         "anns_field": "dense",
         "param": {"metric_type": "IP", "params": {"nprobe": 10}},
         "limit": recalled_text_fragments_top_k,
-        "filter": filter,
     }
     request_1 = AnnSearchRequest(**search_param_1)
     search_param_2 = {
@@ -47,7 +47,6 @@ async def query_vector_db_by_vector(
         "anns_field": "sparse",
         "param": {"metric_type": "BM25", "params": {"drop_ratio_build": 0.2}},
         "limit": recalled_text_fragments_top_k,
-        "filter": filter,
     }
 
     request_2 = AnnSearchRequest(**search_param_2)
@@ -58,6 +57,7 @@ async def query_vector_db_by_vector(
         collection_name=collection_name,
         reqs=reqs,
         ranker=ranker,
+        filter=filter,
         limit=recalled_text_fragments_top_k,
         output_fields=["text", "meta_data"],
     )

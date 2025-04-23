@@ -45,8 +45,7 @@ async def extract_entity_relationship_agent(
     user_prompt: str,
 ) -> FirstExtractedGraphData:
     response = await llm_service(system_prompt=system_prompt, user_prompt=user_prompt)
-    logger.info(f"这是提取的关系：{response}")
-    response_dict_data = json.loads(response)
+    response_dict_data = json.loads(response.assistant_response)
     extracted_entity_relationship_graph = FirstExtractedGraphData(
         entities=[EntityIdInt(**entity) for entity in response_dict_data["entities"]],
         relations=[

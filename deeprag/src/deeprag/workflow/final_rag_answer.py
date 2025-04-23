@@ -57,15 +57,16 @@ async def final_rag_answer_process_not_stream(
     )
 
     if not context:
-        answer = llm_chat_not_stream(system_prompt, user_prompt=user_prompt)
+        answer = await llm_chat_not_stream(system_prompt, user_prompt=user_prompt)
     else:
-        answer = llm_chat_not_stream(system_prompt, context, user_prompt)
+        context = 
+        answer = await llm_chat_not_stream(system_prompt, context, user_prompt)
     if not session_id:
         session_id = str(uuid.uuid4())
     message_id = str(uuid.uuid4())
 
     message = {
-        "answer": answer,
+        "answer": answer.assistant_response,
         "rag_pattern": "deep_query_pattern"
         if deep_query_pattern
         else "common_query_pattern",

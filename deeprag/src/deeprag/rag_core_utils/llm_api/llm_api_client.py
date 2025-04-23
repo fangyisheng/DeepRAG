@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from typing import Optional, AsyncGenerator
 import asyncio
 from loguru import logger
+from deeprag.workflow.data_model import AssistantResponseWithCostTokens
 
 load_dotenv()
 llm_base_url = os.getenv("LLM_BASE_URL")
@@ -33,7 +34,7 @@ async def llm_chat_not_stream(
     system_prompt: Optional[str] = "",
     context_histroy: Optional[list] = [],
     user_prompt: Optional[str] = "",
-) -> str:
+) -> AssistantResponseWithCostTokens:
     chat_completion = await client.chat.completions.create(
         model=llm_model,
         messages=[{"role": "system", "content": system_prompt}]
@@ -41,7 +42,10 @@ async def llm_chat_not_stream(
         + [{"role": "user", "content": user_prompt}],
         stream=False,
     )
-    return chat_completion.choices[0].message.content
+    return AssistantResponseWithCostTokens(
+        assistant_response=chat_completion.choices[0].message.content,
+        cost_tokens=chat_completion.usage.total_tokens,
+    )
 
 
 async def llm_service(
@@ -49,7 +53,7 @@ async def llm_service(
     context_histroy: Optional[list] = [],
     user_prompt: Optional[str] = "",
     cot_prompt: Optional[str] = [],
-) -> str:
+) -> AssistantResponseWithCostTokens:
     chat_completion = await client.chat.completions.create(
         model=llm_model,
         messages=[{"role": "system", "content": system_prompt}]
@@ -58,7 +62,10 @@ async def llm_service(
         + cot_prompt,
         stream=False,
     )
-    return chat_completion.choices[0].message.content
+    return AssistantResponseWithCostTokens(
+        assistant_response=chat_completion.choices[0].message.content,
+        cost_tokens=chat_completion.usage.total_tokens,
+    )
 
 
 async def llm_service_stream(
@@ -88,11 +95,13 @@ async def llm_service_stream(
         yield chunk.choices[0].delta.content
 
 
-# test code
+# # test code
 # async def main():
-#     async for item in llm_chat(system_prompt="你是一个强大的人工智能助手", user_prompt="你好？", stream=True):
-#         print(item, end="", flush=True)  # 实时打印
-#     print() # 换行
+#     response = await llm_chat_not_stream(
+#         system_prompt="你是一个强大的人工智能助手", user_prompt="你好？"
+#     )
+#     return response
+
 
 # if __name__ == "__main__":
-#     asyncio.run(main())
+#     print(asyncio.run(main()))

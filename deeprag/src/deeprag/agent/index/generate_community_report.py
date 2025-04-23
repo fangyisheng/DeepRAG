@@ -23,7 +23,7 @@ async def generate_community_report_agent(
 
     response = await llm_service(system_prompt=system_prompt)
     context_history = [{"role": "user", "content": """请输出社区检测报告"""}] + [
-        {"role": "assistant", "content": f"""{response}"""}
+        {"role": "assistant", "content": f"""{response.assistant_response}"""}
     ]
     user_prompt = """请用JSON结构化生成内容。输出格式参考如下：{"title":"","origin_description":"","summary":""}"""
     cot_prompt = [

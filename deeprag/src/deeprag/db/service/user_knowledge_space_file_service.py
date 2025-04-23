@@ -26,15 +26,7 @@ class UserKnowledgeSpaceFileService:
         """
         根据知识空间id获取知识空间的真实名字
         """
-        knowledge_scope: user = await self.dao.get_knowledge_scope_by_id(
-            knowledge_scope_locator
+        knowledge_scope_real_name: KnowledgeScopeRealName = (
+            await self.dao.get_knowledge_scope_real_name_by_id(knowledge_scope_locator)
         )
-        return KnowledgeScopeRealName(
-            **{
-                "user_name": knowledge_scope.user_name,
-                "knowledge_space_name": knowledge_scope.knowledge_spaces[
-                    0
-                ].knowledge_space_name,
-                "file_name": knowledge_scope.knowledge_spaces[0].files[0].doc_title,
-            }
-        )
+        return knowledge_scope_real_name
