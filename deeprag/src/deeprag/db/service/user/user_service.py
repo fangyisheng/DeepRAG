@@ -31,3 +31,10 @@ class UserService:
     async def get_users_by_user_name(self, user_name: str) -> list[user]:
         found_users = await self.dao.get_users_by_user_name(user_name)
         return found_users
+
+
+# 测试代码
+user_service = UserService()
+import asyncio
+
+print(asyncio.run(user_service.create_user("test")))

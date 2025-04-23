@@ -15,10 +15,12 @@ client = AsyncOpenAI(base_url=llm_base_url, api_key=llm_api_key)
 
 
 async def llm_chat(
-    system_prompt: Optional[str] = "",
-    context_histroy: Optional[list] = [],
-    user_prompt: Optional[str] = "",
+    system_prompt: str,
+    user_prompt: str,
+    context_histroy: list[dict[str, str]] | None = None,
 ) -> AsyncGenerator[str, None]:
+    if context_histroy is None:
+        context_histroy = []
     chat_completion = await client.chat.completions.create(
         model=llm_model,
         messages=[{"role": "system", "content": system_prompt}]
@@ -31,10 +33,12 @@ async def llm_chat(
 
 
 async def llm_chat_not_stream(
-    system_prompt: Optional[str] = "",
-    context_histroy: Optional[list] = [],
-    user_prompt: Optional[str] = "",
+    system_prompt: str,
+    user_prompt: str,
+    context_histroy: list[dict[str, str]] | None = None,
 ) -> AssistantResponseWithCostTokens:
+    if context_histroy is None:
+        context_histroy = []
     chat_completion = await client.chat.completions.create(
         model=llm_model,
         messages=[{"role": "system", "content": system_prompt}]
@@ -49,11 +53,15 @@ async def llm_chat_not_stream(
 
 
 async def llm_service(
-    system_prompt: Optional[str] = "",
-    context_histroy: Optional[list] = [],
-    user_prompt: Optional[str] = "",
-    cot_prompt: Optional[str] = [],
+    system_prompt: str,
+    user_prompt: str,
+    context_histroy: list[dict[str, str]] | None = None,
+    cot_prompt: list[dict[str, str]] | None = None,
 ) -> AssistantResponseWithCostTokens:
+    if context_histroy is None:
+        context_histroy = []
+    if cot_prompt is None:
+        cot_prompt = []
     chat_completion = await client.chat.completions.create(
         model=llm_model,
         messages=[{"role": "system", "content": system_prompt}]
@@ -69,30 +77,34 @@ async def llm_service(
 
 
 async def llm_service_stream(
-    system_prompt: Optional[str] = "",
-    context_histroy: Optional[list] = [],
-    user_prompt: Optional[str] = "",
-    cot_prompt: Optional[str] = [],
+    system_prompt: str,
+    user_prompt: str,
+    context_histroy: list[dict[str, str]] | None = None,
+    cot_prompt: list[dict[str, str]] | None = None,
 ):
     logger.info(f"大模型的输入：{user_prompt}")
     logger.info(f"大模型的输入的类型为：{type(user_prompt)}")
-    chat_completion = await client.chat.completions.create(
-        model=llm_model,
-        messages=[{"role": "system", "content": system_prompt}]
-        + context_histroy
-        + [{"role": "user", "content": user_prompt}],
-        stream=True,
-    )
-    logger.info(
-        f"大模型的输入：{
-            [{'role': 'system', 'content': system_prompt}]
+    if context_histroy is None:
+        context_histroy = []
+    if cot_prompt is None:
+        cot_prompt = []
+
+    try:
+        chat_completion = await client.chat.completions.create(
+            model=llm_model,
+            messages=[{"role": "system", "content": system_prompt}]
             + context_histroy
-            + [{'role': 'user', 'content': user_prompt}]
-            + cot_prompt
-        }"
-    )
-    async for chunk in chat_completion:
-        yield chunk.choices[0].delta.content
+            + [{"role": "user", "content": user_prompt}],
+            stream=True,
+        )
+        async for chunk in chat_completion:
+            if chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
+    except Exception as e:
+        logger.error(f"调用大模型时发生错误: {e}")
+        yield "[系统错误] 无法获取模型响应。"
+    finally:
+        logger.info("大模型响应流处理结束")
 
 
 # # test code

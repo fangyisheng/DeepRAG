@@ -42,14 +42,14 @@ async def upload_file_to_minio_func(
     )
 
 
-# # 测试上传本地文件路径的代码,测试成功
+# 测试上传本地文件路径的代码,测试成功
 # import asyncio
 
 # print(
 #     asyncio.run(
 #         upload_file_to_minio_func(
 #             bucket_name="mybucket",
-#             file_path="/home/easonfang/DeepRAG/deeprag/src/deeprag/knowledge_file/test.txt",
+#             file_path="DeepRAG/deeprag/src/deeprag/knowledge_file/test.txt",
 #             object_name="test.txt",
 #         )
 #     )

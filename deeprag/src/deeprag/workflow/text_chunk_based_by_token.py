@@ -69,17 +69,17 @@ class TextSplitter:
         return ChunkedTextUnit(root=self.chunks)
 
 
-# 测试对csv文件进行切分
-import asyncio
+# # 测试对csv文件进行切分,测试通过
+# import asyncio
 
-spliter = TextSplitter()
-print(
-    asyncio.run(
-        spliter.split_text_by_row_in_csv(
-            "/home/easonfang/DeepRAG/deeprag/src/deeprag/knowledge_file/test.csv"
-        )
-    )
-)
+# spliter = TextSplitter()
+# print(
+#     asyncio.run(
+#         spliter.split_text_by_row_in_csv(
+#             "/root/project/DeepRAG/deeprag/src/deeprag/knowledge_file/test.csv"
+#         )
+#     )
+# )
 
 
 # # 测试通过

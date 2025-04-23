@@ -116,6 +116,7 @@ class DeepRAG:
 
     async def create_user(self, user_name: str) -> user:
         stored_user = await self.user_service.create_user(user_name)
+        logger.info(f"创建用户空间{stored_user.id}成功")
         return stored_user
 
     async def create_knowledge_space(
@@ -126,6 +127,7 @@ class DeepRAG:
                 user_id, knowledge_space_name
             )
         )
+        logger.info(f"创建知识空间{stored_knowledge_space.id}成功")
         return stored_knowledge_space
 
     async def create_file_and_upload_to_minio(
@@ -143,6 +145,7 @@ class DeepRAG:
             minio_bucket_name=bucket_name,
             minio_object_name=object_name,
         )
+        logger.info(f"创建文件{stored_file.id}成功")
         # 这里就对应着doc_text这个字段在数据库表file中是可选的，因为业务逻辑的需求，所以这里doc_text为空
         await self.file_service.upload_new_file_to_minio(
             bucket_name=bucket_name, file_path=file_path, object_name=object_name
@@ -188,34 +191,34 @@ class DeepRAG:
             await self.file_service.get_minio_reference_by_id(knowledge_scope.file_id)
         )
 
-        if Path(minio_object_reference.object_name).suffix != ".csv":
+        # if Path(minio_object_reference.object_name).suffix != ".csv":
 
-            # 首先提取干净的文本
-            cleaned_text: CompleteTextUnit = await process_text(
-                minio_object_reference.bucket_name, minio_object_reference.object_name
-            )
-            logger.info("数据提取和清洗完成")
-            # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
-            # 涉及file的数据库模型
-            await self.file_service.update_existed_file_in_knowledge(
-                knowledge_scope.file_id,
-                {
-                    "doc_text": cleaned_text.root[:300],
-                },
-            )
-            logger.info("file数据模型落盘成功")
-            # 然后进行文本切分
-            splitter = TextSplitter()
-            chunks: ChunkedTextUnit = await splitter.split_text_by_token(cleaned_text)
-            token_list: TokenListByTextChunk = splitter.tokens_by_chunk
-            logger.info("文本切分完成")
-        else:
-
-            
+        # 首先提取干净的文本
+        cleaned_text: CompleteTextUnit = await process_text(
+            minio_object_reference.bucket_name, minio_object_reference.object_name
+        )
+        logger.info("数据提取和清洗完成")
+        # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
+        # 涉及file的数据库模型
+        await self.file_service.update_existed_file_in_knowledge(
+            knowledge_scope.file_id,
+            {
+                "doc_text": cleaned_text.root[:300],
+            },
+        )
+        logger.info("file数据模型落盘成功")
+        # 然后进行文本切分
+        splitter = TextSplitter()
+        chunks: ChunkedTextUnit = await splitter.split_text_by_token(cleaned_text)
+        token_list: TokenListByTextChunk = splitter.tokens_by_chunk
+        logger.info("文本切分完成")
+        # else:
 
         # 涉及text_chunk的数据库模型
         text_chunk_id_list = await self.text_chunk_service.batch_create_text_chunk(
-            knowledge_scope.file_id, chunks, token_list
+            doc_id=knowledge_scope.file_id,
+            text_chunk_list=chunks,
+            n_tokens_list=token_list,
         )
         logger.info("text_chunk数据模型落盘成功")
         # 开始提取图结构
@@ -307,17 +310,20 @@ class DeepRAG:
             graph_data_with_community_id: GraphDataAddCommunityWithVisualization = (
                 await realize_leiden_community_algorithm(merged_graph)
             )
+            logger.info("对完整的图谱结构进行leiden算法community划分完成")
             # 将带有社区标签的可视化html保存到Minio中，方便后续查看
             await upload_file_to_minio_func(
                 bucket_name=minio_object_reference.bucket_name,
                 object_name=f"html_content/{str(uuid.uuid4())}_graph_data_with_leiden.html",
                 string_data=graph_data_with_community_id.html_content,
             )
+            logger.info("整的图结构可视化的HTML文件上传到Minio完成")
 
             # 生成带有社区id的graph_data, 并对其中的关系描述进行增强
             graph_data_with_community_id_and_description_enrichment: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
                 graph_data_with_community_id.graph_data
             )
+            logger.info("对带有社区划分的完整的图谱结构的关系描述加强完成")
 
             # 生成带有社区id的社区报告
             community_report_with_community_id: BatchGenerateCommunityReportResponse = (
@@ -325,17 +331,22 @@ class DeepRAG:
                     graph_data_with_community_id_and_description_enrichment
                 )
             )
+            logger.info(
+                "对带有社区划分的完整的图谱结构增强过的关系描述的community报告生成完成"
+            )
 
             # 这里涉及community_report的数据库模型
             batch_create_community_report_response: BatchCreateCommunityReportResponse = await self.community_report_service.batch_create_community_report(
                 community_report_with_community_id
             )
+            logger.info("community_report数据模型落盘完成")
             # 这里涉及community_cluster的数据库模型
             batch_create_community_cluster_response = (
                 await self.community_cluster_service.batch_create_community_cluster(
                     community_report_with_community_id
                 )
             )
+            logger.info("community_cluster数据模型落盘完成")
 
             await data_insert_to_vector_db(
                 text_list=batch_create_community_report_response.community_report_list,
@@ -345,6 +356,7 @@ class DeepRAG:
                 community_cluster=batch_create_community_report_response.community_id_list,
                 meta_data=meta_data,
             )
+            logger.info("向量数据库插入完成")
 
     async def batch_index(
         self,
