@@ -8,7 +8,7 @@ from deeprag.workflow.data_model import (
     TokenListByTextChunk,
 )
 from importlib import resources
-
+import csv
 
 tiktoken_model_path = resources.files("deeprag.rag_core_utils.tokenizer_model")
 os.environ["TIKTOKEN_CACHE_DIR"] = str(tiktoken_model_path)
@@ -58,6 +58,28 @@ class TextSplitter:
         self.tokens_by_chunk = TokenListByTextChunk(root=tokens_by_chunk)
 
         return ChunkedTextUnit(root=self.chunks)
+
+    async def split_text_by_row_in_csv(self, file_path: str) -> ChunkedTextUnit:
+        with open(file_path, newline="", encoding="utf-8") as csvfile:
+            reader = csv.reader(csvfile)
+            header = next(reader)
+            for row in reader:
+                new_row = [f"{header[i]}: {row[i]}" for i in range(len(row))]
+                self.chunks.append(", ".join(new_row))
+        return ChunkedTextUnit(root=self.chunks)
+
+
+# 测试对csv文件进行切分
+import asyncio
+
+spliter = TextSplitter()
+print(
+    asyncio.run(
+        spliter.split_text_by_row_in_csv(
+            "/home/easonfang/DeepRAG/deeprag/src/deeprag/knowledge_file/test.csv"
+        )
+    )
+)
 
 
 # # 测试通过

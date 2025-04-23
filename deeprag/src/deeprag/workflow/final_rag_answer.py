@@ -24,9 +24,14 @@ async def final_rag_answer_process_stream(
         knowledge_scope_real_name, recalled_text_fragments
     )
     if not context:
-        response = llm_chat(system_prompt, user_prompt=user_prompt)
+        response = await llm_chat(system_prompt=system_prompt, user_prompt=user_prompt)
     else:
-        response = llm_chat(system_prompt, context, user_prompt)
+        context = str([item.model_dump() for item in context])
+        response = await llm_chat(
+            system_prompt=system_prompt,
+            context_histroy=context,
+            user_prompt=user_prompt,
+        )
     if not session_id:
         session_id = str(uuid.uuid4())
 
@@ -57,10 +62,16 @@ async def final_rag_answer_process_not_stream(
     )
 
     if not context:
-        answer = await llm_chat_not_stream(system_prompt, user_prompt=user_prompt)
+        answer = await llm_chat_not_stream(
+            system_prompt=system_prompt, user_prompt=user_prompt
+        )
     else:
-        context = 
-        answer = await llm_chat_not_stream(system_prompt, context, user_prompt)
+        context = str([item.model_dump() for item in context])
+        answer = await llm_chat_not_stream(
+            system_prompt=system_prompt,
+            context_histroy=context,
+            user_prompt=user_prompt,
+        )
     if not session_id:
         session_id = str(uuid.uuid4())
     message_id = str(uuid.uuid4())

@@ -188,25 +188,30 @@ class DeepRAG:
             await self.file_service.get_minio_reference_by_id(knowledge_scope.file_id)
         )
 
-        # 首先提取干净的文本
-        cleaned_text: CompleteTextUnit = await process_text(
-            minio_object_reference.bucket_name, minio_object_reference.object_name
-        )
-        logger.info("数据提取和清洗完成")
-        # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
-        # 涉及file的数据库模型
-        await self.file_service.update_existed_file_in_knowledge(
-            knowledge_scope.file_id,
-            {
-                "doc_text": cleaned_text.root[:300],
-            },
-        )
-        logger.info("file数据模型落盘成功")
-        # 然后进行文本切分
-        splitter = TextSplitter()
-        chunks: ChunkedTextUnit = await splitter.split_text_by_token(cleaned_text)
-        token_list: TokenListByTextChunk = splitter.tokens_by_chunk
-        logger.info("文本切分完成")
+        if Path(minio_object_reference.object_name).suffix != ".csv":
+
+            # 首先提取干净的文本
+            cleaned_text: CompleteTextUnit = await process_text(
+                minio_object_reference.bucket_name, minio_object_reference.object_name
+            )
+            logger.info("数据提取和清洗完成")
+            # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
+            # 涉及file的数据库模型
+            await self.file_service.update_existed_file_in_knowledge(
+                knowledge_scope.file_id,
+                {
+                    "doc_text": cleaned_text.root[:300],
+                },
+            )
+            logger.info("file数据模型落盘成功")
+            # 然后进行文本切分
+            splitter = TextSplitter()
+            chunks: ChunkedTextUnit = await splitter.split_text_by_token(cleaned_text)
+            token_list: TokenListByTextChunk = splitter.tokens_by_chunk
+            logger.info("文本切分完成")
+        else:
+
+            
 
         # 涉及text_chunk的数据库模型
         text_chunk_id_list = await self.text_chunk_service.batch_create_text_chunk(
