@@ -51,10 +51,10 @@ async def generate_community_report_agent(
     )
 
 
-# # 现在测试一下这个功能
+# 现在测试一下这个功能
 
-# import asyncio
+import asyncio
 
-# entity_relation_description = ["微软的CEO是印度人", "印度人之间的关系很好"]
+entity_relation_description = ["微软的CEO是印度人", "印度人之间的关系很好"]
 
-# print(asyncio.run(generate_community_report_agent(entity_relation_description)))
+print(asyncio.run(generate_community_report_agent(entity_relation_description)))

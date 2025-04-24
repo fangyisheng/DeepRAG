@@ -4,7 +4,10 @@ from dotenv import load_dotenv
 from typing import Optional, AsyncGenerator
 import asyncio
 from loguru import logger
-from deeprag.workflow.data_model import AssistantResponseWithCostTokens
+from deeprag.workflow.data_model import (
+    AssistantResponseWithCostTokens,
+    AsyncGeneratorWithCostTokens,
+)
 
 load_dotenv()
 llm_base_url = os.getenv("LLM_BASE_URL")
@@ -18,7 +21,7 @@ async def llm_chat(
     system_prompt: str,
     user_prompt: str,
     context_histroy: list[dict[str, str]] | None = None,
-) -> AsyncGenerator[str, None]:
+) -> AsyncGeneratorWithCostTokens:
     if context_histroy is None:
         context_histroy = []
     chat_completion = await client.chat.completions.create(
@@ -27,9 +30,22 @@ async def llm_chat(
         + context_histroy
         + [{"role": "user", "content": user_prompt}],
         stream=True,
+        stream_options={"include_usage": True},
     )
-    async for chunk in chat_completion:
-        yield chunk.choices[0].delta.content
+    # cost_tokens = asyncio.Future()
+    cost_tokens = 0
+
+    async def generator() -> AsyncGenerator[str, None]:
+        async for chunk in chat_completion:
+            if chunk.choices:
+                yield chunk.choices[0].delta.content
+            if chunk.usage:
+                # cost_tokens.set_result(chunk.usage.total_tokens)
+                cost_tokens = chunk.usage.total_tokens
+
+    return AsyncGeneratorWithCostTokens(
+        assistant_response_generator=generator(), cost_tokens=cost_tokens
+    )
 
 
 async def llm_chat_not_stream(
@@ -82,38 +98,34 @@ async def llm_service_stream(
     context_histroy: list[dict[str, str]] | None = None,
     cot_prompt: list[dict[str, str]] | None = None,
 ):
-    logger.info(f"大模型的输入：{user_prompt}")
-    logger.info(f"大模型的输入的类型为：{type(user_prompt)}")
     if context_histroy is None:
         context_histroy = []
     if cot_prompt is None:
         cot_prompt = []
 
-    try:
-        chat_completion = await client.chat.completions.create(
-            model=llm_model,
-            messages=[{"role": "system", "content": system_prompt}]
-            + context_histroy
-            + [{"role": "user", "content": user_prompt}],
-            stream=True,
-        )
-        async for chunk in chat_completion:
-            if chunk.choices[0].delta.content:
-                yield chunk.choices[0].delta.content
-    except Exception as e:
-        logger.error(f"调用大模型时发生错误: {e}")
-        yield "[系统错误] 无法获取模型响应。"
-    finally:
-        logger.info("大模型响应流处理结束")
+    chat_completion = await client.chat.completions.create(
+        model=llm_model,
+        messages=[{"role": "system", "content": system_prompt}]
+        + context_histroy
+        + [{"role": "user", "content": user_prompt}],
+        stream=True,
+        stream_options={"include_usage": True},
+    )
+    async for chunk in chat_completion:
+        if chunk.choices:
+            yield chunk.choices[0].delta.content
 
 
-# # test code
-# async def main():
-#     response = await llm_chat_not_stream(
-#         system_prompt="你是一个强大的人工智能助手", user_prompt="你好？"
-#     )
-#     return response
+# test code
+async def main():
+    async for response in llm_service_stream(
+        system_prompt="你是一个强大的人工智能助手", user_prompt="你好？"
+    ):
+        print(response)
+        print("\n\n")
 
 
+# main函数没有输出，所以打印它的结果，结果是None
 # if __name__ == "__main__":
 #     print(asyncio.run(main()))
+asyncio.run(main())

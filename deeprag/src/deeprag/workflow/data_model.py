@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, RootModel, ConfigDict
 from typing import Any
 from minio.helpers import ObjectWriteResult
+from typing import AsyncGenerator
 
 
 class CompleteTextUnit(RootModel):
@@ -314,11 +315,26 @@ class GraphDataAddCommunityWithVisualization(BaseModel):
 
 class BatchGenerateCommunityReportResponse(BaseModel):
     """
+    community_reports_with_community_id:
     dict[str, str]
     示例数据：
     {"community_id_1": "社区检测报告的文字",
      "community_id_2": "社区检测报告的文字",
      "community_id_3": "社区检测报告的文字"}
+
+    community_reports_structed_data_with_community_id:
+    dict[str, CommunityReportStructedData]
+    示例数据：
+    {"community_id_1": CommunityReportStructedData(
+        title="社区检测报告的标题",
+        origin_description="社区检测报告的文字",
+        summary="社区检测报告的摘要",
+    ),
+     "community_id_2": CommunityReportStructedData(
+        title="社区检测报告的标题",
+        origin_description="社区检测报告的文字",
+     )
+    }
 
     """
 
@@ -621,4 +637,9 @@ class BatchCreateCommunityReportResponse(BaseModel):
 
 class AssistantResponseWithCostTokens(BaseModel):
     assistant_response: str
+    cost_tokens: int
+
+
+class AsyncGeneratorWithCostTokens(BaseModel):
+    assistant_response_generator: AsyncGenerator
     cost_tokens: int
