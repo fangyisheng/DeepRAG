@@ -7,4 +7,4 @@ Format:
 { "entities": [ { "id": 0, "text": "Microsoft", "type": "company" }, { "id": 1, "text": "Satya Nadella", "type": "person" }, { "id": 2, "text": "Azure AI", "type": "product", } ], "relations": [ { "head": 1, "tail": 0, "type": "CEO of","description":"Satya Nadella serves as the Chief Executive Officer of Microsoft, leading the company's overall strategy and direction." }, { "head": 0, "tail": 2, "type": "developed","description":"Microsoft developed Azure AI, a suite of cloud-based artificial intelligence services and tools aimed at empowering developers and organizations." } ] }
 Warnings:
 给定语料如果是中文，那么提取的实体类型是中文的，提取的关系也是中文的。
-注意事项:关系字段必须包含head/tail/type/description这四个字段。实体字段必须包含id/text/type这三个字段。
+注意事项:关系字段relations必须包含head/tail/type/description这四个字段。实体字段entities必须包含id/text/type这三个字段。

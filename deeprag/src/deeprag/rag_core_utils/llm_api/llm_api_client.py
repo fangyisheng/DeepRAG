@@ -54,7 +54,7 @@ async def llm_chat_not_stream(
 
 async def llm_service(
     system_prompt: str,
-    user_prompt: str,
+    user_prompt: str | None = None,
     context_histroy: list[dict[str, str]] | None = None,
     cot_prompt: list[dict[str, str]] | None = None,
 ) -> AssistantResponseWithCostTokens:

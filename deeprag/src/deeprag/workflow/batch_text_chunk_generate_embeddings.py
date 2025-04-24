@@ -4,7 +4,7 @@ from deeprag.rag_core_utils.embedding_api.embedding_api_client import (
 )
 import asyncio
 from deeprag.workflow.data_model import BatchTextChunkGenerateEmbeddingsResponse
-
+from tqdm.asyncio import tqdm_asyncio
 
 """
 这是对关系的描述的列表或者对社区检测报告的列表的嵌入。不是对文本分块的简单嵌入哦~
@@ -36,16 +36,21 @@ async def batch_text_chunk_generate_embeddings_process(
         #      for batch in sub_batch:
         #          results = await asyncio.gather(*batch)
         tasks = [text_to_vector(batch) for batch in batches]
-        results = await asyncio.gather(*tasks)
+        results = []
+        for future in tqdm_asyncio(
+            asyncio.as_completed(tasks), total=len(tasks), desc="批量生成文本分块的向量"
+        ):
+            result = await future
+            # 如果结果是列表，直接扩展结果列表，而不是追加
+            results.append(result)
         final_result = [item for sublist in results for item in sublist]
         return BatchTextChunkGenerateEmbeddingsResponse(root=final_result)
 
 
-# 编写测试代码,测试成功
+# # 编写测试代码, 测试成功
 # import asyncio
 
 
 # a = asyncio.run(
 #     batch_text_chunk_generate_embeddings_process(["你好", "我是", "一个", "机器人"])
 # )
-# print(a)
