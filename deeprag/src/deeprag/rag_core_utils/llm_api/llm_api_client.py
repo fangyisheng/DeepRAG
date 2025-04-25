@@ -32,16 +32,14 @@ async def llm_chat(
         stream=True,
         stream_options={"include_usage": True},
     )
-    # cost_tokens = asyncio.Future()
-    cost_tokens = 0
+    cost_tokens = asyncio.Future()
 
     async def generator() -> AsyncGenerator[str, None]:
         async for chunk in chat_completion:
             if chunk.choices:
                 yield chunk.choices[0].delta.content
             if chunk.usage:
-                # cost_tokens.set_result(chunk.usage.total_tokens)
-                cost_tokens = chunk.usage.total_tokens
+                cost_tokens.set_result(chunk.usage.total_tokens)
 
     return AsyncGeneratorWithCostTokens(
         assistant_response_generator=generator(), cost_tokens=cost_tokens
