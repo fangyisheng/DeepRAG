@@ -117,11 +117,14 @@ model rag_param {
   RagParamLLMChat   llm_chat @relation(fields: [message_id], references: [id])
 }
 
-model workflow {
+model index_workflow {
   id                     String @id
   status                 String
   action                 String
   workflow_start_time    String
-  workflow_end_time      String
-  workflow_duration_time String
+  workflow_end_time      String?
+  workflow_duration_time String?
+  llm_cost_tokens        Int?
+  embedding_cost_tokens  Int?
 }
+

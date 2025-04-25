@@ -95,7 +95,7 @@ async def llm_service_stream(
     user_prompt: str,
     context_histroy: list[dict[str, str]] | None = None,
     cot_prompt: list[dict[str, str]] | None = None,
-):
+) -> AsyncGeneratorWithCostTokens:
     if context_histroy is None:
         context_histroy = []
     if cot_prompt is None:
@@ -109,21 +109,32 @@ async def llm_service_stream(
         stream=True,
         stream_options={"include_usage": True},
     )
-    async for chunk in chat_completion:
-        if chunk.choices:
-            yield chunk.choices[0].delta.content
+    cost_tokens = asyncio.Future()
+
+    async def generator() -> AsyncGenerator[str, None]:
+        async for chunk in chat_completion:
+            if chunk.choices:
+                yield chunk.choices[0].delta.content
+            if chunk.usage:
+                cost_tokens.set_result(chunk.usage.total_tokens)
+
+    return AsyncGeneratorWithCostTokens(
+        assistant_response_generator=generator(), cost_tokens=cost_tokens
+    )
 
 
-# test code
-async def main():
-    async for response in llm_service_stream(
-        system_prompt="你是一个强大的人工智能助手", user_prompt="你好？"
-    ):
-        print(response)
-        print("\n\n")
+# # test code
+# async def main():
+#     chat = await llm_chat(
+#         system_prompt="你是一个强大的人工智能助手", user_prompt="你好？"
+#     )
+#     async for response in chat.assistant_response_generator:
+#         print(response)
+#         print("\n\n")
+#     print(chat.cost_tokens.result())
 
 
-# main函数没有输出，所以打印它的结果，结果是None
-# if __name__ == "__main__":
-#     print(asyncio.run(main()))
-asyncio.run(main())
+# # main函数没有输出，所以打印它的结果，结果是None
+# # if __name__ == "__main__":
+# #     print(asyncio.run(main()))
+# asyncio.run(main())

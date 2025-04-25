@@ -1,6 +1,7 @@
 import re
 from deeprag.workflow.data_model import CompleteTextUnit
 from deeprag.rag_core_utils.s3_api.s3_api_client import create_minio_client
+from pathlib import Path
 
 
 async def process_text(bucket_name: str, object_name: str) -> CompleteTextUnit:
@@ -23,11 +24,14 @@ async def process_text(bucket_name: str, object_name: str) -> CompleteTextUnit:
     # continuous_text = "".join(line.strip().replace(" ", "") for line in lines if line.strip())
     # return continuous_text
     content = file.read().decode("utf-8")
-    content = content.replace("\n", "")
-    cleaned_content = re.sub(
-        r"(?<=[\u4e00-\u9fff\d])\s+|\s+(?=[\u4e00-\u9fff\d])", "", content
-    )
-    return CompleteTextUnit(root=cleaned_content)
+    if Path(object_name).suffix != ".csv":
+        content = content.replace("\n", "")
+        cleaned_content = re.sub(
+            r"(?<=[\u4e00-\u9fff\d])\s+|\s+(?=[\u4e00-\u9fff\d])", "", content
+        )
+        return CompleteTextUnit(root=cleaned_content)
+    else:
+        return CompleteTextUnit(root=content)
 
 
 # # 单元化功能测试成功

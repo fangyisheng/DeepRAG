@@ -1,5 +1,5 @@
 from deeprag.workflow.text_extract_and_clean import process_text
-from deeprag.workflow.text_chunk_based_by_token import TextSplitter
+from deeprag.workflow.text_chunk_process import TextSplitter
 from deeprag.agent.index.extract_entity_relationship_graph import (
     extract_entity_relationship_agent,
 )

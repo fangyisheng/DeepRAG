@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, RootModel, ConfigDict
 from typing import Any
 from minio.helpers import ObjectWriteResult
 from typing import AsyncGenerator
+import asyncio
 
 
 class CompleteTextUnit(RootModel):
@@ -642,4 +643,5 @@ class AssistantResponseWithCostTokens(BaseModel):
 
 class AsyncGeneratorWithCostTokens(BaseModel):
     assistant_response_generator: AsyncGenerator
-    cost_tokens: int
+    cost_tokens: asyncio.Future()
+    model_config = ConfigDict(arbitrary_types_allowed=True)

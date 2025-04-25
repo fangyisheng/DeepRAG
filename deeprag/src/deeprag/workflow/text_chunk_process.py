@@ -24,7 +24,7 @@ class TextSplitter:
     async def split_text_by_token(
         self,
         text: CompleteTextUnit,
-        max_tokens: int = int(os.getenv("EMBEDDING_MODEL_MAX_TOKEN")),
+        max_tokens: int = 2000,
     ) -> ChunkedTextUnit:
         """
         利用 tiktoken 根据 token 数量来切分文本。

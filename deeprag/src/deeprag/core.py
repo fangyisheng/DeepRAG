@@ -1,6 +1,6 @@
 from deeprag.workflow.upload_file_to_minio import upload_file_to_minio_func
 from deeprag.workflow.text_extract_and_clean import process_text
-from deeprag.workflow.text_chunk_based_by_token import TextSplitter
+from deeprag.workflow.text_chunk_process import TextSplitter
 from deeprag.workflow.batch_text_chunk_generate_graphs import (
     batch_text_chunk_generate_graphs_process,
 )
@@ -52,6 +52,9 @@ from deeprag.db.service.merged_graph_data.merged_graph_data_service import (
 from deeprag.db.service.flatten_entity_relation.flatten_entity_relation_service import (
     FlattenEntityRelationService,
 )
+from deeprag.db.service.index_workflow.index_workflow_service import (
+    IndexWorkFlowService,
+)
 from deeprag.db.data_model import RoleMessage
 from deeprag.workflow.data_model import (
     CompleteTextUnit,
@@ -72,7 +75,7 @@ from deeprag.workflow.data_model import (
     FlattenEntityRelation,
     BatchCreateCommunityReportResponse,
 )
-from prisma.models import file, knowledge_space, user
+from prisma.models import file, knowledge_space, user, index_workflow
 from pathlib import Path
 import uuid
 import asyncio
@@ -94,8 +97,10 @@ class DeepRAG:
         self.community_report_service = CommunityReportService()
         self.flatten_entity_relation_service = FlattenEntityRelationService()
         self.community_cluster_service = CommunityClusterService()
-        self.cost_llm_tokens = 0
-        self.cost_embedding_tokens = 0
+        self.index_workflow_service = IndexWorkFlowService()
+        self.cost_index_llm_tokens = 0
+        self.cost_index_embedding_tokens = 0
+        self.cost_chat_llm_tokens = 0
 
     async def delete_file(self, file_id: str) -> file:
         deleted_file = await self.file_service.delete_file_in_knowledge_space(file_id)
@@ -191,28 +196,42 @@ class DeepRAG:
             await self.file_service.get_minio_reference_by_id(knowledge_scope.file_id)
         )
 
-        # if Path(minio_object_reference.object_name).suffix != ".csv":
+        # 接下来判断需要做index的文件类型，如果是csv或者excel等有结构的数据，那么就要跳过数据清洗
 
-        # 首先提取干净的文本
-        cleaned_text: CompleteTextUnit = await process_text(
+        # 首先提取文本
+        complete_text: CompleteTextUnit = await process_text(
             minio_object_reference.bucket_name, minio_object_reference.object_name
         )
         logger.info("数据提取和清洗完成")
+
         # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
         # 涉及file的数据库模型
         await self.file_service.update_existed_file_in_knowledge(
             knowledge_scope.file_id,
             {
-                "doc_text": cleaned_text.root[:300],
+                "doc_text": complete_text.root[:300],
             },
         )
         logger.info("file数据模型落盘成功")
+        # 然后创建workflow 落盘数据库
+        created_workflow: index_workflow = (
+            await self.index_workflow_service.create_workflow(
+                id=str(uuid.uuid4()),
+                status="processing",
+                action="text_extract",
+                workflow_start_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            )
+        )
         # 然后进行文本切分
         splitter = TextSplitter()
-        chunks: ChunkedTextUnit = await splitter.split_text_by_token(cleaned_text)
+        if Path(minio_object_reference.object_name).suffix != ".csv":
+            chunks: ChunkedTextUnit = await splitter.split_text_by_token(complete_text)
+        else:
+            chunks: ChunkedTextUnit = await splitter.split_text_by_row_in_csv(
+                complete_text
+            )
         token_list: TokenListByTextChunk = splitter.tokens_by_chunk
         logger.info("文本切分完成")
-        # else:
 
         # 涉及text_chunk的数据库模型
         text_chunk_id_list = await self.text_chunk_service.batch_create_text_chunk(
@@ -221,11 +240,21 @@ class DeepRAG:
             n_tokens_list=token_list,
         )
         logger.info("text_chunk数据模型落盘成功")
+        # 更新workflow
+        await self.index_workflow_service.update_workflow(
+            id=created_workflow.id,
+            action="text_chunk",
+        )
         # 开始提取图结构
         graphs: BatchTextChunkGenerateGraphsResponse = (
             await batch_text_chunk_generate_graphs_process(chunks)
         )
         logger.info("子图结构提取完成")
+        # 更新workflow
+        await self.index_workflow_service.update_workflow(
+            id=created_workflow.id,
+            action="sub_graph_generate",
+        )
         # 开始合并每个文本分块得到的子图结构变成一张完整的图谱结构
         merged_graph: CompleteGraphData = await merge_sub_entity_relationship_graph(
             graphs

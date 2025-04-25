@@ -1,7 +1,7 @@
 from deeprag.rag_core_utils.embedding_api.embedding_api_client import text_to_vector
 import asyncio
 from deeprag.workflow.text_extract_and_clean import process_text
-from deeprag.workflow.text_chunk_based_by_token import split_text_by_token
+from deeprag.workflow.text_chunk_process import split_text_by_token
 from deeprag.workflow.batch_text_chunk_generate_embeddings import (
     batch_text_chunk_generate_embeddings_process,
 )

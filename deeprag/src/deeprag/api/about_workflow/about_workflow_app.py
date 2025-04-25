@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from deeprag.db.service.workflow.workflow_service import WorkFlowService
+from deeprag.db.service.index_workflow.index_workflow_service import WorkFlowService
 
 workflow_router = APIRouter(tags=["workflow"])
 
