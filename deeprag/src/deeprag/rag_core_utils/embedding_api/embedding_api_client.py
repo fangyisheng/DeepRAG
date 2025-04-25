@@ -35,7 +35,8 @@ async def text_to_vector(input: list[str], limiter=limiter):
         response = await client.embeddings.create(
             input=input, model=embedding_model, dimensions=embedding_dimension
         )
-        return [item.embedding for item in response.data]
+        # return [item.embedding for item in response.data]
+        return response.usage.total_tokens
 
 
-# print(asyncio.run(text_to_vector(["你好", "hello"])))
+print(asyncio.run(text_to_vector(["你好", "hello"])))

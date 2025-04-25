@@ -8,7 +8,7 @@ def llm_record_token_usage(func):
         result = await func(*args, **kwargs)
         if hasattr(result, "cost_tokens"):
             try:
-                token_usage_var.set(result.cost_tokens)
+                token_usage_var.set(result.cost_tokens.result())
             except Exception as e:
                 print(e)
         return result
@@ -22,7 +22,7 @@ def embedding_record_token_usage(func):
         result = await func(*args, **kwargs)
         if hasattr(result, "cost_tokens"):
             try:
-                token_usage_var.set(result.cost_tokens)
+                token_usage_var.set(result.cost_tokens.result())
             except Exception as e:
                 print(e)
         return result

@@ -131,7 +131,8 @@ async def llm_service_stream(
 #     async for response in chat.assistant_response_generator:
 #         print(response)
 #         print("\n\n")
-#     print(chat.cost_tokens.result())
+#     print(chat.cost_tokens)
+#     print(type(chat.cost_tokens))
 
 
 # # main函数没有输出，所以打印它的结果，结果是None

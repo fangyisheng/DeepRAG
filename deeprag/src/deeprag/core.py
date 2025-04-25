@@ -260,6 +260,11 @@ class DeepRAG:
             graphs
         )
         logger.info("子图结构合并完成一张完整的图")
+        # 更新workflow
+        await self.index_workflow_service.update_workflow(
+            id=created_workflow.id,
+            action="merge_sub_graph",
+        )
         # 对完整的图谱结构进行普通的可视化
         graph_data_html = await store_graph_data_to_html_with_no_leiden(merged_graph)
         logger.info("对完整的图结构可视化完成")
@@ -295,6 +300,11 @@ class DeepRAG:
             await graph_description.describe_graph(merged_graph)
         )
         logger.info("对完整的图谱结构的关系描述加强完成")
+        # 更新workflow
+        await self.index_workflow_service.update_workflow(
+            id=created_workflow.id,
+            action="graph_description_enrichment",
+        )
         # 先将完整的图谱结构进行平铺展开变成一个列表
         flattened_entity_relation: list[
             FlattenEntityRelation
@@ -317,6 +327,11 @@ class DeepRAG:
             )
         )
         logger.info("对完整的图谱结构增强过的关系描述的embedding向量生成完成")
+        # 更新workflow
+        await self.index_workflow_service.update_workflow(
+            id=created_workflow.id,
+            action="generate_embedding_vector",
+        )
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if isinstance(meta_data, str):
             meta_data = [meta_data for _ in range(len(embedding_vector))]
@@ -334,12 +349,20 @@ class DeepRAG:
                 meta_data=meta_data,
             )
             logger.info("向量数据库插入完成")
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id,
+                action="insert_to_vector_db",
+            )
         else:
             # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
             graph_data_with_community_id: GraphDataAddCommunityWithVisualization = (
                 await realize_leiden_community_algorithm(merged_graph)
             )
             logger.info("对完整的图谱结构进行leiden算法community划分完成")
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id,
+                action="to partition community with merged_graph",
+            )
             # 将带有社区标签的可视化html保存到Minio中，方便后续查看
             await upload_file_to_minio_func(
                 bucket_name=minio_object_reference.bucket_name,

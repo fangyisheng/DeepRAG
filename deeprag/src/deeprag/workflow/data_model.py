@@ -643,5 +643,5 @@ class AssistantResponseWithCostTokens(BaseModel):
 
 class AsyncGeneratorWithCostTokens(BaseModel):
     assistant_response_generator: AsyncGenerator
-    cost_tokens: asyncio.Future()
+    cost_tokens: asyncio.Future
     model_config = ConfigDict(arbitrary_types_allowed=True)
