@@ -80,6 +80,10 @@ from pathlib import Path
 import uuid
 import asyncio
 from loguru import logger
+from deeprag.rag_core_utils.utils.context_holder import (
+    llm_token_usage_var,
+    embedding_token_usage_var,
+)
 import json
 from datetime import datetime
 
@@ -326,20 +330,23 @@ class DeepRAG:
                 graph_data_with_description_enrichment.graph_description_list
             )
         )
+
+        # 因为embedding_token_usage_var是全局变量，在上面的函数中已经运行过
+        embedding_total_token_usage = embedding_token_usage_var.get()
         logger.info("对完整的图谱结构增强过的关系描述的embedding向量生成完成")
         # 更新workflow
         await self.index_workflow_service.update_workflow(
             id=created_workflow.id,
             action="generate_embedding_vector",
+            embedding_cost_tokens=embedding_total_token_usage,
+            llm_cost_tokens=
         )
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if isinstance(meta_data, str):
             meta_data = [meta_data for _ in range(len(embedding_vector))]
         if isinstance(knowledge_scope, KnowledgeScopeLocator):
             knowledge_scope = [
-                knowledge_scope for _ in range(len(embedding_vector.root))
-            ]
-
+                knowledge_scope for _ in range(len(embedding_vector.root))]                                                                                                                                                           
         if not deep_index_pattern:
             await data_insert_to_vector_db(
                 text_list=graph_data_with_description_enrichment.graph_description_list,

@@ -8,6 +8,12 @@ from deeprag.workflow.data_model import (
     AssistantResponseWithCostTokens,
     AsyncGeneratorWithCostTokens,
 )
+from deeprag.rag_core_utils.utils.decorators import (
+    llm_record_token_usage,
+)
+from deeprag.rag_core_utils.utils.context_holder import (
+    llm_token_usage_var,
+)
 
 load_dotenv()
 llm_base_url = os.getenv("LLM_BASE_URL")
@@ -46,6 +52,7 @@ async def llm_chat(
     )
 
 
+@llm_record_token_usage
 async def llm_chat_not_stream(
     system_prompt: str,
     user_prompt: str,
@@ -66,6 +73,7 @@ async def llm_chat_not_stream(
     )
 
 
+@llm_record_token_usage
 async def llm_service(
     system_prompt: str,
     user_prompt: str | None = None,
@@ -123,7 +131,7 @@ async def llm_service_stream(
     )
 
 
-# # test code
+# # test code 测试通过
 # async def main():
 #     chat = await llm_chat(
 #         system_prompt="你是一个强大的人工智能助手", user_prompt="你好？"
@@ -131,8 +139,22 @@ async def llm_service_stream(
 #     async for response in chat.assistant_response_generator:
 #         print(response)
 #         print("\n\n")
+#     print(chat.cost_tokens.result())
+
+
+# # main函数没有输出，所以打印它的结果，结果是None
+# # if __name__ == "__main__":
+# #     print(asyncio.run(main()))
+# asyncio.run(main())
+
+
+# # test code 测试通过
+# async def main():
+#     chat = await llm_service(
+#         system_prompt="你是一个强大的人工智能助手", user_prompt="你好？"
+#     )
+#     print(chat.assistant_response)
 #     print(chat.cost_tokens)
-#     print(type(chat.cost_tokens))
 
 
 # # main函数没有输出，所以打印它的结果，结果是None

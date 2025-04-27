@@ -7,6 +7,9 @@ from deeprag.workflow.data_model import (
     ChunkedTextUnit,
 )
 from tqdm.asyncio import tqdm_asyncio
+from deeprag.rag_core_utils.utils.context_holder import (
+    llm_token_usage_var,
+)
 
 
 async def batch_text_chunk_generate_graphs_process(
@@ -30,6 +33,8 @@ async def batch_text_chunk_generate_graphs_process(
     ):
         result = await future
         results.append(result)
+    total_llm_tokens_usage = sum([item.cost_tokens for item in results])
+    llm_token_usage_var.set(total_llm_tokens_usage)
     return BatchTextChunkGenerateGraphsResponse(root=results)
 
 

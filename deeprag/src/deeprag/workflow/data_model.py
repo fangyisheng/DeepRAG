@@ -645,3 +645,8 @@ class AsyncGeneratorWithCostTokens(BaseModel):
     assistant_response_generator: AsyncGenerator
     cost_tokens: asyncio.Future
     model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
+class EmbeddingResponseWithCostTokens(BaseModel):
+    embedding_vector: list[list[float]]
+    cost_tokens: int
