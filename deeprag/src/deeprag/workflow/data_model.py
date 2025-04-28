@@ -191,6 +191,11 @@ class FirstExtractedGraphData(BaseModel):
     relations: list[RelationsInt]
 
 
+class ExtractEntityRelationshipAgentResponse(BaseModel):
+    first_extracted_graph_data: FirstExtractedGraphData
+    cost_tokens: int
+
+
 class CompleteGraphData(BaseModel):
     """
     示例数据的__dict__：

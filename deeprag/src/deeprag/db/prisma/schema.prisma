@@ -10,7 +10,7 @@ datasource db {
 
 model knowledge_space {
   id                   String  @id
-  human_readable_id    String? @default(dbgenerated("nextval('knowledge_space_human_readable_id_seq'::regclass)"))
+  human_readable_id    String?
   user_id              String
   knowledge_space_name String
   files                file[]
@@ -19,19 +19,21 @@ model knowledge_space {
 
 model file {
   id                 String          @id
-  human_readable_id  String?         @default(dbgenerated("nextval('file_human_readable_id_seq'::regclass)"))
+  human_readable_id  String?
   doc_title          String
   doc_text           String?
   knowledge_space_id String
   minio_bucket_name  String
   minio_object_name  String
+  indexed            Boolean
+  zilliz_collection_name   String?
   KnowledgeSpaceFile knowledge_space @relation(fields: [knowledge_space_id], references: [id])
   text_chunks        text_chunk[]
 }
 
 model text_chunk {
   id                String          @id
-  human_readable_id String?         @default(dbgenerated("nextval('text_chunk_human_readable_id_seq'::regclass)"))
+  human_readable_id String?
   doc_id            String
   text_chunk        String
   n_tokens          Int
@@ -41,17 +43,17 @@ model text_chunk {
 
 model sub_graph_data {
   id                          String            @id
-  human_readable_id           String?           @default(dbgenerated("nextval('sub_graph_data_human_readable_id_seq'::regclass)"))
+  human_readable_id           String?
   text_chunk_id               String            @unique
   graph_data                  String
   merged_graph_data_id        String
-  SubGraphDataMergedGraphData merged_graph_data? @relation(fields: [merged_graph_data_id], references: [id])
-  TextChunkSubGraphData       text_chunk?        @relation(fields: [text_chunk_id], references: [id])
+  SubGraphDataMergedGraphData merged_graph_data @relation(fields: [merged_graph_data_id], references: [id])
+  TextChunkSubGraphData       text_chunk        @relation(fields: [text_chunk_id], references: [id])
 }
 
 model merged_graph_data {
   id                                   String                    @id
-  human_readable_id                    String?                   @default(dbgenerated("nextval('merged_graph_data_human_readable_id_seq'::regclass)"))
+  human_readable_id                    String?
   graph_data                           String
   merged_graph_data_visualization_html String
   flatten_entity_relations             flatten_entity_relation[]
@@ -60,9 +62,9 @@ model merged_graph_data {
 
 model flatten_entity_relation {
   id                                    String             @id
-  human_readable_id                     String?            @default(dbgenerated("nextval('flatten_entity_relation_human_readable_id_seq'::regclass)"))
+  human_readable_id                     String?
   head_entity                           String
-  tail_entity                            String
+  tail_entity                           String
   merged_graph_data_id                  String
   community_id                          String?
   relation_description                  String
@@ -72,7 +74,7 @@ model flatten_entity_relation {
 
 model community_cluster {
   id                       String                    @id
-  human_readable_id        String?                   @default(dbgenerated("nextval('community_cluster_human_readable_id_seq'::regclass)"))
+  human_readable_id        String?
   community_title          String
   community_report         community_report?
   flatten_entity_relations flatten_entity_relation[]
@@ -80,7 +82,7 @@ model community_cluster {
 
 model community_report {
   id                              String            @id
-  human_readable_id               String?           @default(dbgenerated("nextval('community_report_human_readable_id_seq'::regclass)"))
+  human_readable_id               String?
   community_report                String
   community_id                    String            @unique
   CommunityReportCommunityCluster community_cluster @relation(fields: [community_id], references: [id])
@@ -88,7 +90,7 @@ model community_report {
 
 model user {
   id                String            @id
-  human_readable_id String?           @default(dbgenerated("nextval('user_human_readable_id_seq'::regclass)"))
+  human_readable_id String?
   user_name         String
   knowledge_spaces  knowledge_space[]
   llm_chats         llm_chat[]
@@ -97,7 +99,7 @@ model user {
 model llm_chat {
   id                    String     @id
   user_id               String
-  human_readable_id     String?    @default(dbgenerated("nextval('llm_chat_human_readable_id_seq'::regclass)"))
+  human_readable_id     String?
   user_prompt           String
   user_context          String
   llm_answer            String
@@ -112,13 +114,13 @@ model llm_chat {
 
 model rag_param {
   id                String   @id
-  human_readable_id String?  @default(dbgenerated("nextval('rag_param_human_readable_id_seq'::regclass)"))
+  human_readable_id String?
   message_id        String   @unique
   RagParamLLMChat   llm_chat @relation(fields: [message_id], references: [id])
 }
 
 model index_workflow {
-  id                     String @id
+  id                     String  @id
   status                 String
   action                 String
   workflow_start_time    String
@@ -127,4 +129,3 @@ model index_workflow {
   llm_cost_tokens        Int?
   embedding_cost_tokens  Int?
 }
-

@@ -10,6 +10,7 @@ from deeprag.workflow.data_model import (
     FirstExtractedGraphData,
     EntityIdInt,
     RelationsInt,
+    ExtractEntityRelationshipAgentResponse,
 )
 
 
@@ -43,7 +44,7 @@ with (
 
 async def extract_entity_relationship_agent(
     user_prompt: str,
-) -> FirstExtractedGraphData:
+) -> ExtractEntityRelationshipAgentResponse:
     response = await llm_service(system_prompt=system_prompt, user_prompt=user_prompt)
     response_dict_data = json.loads(response.assistant_response)
     extracted_entity_relationship_graph = FirstExtractedGraphData(
@@ -52,7 +53,10 @@ async def extract_entity_relationship_agent(
             RelationsInt(**relation) for relation in response_dict_data["relations"]
         ],
     )
-    return extracted_entity_relationship_graph
+    return ExtractEntityRelationshipAgentResponse(
+        first_extracted_graph_data=extracted_entity_relationship_graph,
+        cost_tokens=response.cost_tokens,
+    )
 
 
 # # 测试代码

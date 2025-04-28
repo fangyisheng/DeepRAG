@@ -28,12 +28,13 @@ async def batch_text_chunk_generate_graphs_process(
         for text_chunk in chunked_text_array.root
     ]
     results = []
+    total_llm_tokens_usage = 0
     for future in tqdm_asyncio(
         asyncio.as_completed(tasks), total=len(tasks), desc="批量生成子图结构中"
     ):
         result = await future
-        results.append(result)
-    total_llm_tokens_usage = sum([item.cost_tokens for item in results])
+        results.append(result.first_extracted_graph_data)
+        total_llm_tokens_usage += result.cost_tokens
     llm_token_usage_var.set(total_llm_tokens_usage)
     return BatchTextChunkGenerateGraphsResponse(root=results)
 

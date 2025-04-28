@@ -218,12 +218,13 @@ class DeepRAG:
         )
         logger.info("file数据模型落盘成功")
         # 然后创建workflow 落盘数据库
+        index_workflow_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         created_workflow: index_workflow = (
             await self.index_workflow_service.create_workflow(
                 id=str(uuid.uuid4()),
                 status="processing",
                 action="text_extract",
-                workflow_start_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                workflow_start_time=index_workflow_start_time,
             )
         )
         # 然后进行文本切分
@@ -254,6 +255,10 @@ class DeepRAG:
             await batch_text_chunk_generate_graphs_process(chunks)
         )
         logger.info("子图结构提取完成")
+        # 开始计算消耗的llm_tokens 后续用来累加
+        llm_total_token_usage = llm_token_usage_var.get()
+        logger.info(f"目前消耗的llm的token数量为{llm_total_token_usage}")
+
         # 更新workflow
         await self.index_workflow_service.update_workflow(
             id=created_workflow.id,
@@ -280,6 +285,10 @@ class DeepRAG:
             string_data=graph_data_html.root,
         )
         logger.info("完整的图结构可视化的HTML文件上传到Minio完成")
+        await self.index_workflow_service.update_workflow(
+            id=created_workflow.id,
+            action="Generate a visualization of the complete graph structure and store it in MinIO.",
+        )
 
         # 涉及merged_graph_data的数据库模型
         stored_merged_graph_data = (
@@ -298,56 +307,58 @@ class DeepRAG:
         )
         logger.info("sub_graph_data数据模型落盘完成")
 
-        # 得到完整的图谱结构以后，要对其中的关系描述进行加强
-        graph_description = GraphDescriptionEnrichment()
-        graph_data_with_description_enrichment: GraphDescriptionResponse = (
-            await graph_description.describe_graph(merged_graph)
-        )
-        logger.info("对完整的图谱结构的关系描述加强完成")
-        # 更新workflow
-        await self.index_workflow_service.update_workflow(
-            id=created_workflow.id,
-            action="graph_description_enrichment",
-        )
-        # 先将完整的图谱结构进行平铺展开变成一个列表
-        flattened_entity_relation: list[
-            FlattenEntityRelation
-        ] = await flatten_entity_relation_func(
-            graph_data_with_description_enrichment.graph_data_with_enriched_description,
-            stored_merged_graph_data.id,
-        )
-        logger.info("完整的图谱结构平铺展开完成，得到head_entity和tail_entity")
-
-        # 涉及到flattend_entity_relation的数据库模型的IO
-        await self.flatten_entity_relation_service.batch_create_flatten_entity_relation(
-            flattened_entity_relation
-        )
-        logger.info("flattened_entity_relation数据模型落盘完成")
-
-        # 利用embedding模型生成embedding向量
-        embedding_vector: BatchTextChunkGenerateEmbeddingsResponse = (
-            await batch_text_chunk_generate_embeddings_process(
-                graph_data_with_description_enrichment.graph_description_list
-            )
-        )
-
-        # 因为embedding_token_usage_var是全局变量，在上面的函数中已经运行过
-        embedding_total_token_usage = embedding_token_usage_var.get()
-        logger.info("对完整的图谱结构增强过的关系描述的embedding向量生成完成")
-        # 更新workflow
-        await self.index_workflow_service.update_workflow(
-            id=created_workflow.id,
-            action="generate_embedding_vector",
-            embedding_cost_tokens=embedding_total_token_usage,
-            llm_cost_tokens=
-        )
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
         if isinstance(meta_data, str):
-            meta_data = [meta_data for _ in range(len(embedding_vector))]
+            meta_data = [meta_data for _ in range(len(chunks.root))]
         if isinstance(knowledge_scope, KnowledgeScopeLocator):
-            knowledge_scope = [
-                knowledge_scope for _ in range(len(embedding_vector.root))]                                                                                                                                                           
+            knowledge_scope = [knowledge_scope for _ in range(len(chunks.root))]
         if not deep_index_pattern:
+            # 得到完整的图谱结构以后，要对其中的关系描述进行加强
+            graph_description = GraphDescriptionEnrichment()
+            graph_data_with_description_enrichment: GraphDescriptionResponse = (
+                await graph_description.describe_graph(merged_graph)
+            )
+            logger.info("对完整的图谱结构的关系描述加强完成")
+            # 更新workflow
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id,
+                action="graph_description_enrichment",
+            )
+            # 先将完整的图谱结构进行平铺展开变成一个列表
+            flattened_entity_relation: list[
+                FlattenEntityRelation
+            ] = await flatten_entity_relation_func(
+                graph_data_with_description_enrichment.graph_data_with_enriched_description,
+                stored_merged_graph_data.id,
+            )
+            logger.info("完整的图谱结构平铺展开完成，得到head_entity和tail_entity")
+
+            # 涉及到flattend_entity_relation的数据库模型的IO
+            await self.flatten_entity_relation_service.batch_create_flatten_entity_relation(
+                flattened_entity_relation
+            )
+            logger.info("flattened_entity_relation数据模型落盘完成")
+
+            # 利用embedding模型生成embedding向量
+            embedding_vector: BatchTextChunkGenerateEmbeddingsResponse = (
+                await batch_text_chunk_generate_embeddings_process(
+                    graph_data_with_description_enrichment.graph_description_list
+                )
+            )
+
+            logger.info("对完整的图谱结构增强过的关系描述的embedding向量生成完成")
+            # 因为embedding_token_usage_var是全局变量，在上面的函数中已经运行过
+            embedding_total_token_usage = embedding_token_usage_var.get()
+            logger.info(
+                f"目前消耗的embedding的token数量为{embedding_total_token_usage}"
+            )
+            # 更新workflow
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id,
+                action="generate_embedding_vector",
+                embedding_cost_tokens=embedding_total_token_usage,
+                llm_cost_tokens=llm_total_token_usage,
+            )
             await data_insert_to_vector_db(
                 text_list=graph_data_with_description_enrichment.graph_description_list,
                 vector=embedding_vector.root,
@@ -356,9 +367,16 @@ class DeepRAG:
                 meta_data=meta_data,
             )
             logger.info("向量数据库插入完成")
+            index_workflow_end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            index_workflow_duration_time = str(
+                index_workflow_end_time - index_workflow_start_time
+            )
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
+                status="success",
                 action="insert_to_vector_db",
+                workflow_end_time=index_workflow_end_time,
+                workflow_duration_time=index_workflow_duration_time,
             )
         else:
             # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
@@ -366,10 +384,12 @@ class DeepRAG:
                 await realize_leiden_community_algorithm(merged_graph)
             )
             logger.info("对完整的图谱结构进行leiden算法community划分完成")
+            # 更新workflow的状态
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
-                action="to partition community with merged_graph",
+                action="Perform community detection on the complete graph structure using the Leiden algorithm",
             )
+
             # 将带有社区标签的可视化html保存到Minio中，方便后续查看
             await upload_file_to_minio_func(
                 bucket_name=minio_object_reference.bucket_name,
@@ -377,12 +397,21 @@ class DeepRAG:
                 string_data=graph_data_with_community_id.html_content,
             )
             logger.info("整的图结构可视化的HTML文件上传到Minio完成")
+            # 更新workflow状态
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id,
+                action="Generate a visualization of the complete graph structure with community label and store it in MinIO.",
+            )
 
             # 生成带有社区id的graph_data, 并对其中的关系描述进行增强
             graph_data_with_community_id_and_description_enrichment: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
                 graph_data_with_community_id.graph_data
             )
             logger.info("对带有社区划分的完整的图谱结构的关系描述加强完成")
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id,
+                action="graph_description_enrichment_with_community_detection",
+            )
 
             # 生成带有社区id的社区报告
             community_report_with_community_id: BatchGenerateCommunityReportResponse = (
@@ -393,6 +422,13 @@ class DeepRAG:
             logger.info(
                 "对带有社区划分的完整的图谱结构增强过的关系描述的community报告生成完成"
             )
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id,
+                action="graph_description_enrichment_with_community_detection",
+            )
+            # 这里产生了llm_token的消耗
+            llm_total_token_usage += llm_token_usage_var.get()
+            logger.info(f"目前消耗的llm的token数量为{llm_total_token_usage}")
 
             # 这里涉及community_report的数据库模型
             batch_create_community_report_response: BatchCreateCommunityReportResponse = await self.community_report_service.batch_create_community_report(
@@ -416,6 +452,17 @@ class DeepRAG:
                 meta_data=meta_data,
             )
             logger.info("向量数据库插入完成")
+            index_workflow_end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            index_workflow_duration_time = str(
+                index_workflow_end_time - index_workflow_start_time
+            )
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id,
+                status="success",
+                action="insert_to_vector_db",
+                workflow_end_time=index_workflow_end_time,
+                workflow_duration_time=index_workflow_duration_time,
+            )
 
     async def batch_index(
         self,
@@ -465,7 +512,7 @@ class DeepRAG:
     ):
         """感觉这里的context参数是可以保留那种原始的历史记录，也可以让用户手动增加的，保留更多灵活性,
         可以用实际已经存在的session_id去调取context上下文，也可以开发者或者用户根据给定的数据结构手动构造上下文添加进来
-        session_id如果是空白的，那就是新开一个会话，这个逻辑是可通的"""
+        session_id如果是空白的，那就是新开一个会话，这个逻辑是可通的, 感觉这个collection_name 是不是也可以去除了，只要针对知识空间提问就行了，不需要再引入别的复杂度了？？"""
 
         # 首先利用输入的query对向量数据库进行有筛选的检索
         knowledge_scope_real_name: KnowledgeScopeRealName = await self.user_knowledge_space_file_service.get_knowledge_scope_real_name_by_id(
