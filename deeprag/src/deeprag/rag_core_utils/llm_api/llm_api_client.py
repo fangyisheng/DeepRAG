@@ -84,14 +84,24 @@ async def llm_service(
         context_histroy = []
     if cot_prompt is None:
         cot_prompt = []
-    chat_completion = await client.chat.completions.create(
-        model=llm_model,
-        messages=[{"role": "system", "content": system_prompt}]
-        + context_histroy
-        + [{"role": "user", "content": user_prompt}]
-        + cot_prompt,
-        stream=False,
-    )
+    if user_prompt is None:
+        chat_completion = await client.chat.completions.create(
+            model=llm_model,
+            messages=[{"role": "system", "content": system_prompt}]
+            + context_histroy
+            + cot_prompt,
+            stream=False,
+        )
+    else:
+        chat_completion = await client.chat.completions.create(
+            model=llm_model,
+            messages=[{"role": "system", "content": system_prompt}]
+            + context_histroy
+            + [{"role": "user", "content": user_prompt}]
+            + cot_prompt,
+            stream=False,
+        )
+
     return AssistantResponseWithCostTokens(
         assistant_response=chat_completion.choices[0].message.content,
         cost_tokens=chat_completion.usage.total_tokens,
@@ -150,11 +160,10 @@ async def llm_service_stream(
 
 # # test code 测试通过
 # async def main():
-#     chat = await llm_service(
-#         system_prompt="你是一个强大的人工智能助手", user_prompt="你好？"
-#     )
+#     chat = await llm_service(system_prompt="你是一个强大的人工智能助手")
 #     print(chat.assistant_response)
 #     print(chat.cost_tokens)
+#     # print(chat)
 
 
 # # main函数没有输出，所以打印它的结果，结果是None

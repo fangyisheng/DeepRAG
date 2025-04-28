@@ -371,6 +371,14 @@ class DeepRAG:
             index_workflow_duration_time = str(
                 index_workflow_end_time - index_workflow_start_time
             )
+            # 文件索引完毕，也确定好了文件的索引要放在zilliz某个集群下哪个collection_name了,所以要
+            await self.file_service.update_existed_file_in_knowledge(
+                id=knowledge_scope.file_id,
+                data={
+                    "indexed": True,
+                    "file_embedding_zilliz_collection_name": collection_name,
+                },
+            )
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
                 status="success",
@@ -503,7 +511,6 @@ class DeepRAG:
     async def query(
         self,
         user_prompt: str,
-        collection_name: str,
         knowledge_scope: KnowledgeScopeLocator,
         deep_query_pattern: bool = False,
         session_id: str | None = None,
@@ -519,6 +526,10 @@ class DeepRAG:
             knowledge_scope
         )
         logger.info(f"本次查询的知识范围的真实范围是{knowledge_scope_real_name}")
+        # 根据知识范围knowledge_scope找到文件产生的embedding向量存放在哪个zilliz_collection中了
+        collection_name = await self.file_service.get_zilliz_collection_name_by_file_id(
+            knowledge_scope.file_id
+        )
         searched_text: SearchedTextResponse = await query_vector_db_by_vector(
             user_prompt,
             collection_name,

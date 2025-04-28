@@ -80,3 +80,9 @@ class FileService:
         )
 
         return found_file_list
+
+    async def get_zilliz_collection_name_by_file_id(self, id: str) -> str:
+        zilliz_collection_name = await self.dao.get_zilliz_collection_name_by_file_id(
+            id
+        )
+        return zilliz_collection_name

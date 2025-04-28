@@ -15,18 +15,17 @@ async def created_knowledge_scope(
     file_path: str,
 ) -> Any:
     created_user = await deeprag.create_user(user_name)
-    # created_knowledge_space = await deeprag.create_knowledge_space(
-    #     created_user.id, knowledge_space_name
-    # )
-    # created_file = await deeprag.create_file_and_upload_to_minio(
-    #     file_path=file_path,
-    #     knowledge_space_id=created_knowledge_space.id,
-    #     bucket_name=minio_bucket_name,
-    #     object_name=minio_object_name,
-    # )
-    # knowledge_scope = created_file.knowledge_scope
-    # return knowledge_scope
-    return created_user
+    created_knowledge_space = await deeprag.create_knowledge_space(
+        created_user.id, knowledge_space_name
+    )
+    created_file = await deeprag.create_file_and_upload_to_minio(
+        file_path=file_path,
+        knowledge_space_id=created_knowledge_space.id,
+        bucket_name=minio_bucket_name,
+        object_name=minio_object_name,
+    )
+    knowledge_scope = created_file.knowledge_scope
+    return knowledge_scope
 
 
 async def index(collection_name: str, knowlege_scope: KnowledgeScopeLocator):
@@ -55,33 +54,15 @@ async def query_non_stream(
 
 import asyncio
 
-# asyncio.run(
-#     query_non_stream(
-#         "深度求索和哪些公司有关系？",
-#         "test_collection",
-#         KnowledgeScopeLocator(
-#             user_id="d1e48bb5-f65c-4975-a667-4d68e01c67c1",
-#             knowledge_space_id="8bb5493d-32a2-47fa-b724-678ecbd04e25",
-#             file_id="49302933-e63d-4b79-8923-c5c31883f5b1",
-#         ),
-#     )
-# )
-print(
-    asyncio.run(
-        created_knowledge_scope(
-            user_name="test_user",
-            knowledge_space_name="test_knowledge_space",
-            minio_bucket_name="mybucket",
-            minio_object_name="test.txt",
-            file_path="/root/project/DeepRAG/deeprag/src/deeprag/knowledge_file/test.txt",
-        )
+
+async def main():
+    await created_knowledge_scope(
+        user_name="test_name",
+        knowledge_space_name="test_knowledge_space",
+        minio_bucket_name="mybucket",
+        minio_object_name="test1.txt",
+        file_path="/home/easonfang/DeepRAG/deeprag/src/deeprag/samples.py",
     )
-)
 
 
-# asyncio.run(
-#     index(
-#         collection_name="test_collection",
-#         knowlege_scope=knowledge_scope,
-#     )
-# )
+print(asyncio.run(main()))

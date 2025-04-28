@@ -18,6 +18,8 @@ class FileDAO:
         doc_text: str,
         minio_bucket_name: str,
         minio_object_name: str,
+        indexed: bool = False,
+        file_embedding_zilliz_collection_name: str | None = None,
     ) -> file:
         await self.db.connect()
         stored_file = await self.db.file.create(
@@ -28,6 +30,8 @@ class FileDAO:
                 "doc_text": doc_text,
                 "minio_bucket_name": minio_bucket_name,
                 "minio_object_name": minio_object_name,
+                "indexed": indexed,
+                "file_embedding_zilliz_collection_name": file_embedding_zilliz_collection_name,
             },
             include={"KnowledgeSpaceFile": True},
         )
@@ -59,6 +63,12 @@ class FileDAO:
         found_file_list = await self.db.file.find_many(where={"knowledge_space_id": id})
         await self.db.disconnect()
         return found_file_list
+
+    async def get_zilliz_collection_name_by_file_id(self, id: str) -> str:
+        await self.db.connect()
+        found_file = await self.db.file.find_unique(where={"id": id})
+        await self.db.disconnect()
+        return found_file.zilliz_collection_name
 
 
 # # 撰写测试代码
