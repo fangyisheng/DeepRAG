@@ -655,3 +655,8 @@ class AsyncGeneratorWithCostTokens(BaseModel):
 class EmbeddingResponseWithCostTokens(BaseModel):
     embedding_vector: list[list[float]]
     cost_tokens: int
+
+
+class CostTokens(BaseModel):
+    llm_token_usage: int
+    embedding_token_usage: int

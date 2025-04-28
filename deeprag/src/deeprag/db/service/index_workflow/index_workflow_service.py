@@ -11,7 +11,7 @@ class IndexWorkFlowService:
         self,
         status: str,
         action: str,
-        workflow_start_time: str | None = None,
+        workflow_start_time: str,
         workflow_end_time: str | None = None,
         workflow_duration_time: str | None = None,
         llm_cost_tokens: int | None = None,
@@ -41,22 +41,7 @@ class IndexWorkFlowService:
     async def update_workflow(
         self,
         id: str,
-        status: str | None = None,
-        action: str | None = None,
-        workflow_start_time: str | None = None,
-        workflow_end_time: str | None = None,
-        workflow_duration_time: str | None = None,
-        llm_cost_tokens: int | None = None,
-        embedding_cost_tokens: int | None = None,
+        data: dict,
     ) -> index_workflow:
-        updated_workflow = await self.dao.update_workflow(
-            id,
-            status,
-            action,
-            workflow_start_time,
-            workflow_end_time,
-            workflow_duration_time,
-            llm_cost_tokens,
-            embedding_cost_tokens,
-        )
+        updated_workflow = await self.dao.update_workflow(id=id, data=data)
         return updated_workflow

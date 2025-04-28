@@ -59,9 +59,20 @@ class UserDAO:
         await self.db.disconnect()
         return searced_users
 
+    async def update_user_by_id(self, id: str, user_name: str) -> user:
+        await self.db.connect()
+        updated_user = await self.db.user.update(
+            where={"id": id}, data={"user_name": user_name}
+        )
+        await self.db.disconnect()
+        return updated_user
+
 
 # # 做一下select方法的测试,可能在Python的prisma客户端里没有select方法，还要做一下human_readable_id的序列增加
 
 # import asyncio
 
 # asyncio.run()
+
+
+# 测试一下update的功能方法

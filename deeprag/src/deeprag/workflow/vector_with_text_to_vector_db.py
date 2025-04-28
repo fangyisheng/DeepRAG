@@ -14,9 +14,9 @@ async def data_insert_to_vector_db(
     text_list: list,
     vector: list,
     collection_name: str,
-    knowledge_scope: list[KnowledgeScopeLocator],
-    community_cluster: list | None = None,
-    meta_data: list | None = None,
+    knowledge_scope_list: list[KnowledgeScopeLocator],
+    community_cluster_list: list | None = None,
+    meta_data_list: list | None = None,
 ) -> DataInsertVectorDBResponse:
     """
     knowledge_scope 的列表元素举例
@@ -30,14 +30,17 @@ async def data_insert_to_vector_db(
     [uuid, uuid, uuid, uuid]
     """
     # 通过引入字典解包，实现动态键值对的增加
-    knowledge_scope_list = [item.model_dump() for item in knowledge_scope]
+    knowledge_scope_list = [item.model_dump() for item in knowledge_scope_list]
+    logger.info(f"knowledge_scope_list: {knowledge_scope_list}")
+    logger.info(f"text_list: {text_list}")
+
     data = [
         {
             "text": text_list[i],
             "dense": vector[i],
             "knowledge_scope": knowledge_scope_list[i],
-            "meta_data": meta_data[i] if meta_data else "",
-            "community_id": community_cluster[i] if community_cluster else "",
+            "meta_data": meta_data_list[i] if meta_data_list else "",
+            "community_id": community_cluster_list[i] if community_cluster_list else "",
         }
         for i in range(len(text_list))
     ]

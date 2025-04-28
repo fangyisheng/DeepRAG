@@ -68,7 +68,7 @@ class FileDAO:
         await self.db.connect()
         found_file = await self.db.file.find_unique(where={"id": id})
         await self.db.disconnect()
-        return found_file.zilliz_collection_name
+        return found_file.file_embedding_zilliz_collection_name
 
 
 # # 撰写测试代码

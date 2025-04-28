@@ -107,8 +107,9 @@ model llm_chat {
   message_end_time      String
   message_duration_time String
   session_id            String
-  cost_tokens           String
-  LLLMChatUser          user       @relation(fields: [user_id], references: [id])
+  llm_token_usage           String
+  embedding_token_usage      String
+  LLLMChatUser          user?       @relation(fields: [user_id], references: [id])
   rag_params            rag_param?
 }
 
@@ -121,9 +122,9 @@ model rag_param {
 
 model index_workflow {
   id                     String  @id
-  status                 String
+  status                 String?
   action                 String
-  workflow_start_time    String
+  workflow_start_time    String?
   workflow_end_time      String?
   workflow_duration_time String?
   llm_cost_tokens        Int?

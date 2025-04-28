@@ -74,6 +74,7 @@ from deeprag.workflow.data_model import (
     GraphDataAddCommunityWithVisualization,
     FlattenEntityRelation,
     BatchCreateCommunityReportResponse,
+    CostTokens,
 )
 from prisma.models import file, knowledge_space, user, index_workflow
 from pathlib import Path
@@ -221,7 +222,6 @@ class DeepRAG:
         index_workflow_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         created_workflow: index_workflow = (
             await self.index_workflow_service.create_workflow(
-                id=str(uuid.uuid4()),
                 status="processing",
                 action="text_extract",
                 workflow_start_time=index_workflow_start_time,
@@ -247,8 +247,7 @@ class DeepRAG:
         logger.info("text_chunk数据模型落盘成功")
         # 更新workflow
         await self.index_workflow_service.update_workflow(
-            id=created_workflow.id,
-            action="text_chunk",
+            id=created_workflow.id, data={"action": "text_chunk"}
         )
         # 开始提取图结构
         graphs: BatchTextChunkGenerateGraphsResponse = (
@@ -261,8 +260,7 @@ class DeepRAG:
 
         # 更新workflow
         await self.index_workflow_service.update_workflow(
-            id=created_workflow.id,
-            action="sub_graph_generate",
+            id=created_workflow.id, data={"action": "sub_graph_generate"}
         )
         # 开始合并每个文本分块得到的子图结构变成一张完整的图谱结构
         merged_graph: CompleteGraphData = await merge_sub_entity_relationship_graph(
@@ -271,8 +269,7 @@ class DeepRAG:
         logger.info("子图结构合并完成一张完整的图")
         # 更新workflow
         await self.index_workflow_service.update_workflow(
-            id=created_workflow.id,
-            action="merge_sub_graph",
+            id=created_workflow.id, data={"action": "merge_sub_graph"}
         )
         # 对完整的图谱结构进行普通的可视化
         graph_data_html = await store_graph_data_to_html_with_no_leiden(merged_graph)
@@ -287,7 +284,9 @@ class DeepRAG:
         logger.info("完整的图结构可视化的HTML文件上传到Minio完成")
         await self.index_workflow_service.update_workflow(
             id=created_workflow.id,
-            action="Generate a visualization of the complete graph structure and store it in MinIO.",
+            data={
+                "action": "Generate a visualization of the complete graph structure and store it in MinIO."
+            },
         )
 
         # 涉及merged_graph_data的数据库模型
@@ -308,10 +307,7 @@ class DeepRAG:
         logger.info("sub_graph_data数据模型落盘完成")
 
         # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
-        if isinstance(meta_data, str):
-            meta_data = [meta_data for _ in range(len(chunks.root))]
-        if isinstance(knowledge_scope, KnowledgeScopeLocator):
-            knowledge_scope = [knowledge_scope for _ in range(len(chunks.root))]
+
         if not deep_index_pattern:
             # 得到完整的图谱结构以后，要对其中的关系描述进行加强
             graph_description = GraphDescriptionEnrichment()
@@ -321,8 +317,7 @@ class DeepRAG:
             logger.info("对完整的图谱结构的关系描述加强完成")
             # 更新workflow
             await self.index_workflow_service.update_workflow(
-                id=created_workflow.id,
-                action="graph_description_enrichment",
+                id=created_workflow.id, data={"action": "graph_description_enrichment"}
             )
             # 先将完整的图谱结构进行平铺展开变成一个列表
             flattened_entity_relation: list[
@@ -355,21 +350,44 @@ class DeepRAG:
             # 更新workflow
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
-                action="generate_embedding_vector",
-                embedding_cost_tokens=embedding_total_token_usage,
-                llm_cost_tokens=llm_total_token_usage,
+                data={
+                    "action": "generate_embedding_vector",
+                    "embedding_cost_tokens": embedding_total_token_usage,
+                    "llm_cost_tokens": llm_total_token_usage,
+                },
             )
+            if isinstance(meta_data, str):
+                meta_data_list = [
+                    meta_data
+                    for _ in range(
+                        len(
+                            graph_data_with_description_enrichment.graph_description_list
+                        )
+                    )
+                ]
+            if meta_data is None:
+                meta_data_list = None
+            if isinstance(knowledge_scope, KnowledgeScopeLocator):
+                knowledge_scope_list = [
+                    knowledge_scope
+                    for _ in range(
+                        len(
+                            graph_data_with_description_enrichment.graph_description_list
+                        )
+                    )
+                ]
             await data_insert_to_vector_db(
                 text_list=graph_data_with_description_enrichment.graph_description_list,
                 vector=embedding_vector.root,
                 collection_name=collection_name,
-                knowledge_scope=knowledge_scope,
-                meta_data=meta_data,
+                knowledge_scope_list=knowledge_scope_list,
+                meta_data_list=meta_data_list,
             )
             logger.info("向量数据库插入完成")
             index_workflow_end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             index_workflow_duration_time = str(
-                index_workflow_end_time - index_workflow_start_time
+                datetime.strptime(index_workflow_end_time, "%Y-%m-%d %H:%M:%S")
+                - datetime.strptime(index_workflow_start_time, "%Y-%m-%d %H:%M:%S")
             )
             # 文件索引完毕，也确定好了文件的索引要放在zilliz某个集群下哪个collection_name了,所以要
             await self.file_service.update_existed_file_in_knowledge(
@@ -381,10 +399,12 @@ class DeepRAG:
             )
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
-                status="success",
-                action="insert_to_vector_db",
-                workflow_end_time=index_workflow_end_time,
-                workflow_duration_time=index_workflow_duration_time,
+                data={
+                    "status": "success",
+                    "action": "insert_to_vector_db",
+                    "workflow_end_time": index_workflow_end_time,
+                    "workflow_duration_time": index_workflow_duration_time,
+                },
             )
         else:
             # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
@@ -395,7 +415,9 @@ class DeepRAG:
             # 更新workflow的状态
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
-                action="Perform community detection on the complete graph structure using the Leiden algorithm",
+                data={
+                    "status": "Perform community detection on the complete graph structure using the Leiden algorithm"
+                },
             )
 
             # 将带有社区标签的可视化html保存到Minio中，方便后续查看
@@ -408,7 +430,9 @@ class DeepRAG:
             # 更新workflow状态
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
-                action="Generate a visualization of the complete graph structure with community label and store it in MinIO.",
+                data={
+                    "action": "Generate a visualization of the complete graph structure with community label and store it in MinIO."
+                },
             )
 
             # 生成带有社区id的graph_data, 并对其中的关系描述进行增强
@@ -418,7 +442,9 @@ class DeepRAG:
             logger.info("对带有社区划分的完整的图谱结构的关系描述加强完成")
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
-                action="graph_description_enrichment_with_community_detection",
+                data={
+                    "action": "graph_description_enrichment_with_community_detection"
+                },
             )
 
             # 生成带有社区id的社区报告
@@ -432,7 +458,9 @@ class DeepRAG:
             )
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
-                action="graph_description_enrichment_with_community_detection",
+                data={
+                    "action": "graph_description_enrichment_with_community_detection"
+                },
             )
             # 这里产生了llm_token的消耗
             llm_total_token_usage += llm_token_usage_var.get()
@@ -450,6 +478,26 @@ class DeepRAG:
                 )
             )
             logger.info("community_cluster数据模型落盘完成")
+            if isinstance(meta_data, str):
+                meta_data = [
+                    meta_data
+                    for _ in range(
+                        len(
+                            graph_data_with_description_enrichment.graph_description_list
+                        )
+                    )
+                ]
+            if meta_data is None:
+                meta_data_list = None
+            if isinstance(knowledge_scope, KnowledgeScopeLocator):
+                knowledge_scope = [
+                    knowledge_scope
+                    for _ in range(
+                        len(
+                            graph_data_with_description_enrichment.graph_description_list
+                        )
+                    )
+                ]
 
             await data_insert_to_vector_db(
                 text_list=batch_create_community_report_response.community_report_list,
@@ -466,11 +514,17 @@ class DeepRAG:
             )
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
-                status="success",
-                action="insert_to_vector_db",
-                workflow_end_time=index_workflow_end_time,
-                workflow_duration_time=index_workflow_duration_time,
+                data={
+                    "status": "success",
+                    "action": "insert_to_vector_db",
+                    "workflow_end_time": index_workflow_end_time,
+                    "workflow_duration_time": index_workflow_duration_time,
+                },
             )
+        return CostTokens(
+            llm_token_usage=llm_total_token_usage,
+            embedding_token_usage=embedding_total_token_usage,
+        )
 
     async def batch_index(
         self,
@@ -479,7 +533,8 @@ class DeepRAG:
         meta_data: str | None = None,
         deep_index_pattern: bool = False,
     ):
-        # 这个batch index的行为有三种情况，一个是对不同的file_id进行batch index,另外一个是对相同的知识库id下面的文件做batch index，第三个行为是对用户空间下不同知识库id下面的所有的file id进行index
+        # 这个batch index的行为有三种情况，一个是对不同的file_id进行batch index,另外一个是对相同的知识库id下面的文件做batch index，第三个行为是对用户空间下不同知识库id下面的所有的file id进行index/.
+        # 这个函数后期还需要改进一下，集中返回所有文件消耗的llm_token_usage和embedding_token_usage
         if isinstance(knowledge_scope, list[KnowledgeScopeLocator]):
             if all(knowledge_scope.file_id for knowledge_scope in knowledge_scope):
                 tasks = [
@@ -520,6 +575,9 @@ class DeepRAG:
         """感觉这里的context参数是可以保留那种原始的历史记录，也可以让用户手动增加的，保留更多灵活性,
         可以用实际已经存在的session_id去调取context上下文，也可以开发者或者用户根据给定的数据结构手动构造上下文添加进来
         session_id如果是空白的，那就是新开一个会话，这个逻辑是可通的, 感觉这个collection_name 是不是也可以去除了，只要针对知识空间提问就行了，不需要再引入别的复杂度了？？"""
+        """
+        好像这里的deep_query_pattern好像还没开始写这部分的功能
+        """
 
         # 首先利用输入的query对向量数据库进行有筛选的检索
         knowledge_scope_real_name: KnowledgeScopeRealName = await self.user_knowledge_space_file_service.get_knowledge_scope_real_name_by_id(
@@ -576,17 +634,23 @@ class DeepRAG:
     async def query_answer_non_stream(
         self,
         user_prompt: str,
-        collection_name: str,
         knowledge_scope: KnowledgeScopeLocator,
         deep_query_pattern: bool = False,
         session_id: str | None = None,
         context: list[RoleMessage] | None = None,
         recalled_text_fragments_top_k: int = 5,
     ):
+        """
+        好像这里的deep_query_pattern好像还没开始写这部分的功能
+        """
         knowledge_scope_real_name: KnowledgeScopeRealName = await self.user_knowledge_space_file_service.get_knowledge_scope_real_name_by_id(
             knowledge_scope
         )
         logger.info(f"本次查询的知识范围的真实范围是{knowledge_scope_real_name}")
+        # 根据知识范围knowledge_scope找到文件产生的embedding向量存放在哪个zilliz_collection中了
+        collection_name = await self.file_service.get_zilliz_collection_name_by_file_id(
+            knowledge_scope.file_id
+        )
         searched_text: SearchedTextResponse = await query_vector_db_by_vector(
             user_prompt,
             collection_name,

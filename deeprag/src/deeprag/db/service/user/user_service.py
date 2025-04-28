@@ -33,8 +33,8 @@ class UserService:
         return found_users
 
 
-# 测试代码
-user_service = UserService()
-import asyncio
+# # 测试代码
+# user_service = UserService()
+# import asyncio
 
-print(asyncio.run(user_service.create_user("test")))
+# print(asyncio.run(user_service.create_user("test")))

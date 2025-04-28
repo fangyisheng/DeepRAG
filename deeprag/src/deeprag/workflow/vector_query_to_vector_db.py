@@ -36,7 +36,7 @@ async def query_vector_db_by_vector(
     else:
         filter = filter + ' AND commuity_id = ""'
     search_param_1 = {
-        "data": query_vector,
+        "data": query_vector.embedding_vector,
         "anns_field": "dense",
         "param": {"metric_type": "IP", "params": {"nprobe": 10}},
         "limit": recalled_text_fragments_top_k,
