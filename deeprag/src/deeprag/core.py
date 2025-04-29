@@ -55,6 +55,7 @@ from deeprag.db.service.flatten_entity_relation.flatten_entity_relation_service 
 from deeprag.db.service.index_workflow.index_workflow_service import (
     IndexWorkFlowService,
 )
+from deeprag.db.service.rag_param.rag_param_service import RagParamService
 from deeprag.db.data_model import RoleMessage
 from deeprag.workflow.data_model import (
     CompleteTextUnit,
@@ -103,9 +104,10 @@ class DeepRAG:
         self.flatten_entity_relation_service = FlattenEntityRelationService()
         self.community_cluster_service = CommunityClusterService()
         self.index_workflow_service = IndexWorkFlowService()
-        self.cost_index_llm_tokens = 0
-        self.cost_index_embedding_tokens = 0
-        self.cost_chat_llm_tokens = 0
+        self.rag_param_service = RagParamService()
+        # self.cost_index_llm_tokens = 0
+        # self.cost_index_embedding_tokens = 0
+        # self.cost_chat_llm_tokens = 0
 
     async def delete_file(self, file_id: str) -> file:
         deleted_file = await self.file_service.delete_file_in_knowledge_space(file_id)
@@ -643,6 +645,10 @@ class DeepRAG:
             llm_token_usage=llm_total_token_usage,
             embedding_token_usage=embedding_total_token_usage,
         )
+        await self.rag_param_service.create_rag_param(
+            grounds_for_response=real_response_dict["rag_groundings"],
+            message_id=real_response_dict["message_id"],
+        )
 
     async def query_answer_non_stream(
         self,
@@ -671,6 +677,7 @@ class DeepRAG:
             recalled_text_fragments_top_k,
             deep_query_pattern,
         )
+
         embedding_total_token_usage = embedding_token_usage_var.get()
         logger.info(f"本次检索到的文本是{searched_text}")
         if not session_id:
@@ -706,6 +713,10 @@ class DeepRAG:
             session_id=answer["session_id"],
             llm_token_usage=llm_total_token_usage,
             embedding_token_usage=embedding_total_token_usage,
+        )
+        await self.rag_param_service.create_rag_param(
+            grounds_for_response=answer["rag_groundings"],
+            message_id=answer["message_id"],
         )
 
         return answer

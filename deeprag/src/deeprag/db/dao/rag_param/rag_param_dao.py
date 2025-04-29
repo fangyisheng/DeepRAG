@@ -16,7 +16,7 @@ class RagParamDAO:
         stored_rag_param = await self.db.rag_param.create(
             data={
                 "id": id,
-                "grounds_for_response": grounds_for_response,
+                "rag_groundings": grounds_for_response,
                 "message_id": message_id,
             }
         )

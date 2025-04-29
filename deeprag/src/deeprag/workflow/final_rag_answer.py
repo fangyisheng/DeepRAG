@@ -41,10 +41,19 @@ async def final_rag_answer_process_stream(
             "rag_pattern": "deep_query_pattern"
             if deep_query_pattern
             else "common_query_pattern",
+            "rag_groundings": recalled_text_fragments,
             "session_id": session_id,
             "message_id": message_id,
         }
         yield f"data: {message}\n\n"
+    last_message = {
+        "answer": "",
+        "rag_pattern": "deep_query_pattern"
+        if deep_query_pattern
+        else "common_query_pattern",
+        "session_id": session_id,
+    }
+    yield f"""data: {last_message}\n\n"""
 
 
 async def final_rag_answer_process_not_stream(
@@ -52,6 +61,7 @@ async def final_rag_answer_process_not_stream(
     knowledge_scope_real_name: KnowledgeScopeRealName,
     recalled_text_fragments_list: list[str],
     session_id: str,
+    embedding_token_usage: int,
     deep_query_pattern: bool = False,
     context: list[RoleMessage] | None = None,
 ) -> FinalRAGAnswerResponse:
@@ -80,6 +90,9 @@ async def final_rag_answer_process_not_stream(
         "rag_pattern": "deep_query_pattern"
         if deep_query_pattern
         else "common_query_pattern",
+        "rag_groundings": recalled_text_fragments,
+        "embedding_token_usage": embedding_token_usage,
+        "llm_token_usage": answer.cost_tokens,
         "session_id": session_id,
         "message_id": message_id,
     }

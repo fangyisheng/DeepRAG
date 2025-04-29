@@ -3,7 +3,7 @@ from deeprag.workflow.data_model import KnowledgeScopeLocator
 import asyncio
 from typing import Any
 import traceback
-
+from deeprag.rag_core_utils.
 deeprag = DeepRAG()
 
 
@@ -80,7 +80,7 @@ import asyncio
 
 async def main():
     try:
-        await query_non_stream(
+        answer = await query_non_stream(
             user_prompt="深度求索和哪些公司有关系？",
             knowledge_scope=KnowledgeScopeLocator(
                 user_id="67f54e07-03aa-4319-9fcd-93034e8e990c",
@@ -88,6 +88,8 @@ async def main():
                 file_id="0da4cf66-ab9d-4378-a54d-c87ea0b36651",
             ),
         )
+        print()
+        return answer
     except Exception as e:
         print(e)
         print(traceback.format_exc())

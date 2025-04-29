@@ -107,16 +107,18 @@ model llm_chat {
   message_end_time      String
   message_duration_time String
   session_id            String
-  llm_token_usage           String
-  embedding_token_usage      String
-  LLLMChatUser          user?       @relation(fields: [user_id], references: [id])
+  llm_token_usage           Int
+  embedding_token_usage      Int
+  LLLMChatUser          user      @relation(fields: [user_id], references: [id])
   rag_params            rag_param?
 }
 
+// 这个rag_param表主要是记录RAG参数，目前好像用不到什么，方便后期项目的拓展吧
 model rag_param {
   id                String   @id
   human_readable_id String?  @default(dbgenerated("nextval('rag_param_human_readable_id_seq'::regclass)"))
   message_id        String   @unique
+  rag_groundings    String
   RagParamLLMChat   llm_chat @relation(fields: [message_id], references: [id])
 }
 
