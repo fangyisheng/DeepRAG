@@ -101,7 +101,7 @@ model llm_chat {
   user_id               String
   human_readable_id     String?    @default(dbgenerated("nextval('llm_chat_human_readable_id_seq'::regclass)"))
   user_prompt           String
-  user_context          String
+  user_context          String?
   llm_answer            String
   message_start_time    String
   message_end_time      String

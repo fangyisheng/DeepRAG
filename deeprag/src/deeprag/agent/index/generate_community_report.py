@@ -50,6 +50,7 @@ async def generate_community_report_agent(
                 origin_description=final_response_dict["origin_description"],
                 summary=final_response_dict["summary"],
             ),
+            cost_tokens=final_response.cost_tokens,
         )
     except Exception as e:
         print(f"发生错误: {str(e)}")

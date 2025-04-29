@@ -6,6 +6,10 @@ from deeprag.workflow.data_model import (
     BatchGenerateCommunityReportResponse,
 )
 from tqdm.asyncio import tqdm_asyncio
+from deeprag.rag_core_utils.utils.context_holder import (
+    llm_token_usage_var,
+)
+from loguru import logger
 
 
 async def batch_generate_community_report_func(
@@ -30,14 +34,19 @@ async def batch_generate_community_report_func(
         tasks.append((community_id, task))
     # result = await asyncio.gather(*(task for _, task in tasks))
     results = []
+    total_llm_tokens_usage = 0
     for future in tqdm_asyncio(
         asyncio.as_completed([task for _, task in tasks]),
         total=len(tasks),
         desc="批量生成划分好的社区的社区报告",
     ):
         result = await future
-        # 如果结果是列表，直接扩展结果列表，而不是追加
         results.append(result)
+        total_llm_tokens_usage += result.cost_tokens
+        logger.info(f"当前社区报告消耗的token: {result.cost_tokens}")
+    logger.info(f"总的LLM tokens使用量: {total_llm_tokens_usage}")
+
+    llm_token_usage_var.set(total_llm_tokens_usage)
 
     community_reports_with_community_id = {
         community_id: report.community_report
@@ -72,4 +81,9 @@ async def batch_generate_community_report_func(
 # }
 
 
-# print(asyncio.run(batch_generate_community_report_func(test_data)))
+# async def main():
+#     await batch_generate_community_report_func(test_data)
+#     print(llm_token_usage_var.get())
+
+
+# asyncio.run(main())

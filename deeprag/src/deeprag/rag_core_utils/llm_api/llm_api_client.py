@@ -152,9 +152,6 @@ async def llm_service_stream(
 #     print(chat.cost_tokens.result())
 
 
-# # main函数没有输出，所以打印它的结果，结果是None
-# # if __name__ == "__main__":
-# #     print(asyncio.run(main()))
 # asyncio.run(main())
 
 

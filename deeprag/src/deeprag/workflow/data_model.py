@@ -319,6 +319,12 @@ class GraphDataAddCommunityWithVisualization(BaseModel):
     )
 
 
+class CommunityReportStructedData(BaseModel):
+    title: str
+    origin_description: str
+    summary: str
+
+
 class BatchGenerateCommunityReportResponse(BaseModel):
     """
     community_reports_with_community_id:
@@ -360,18 +366,15 @@ class BatchGenerateCommunityReportResponse(BaseModel):
         ],
     )
 
-    community_reports_structed_data_with_community_id: dict[str, str]
-
-
-class CommunityReportStructedData(BaseModel):
-    title: str
-    origin_description: str
-    summary: str
+    community_reports_structed_data_with_community_id: dict[
+        str, CommunityReportStructedData
+    ]
 
 
 class GenerateCommunityReportResponse(BaseModel):
     community_report: str
     community_report_structed_data: CommunityReportStructedData
+    cost_tokens: int
 
 
 # class BatchGenerateCommunityClusterResponse(BaseModel):

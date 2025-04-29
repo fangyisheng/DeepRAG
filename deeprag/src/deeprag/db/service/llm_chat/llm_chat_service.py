@@ -18,7 +18,8 @@ class LLMChatService:
         message_end_time: str,
         message_duration_time: str,
         session_id: str,
-        cost_tokens: str | None = None,
+        llm_token_usage: int,
+        embedding_token_usage: int,
     ) -> llm_chat:
         stored_message = await self.dao.create_message(
             id,
@@ -30,7 +31,8 @@ class LLMChatService:
             message_end_time,
             message_duration_time,
             session_id,
-            cost_tokens,
+            llm_token_usage,
+            embedding_token_usage,
         )
         return stored_message
 

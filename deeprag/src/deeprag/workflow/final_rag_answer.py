@@ -5,7 +5,6 @@ from deeprag.workflow.data_model import (
     FinalRAGAnswerStreamResponse,
     KnowledgeScopeRealName,
 )
-
 from deeprag.db.data_model import RoleMessage
 from typing import AsyncGenerator
 import uuid
@@ -36,7 +35,7 @@ async def final_rag_answer_process_stream(
         session_id = str(uuid.uuid4())
 
     message_id = str(uuid.uuid4())
-    async for answer in response:
+    async for answer in response.assistant_response_generator:
         message = {
             "answer": answer,
             "rag_pattern": "deep_query_pattern"

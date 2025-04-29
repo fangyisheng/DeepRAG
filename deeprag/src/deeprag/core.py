@@ -532,9 +532,10 @@ class DeepRAG:
         knowledge_scope: list[KnowledgeScopeLocator] | KnowledgeScopeLocator,
         meta_data: str | None = None,
         deep_index_pattern: bool = False,
-    ):
+    ) -> CostTokens:
         # 这个batch index的行为有三种情况，一个是对不同的file_id进行batch index,另外一个是对相同的知识库id下面的文件做batch index，第三个行为是对用户空间下不同知识库id下面的所有的file id进行index/.
         # 这个函数后期还需要改进一下，集中返回所有文件消耗的llm_token_usage和embedding_token_usage
+        results = []
         if isinstance(knowledge_scope, list[KnowledgeScopeLocator]):
             if all(knowledge_scope.file_id for knowledge_scope in knowledge_scope):
                 tasks = [
@@ -546,7 +547,7 @@ class DeepRAG:
                     )
                     for knowledge_scope in knowledge_scope
                 ]
-                await asyncio.gather(*tasks)
+                results = await asyncio.gather(*tasks)
         if isinstance(knowledge_scope, KnowledgeScopeLocator):
             if knowledge_scope.knowledge_space_id and not knowledge_scope.file_id:
                 found_file_list = await self.file_service.get_file_in_knowledge_space_by_knowledge_space_id(
@@ -561,7 +562,15 @@ class DeepRAG:
                     )
                     for file in found_file_list
                 ]
-                await asyncio.gather(**tasks)
+                results = await asyncio.gather(**tasks)
+        llm_total_token_usage = sum([result.llm_token_usage for result in results])
+        embedding_total_token_usage = sum(
+            [result.embedding_token_usage for result in results]
+        )
+        return CostTokens(
+            llm_token_usage=llm_total_token_usage,
+            embedding_token_usage=embedding_total_token_usage,
+        )
 
     async def query(
         self,
@@ -595,6 +604,7 @@ class DeepRAG:
             recalled_text_fragments_top_k,
             deep_query_pattern,
         )
+        embedding_total_token_usage = embedding_token_usage_var.get()
         logger.info(f"本次检索到的文本是{searched_text}")
         if not session_id:
             context = None
@@ -618,6 +628,7 @@ class DeepRAG:
             datetime.strptime(message_end_time, "%Y-%m-%d %H:%M:%S")
             - datetime.strptime(message_start_time, "%Y-%m-%d %H:%M:%S")
         )
+        llm_total_token_usage = llm_token_usage_var.get()
 
         await self.llm_chat_service.create_message(
             id=real_response_dict["message_id"],
@@ -629,6 +640,8 @@ class DeepRAG:
             message_end_time=message_end_time,
             message_duration_time=message_duration_time,
             session_id=real_response_dict["session_id"],
+            llm_token_usage=llm_total_token_usage,
+            embedding_token_usage=embedding_total_token_usage,
         )
 
     async def query_answer_non_stream(
@@ -658,6 +671,7 @@ class DeepRAG:
             recalled_text_fragments_top_k,
             deep_query_pattern,
         )
+        embedding_total_token_usage = embedding_token_usage_var.get()
         logger.info(f"本次检索到的文本是{searched_text}")
         if not session_id:
             context = None
@@ -679,6 +693,7 @@ class DeepRAG:
             datetime.strptime(message_end_time, "%Y-%m-%d %H:%M:%S")
             - datetime.strptime(message_start_time, "%Y-%m-%d %H:%M:%S")
         )
+        llm_total_token_usage = llm_token_usage_var.get()
         await self.llm_chat_service.create_message(
             id=answer["message_id"],
             user_id=knowledge_scope.user_id,
@@ -689,6 +704,8 @@ class DeepRAG:
             message_end_time=message_end_time,
             message_duration_time=message_duration_time,
             session_id=answer["session_id"],
+            llm_token_usage=llm_total_token_usage,
+            embedding_token_usage=embedding_total_token_usage,
         )
 
         return answer
