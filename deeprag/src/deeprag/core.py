@@ -593,7 +593,7 @@ class DeepRAG:
                 collection_name=collection_name,
                 knowledge_scope_list=knowledge_scope_list,
                 community_cluster_list=batch_create_community_report_response.community_id_list,
-                meta_data=meta_data,
+                meta_data_list=meta_data,
             )
             logger.info("向量数据库插入完成")
             index_workflow_end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
