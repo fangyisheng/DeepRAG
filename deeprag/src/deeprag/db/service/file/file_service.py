@@ -86,3 +86,11 @@ class FileService:
             id
         )
         return zilliz_collection_name
+
+    async def get_index_status_by_file_id(self, id: str) -> bool:
+        index_status = await self.dao.get_index_status_by_file_id(id)
+        return index_status
+
+    async def get_deep_index_status_by_file_id(self, id: str) -> bool:
+        deep_index_status = await self.dao.get_deep_index_status_by_file_id(id)
+        return deep_index_status

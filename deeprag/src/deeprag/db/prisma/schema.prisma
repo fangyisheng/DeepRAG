@@ -18,17 +18,18 @@ model knowledge_space {
 }
 
 model file {
-  id                     String          @id
-  human_readable_id      String?         @default(dbgenerated("nextval('file_human_readable_id_seq'::regclass)"))
-  doc_title              String
-  doc_text               String?
-  knowledge_space_id     String
-  minio_bucket_name      String
-  minio_object_name      String
-  indexed                Boolean?
+  id                                    String          @id
+  human_readable_id                     String?         @default(dbgenerated("nextval('file_human_readable_id_seq'::regclass)"))
+  doc_title                             String
+  doc_text                              String?
+  knowledge_space_id                    String
+  minio_bucket_name                     String
+  minio_object_name                     String
+  indexed                               Boolean @default(false) 
+  deep_indexed                          Boolean @default(false) 
   file_embedding_zilliz_collection_name String?
-  KnowledgeSpaceFile     knowledge_space @relation(fields: [knowledge_space_id], references: [id])
-  text_chunks            text_chunk[]
+  KnowledgeSpaceFile                    knowledge_space @relation(fields: [knowledge_space_id], references: [id])
+  text_chunks                           text_chunk[]
 }
 
 model text_chunk {
@@ -107,13 +108,12 @@ model llm_chat {
   message_end_time      String
   message_duration_time String
   session_id            String
-  llm_token_usage           Int
-  embedding_token_usage      Int
-  LLLMChatUser          user      @relation(fields: [user_id], references: [id])
+  llm_token_usage       Int
+  embedding_token_usage Int
+  LLLMChatUser          user       @relation(fields: [user_id], references: [id])
   rag_params            rag_param?
 }
 
-// 这个rag_param表主要是记录RAG参数，目前好像用不到什么，方便后期项目的拓展吧
 model rag_param {
   id                String   @id
   human_readable_id String?  @default(dbgenerated("nextval('rag_param_human_readable_id_seq'::regclass)"))

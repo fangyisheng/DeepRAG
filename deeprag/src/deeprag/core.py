@@ -88,6 +88,7 @@ from deeprag.rag_core_utils.utils.context_holder import (
 )
 import json
 from datetime import datetime
+import ast
 
 
 class DeepRAG:
@@ -198,119 +199,176 @@ class DeepRAG:
         if knowledge_scope.file_id is None:
             raise ValueError("knowledge_scope.file_id is Needed")
 
+        index_status = await self.file_service.get_index_status_by_file_id(
+            knowledge_scope.file_id
+        )
+        deep_index_status = await self.file_service.get_deep_index_status_by_file_id(
+            knowledge_scope.file_id
+        )
+
+        #  判断当前文件是否已经索引过了，是否已经被深度索引过了。
+        # 如果你的deep_index_pattern为True，那么就代表你需要深度索引，那么就判断是否已经被深度索引过了，如果已经被深度索引过了，那么就抛出异常
+        # 如果deep_index_pattern为False，那么就代表你需要普通索引，那么就判断是否已经被索引过了，如果已经被索引过了，那么就抛出异常
+
+        if deep_index_pattern:
+            if deep_index_status:
+                raise Exception("当前文件已经被深度索引过了！")
+            if index_status:
+                logger.info(
+                    "当前文件已经被普通索引过了，但是没有被深度索引过，可以复用之前的中间过程开始深度索引"
+                )
+            else:
+                logger.info("当前文件没有深度索引过，也没有普通索引过，开始深度索引")
+        else:
+            if deep_index_status:
+                raise Exception(
+                    "当前文件已经被深度索引过了,但是没有被普通索引过，可以复用之前的中间过程开始普通索引"
+                )
+            if index_status:
+                raise Exception("当前文件已经被普通索引过了！")
+            else:
+                logger.info("当前文件没有深度索引过，也没有普通索引过，开始普通索引")
+        llm_total_token_usage = 0
+        embedding_total_token_usage = 0
         # 通过file_id定位文件在Minio中的位置
+
         minio_object_reference: MinioObjectReference = (
             await self.file_service.get_minio_reference_by_id(knowledge_scope.file_id)
         )
 
-        # 接下来判断需要做index的文件类型，如果是csv或者excel等有结构的数据，那么就要跳过数据清洗
+        if not index_status and not deep_index_status:
+            # 接下来判断需要做index的文件类型，如果是csv或者excel等有结构的数据，那么就要跳过数据清洗
 
-        # 首先提取文本
-        complete_text: CompleteTextUnit = await process_text(
-            minio_object_reference.bucket_name, minio_object_reference.object_name
-        )
-        logger.info("数据提取和清洗完成")
-
-        # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
-        # 涉及file的数据库模型
-        await self.file_service.update_existed_file_in_knowledge(
-            knowledge_scope.file_id,
-            {
-                "doc_text": complete_text.root[:300],
-            },
-        )
-        logger.info("file数据模型落盘成功")
-        # 然后创建workflow 落盘数据库
-        index_workflow_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        created_workflow: index_workflow = (
-            await self.index_workflow_service.create_workflow(
-                status="processing",
-                action="text_extract",
-                workflow_start_time=index_workflow_start_time,
+            # 首先提取文本
+            complete_text: CompleteTextUnit = await process_text(
+                minio_object_reference.bucket_name, minio_object_reference.object_name
             )
-        )
-        # 然后进行文本切分
-        splitter = TextSplitter()
-        if Path(minio_object_reference.object_name).suffix != ".csv":
-            chunks: ChunkedTextUnit = await splitter.split_text_by_token(complete_text)
-        else:
-            chunks: ChunkedTextUnit = await splitter.split_text_by_row_in_csv(
-                complete_text
+            logger.info("数据提取和清洗完成")
+
+            # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
+            # 涉及file的数据库模型
+            await self.file_service.update_existed_file_in_knowledge(
+                knowledge_scope.file_id,
+                {
+                    "doc_text": complete_text.root[:300],
+                },
             )
-        token_list: TokenListByTextChunk = splitter.tokens_by_chunk
-        logger.info("文本切分完成")
-
-        # 涉及text_chunk的数据库模型
-        text_chunk_id_list = await self.text_chunk_service.batch_create_text_chunk(
-            doc_id=knowledge_scope.file_id,
-            text_chunk_list=chunks,
-            n_tokens_list=token_list,
-        )
-        logger.info("text_chunk数据模型落盘成功")
-        # 更新workflow
-        await self.index_workflow_service.update_workflow(
-            id=created_workflow.id, data={"action": "text_chunk"}
-        )
-        # 开始提取图结构
-        graphs: BatchTextChunkGenerateGraphsResponse = (
-            await batch_text_chunk_generate_graphs_process(chunks)
-        )
-        logger.info("子图结构提取完成")
-        # 开始计算消耗的llm_tokens 后续用来累加
-        llm_total_token_usage = llm_token_usage_var.get()
-        logger.info(f"目前消耗的llm的token数量为{llm_total_token_usage}")
-
-        # 更新workflow
-        await self.index_workflow_service.update_workflow(
-            id=created_workflow.id, data={"action": "sub_graph_generate"}
-        )
-        # 开始合并每个文本分块得到的子图结构变成一张完整的图谱结构
-        merged_graph: CompleteGraphData = await merge_sub_entity_relationship_graph(
-            graphs
-        )
-        logger.info("子图结构合并完成一张完整的图")
-        # 更新workflow
-        await self.index_workflow_service.update_workflow(
-            id=created_workflow.id, data={"action": "merge_sub_graph"}
-        )
-        # 对完整的图谱结构进行普通的可视化
-        graph_data_html = await store_graph_data_to_html_with_no_leiden(merged_graph)
-        logger.info("对完整的图结构可视化完成")
-
-        # 然后将可视化的html文件上传到Minio中方便查看
-        await upload_file_to_minio_func(
-            bucket_name=minio_object_reference.bucket_name,
-            object_name=f"html_content/{str(uuid.uuid4())}_graph_data_with_no_leiden.html",
-            string_data=graph_data_html.root,
-        )
-        logger.info("完整的图结构可视化的HTML文件上传到Minio完成")
-        await self.index_workflow_service.update_workflow(
-            id=created_workflow.id,
-            data={
-                "action": "Generate a visualization of the complete graph structure and store it in MinIO."
-            },
-        )
-
-        # 涉及merged_graph_data的数据库模型
-        stored_merged_graph_data = (
-            await self.merged_graph_data_service.create_merged_graph_data(
-                str(merged_graph.model_dump()), graph_data_html.root
+            logger.info("file数据模型落盘成功")
+            # 然后创建workflow 落盘数据库
+            index_workflow_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            created_workflow: index_workflow = (
+                await self.index_workflow_service.create_workflow(
+                    status="processing",
+                    action="text_extract",
+                    workflow_start_time=index_workflow_start_time,
+                )
             )
-        )
-        # 这里在函数调用的外面仍然加了一个括号的作用是为了隐式续行，放心，不会变成元组
+            # 然后进行文本切分
+            splitter = TextSplitter()
+            if Path(minio_object_reference.object_name).suffix != ".csv":
+                chunks: ChunkedTextUnit = await splitter.split_text_by_token(
+                    complete_text
+                )
+            else:
+                chunks: ChunkedTextUnit = await splitter.split_text_by_row_in_csv(
+                    complete_text
+                )
+            token_list: TokenListByTextChunk = splitter.tokens_by_chunk
+            logger.info("文本切分完成")
 
-        logger.info("merged_graph_data数据模型落盘完成")
-        # 涉及到sub_graph_data的数据库模型
-        await self.sub_graph_data_service.batch_create_sub_graph_data(
-            text_chunk_id_list=text_chunk_id_list,
-            sub_graph_data_list=graphs,
-            merged_graph_data_id=stored_merged_graph_data.id,
-        )
-        logger.info("sub_graph_data数据模型落盘完成")
+            # 涉及text_chunk的数据库模型
+            text_chunk_id_list = await self.text_chunk_service.batch_create_text_chunk(
+                doc_id=knowledge_scope.file_id,
+                text_chunk_list=chunks,
+                n_tokens_list=token_list,
+            )
+            logger.info("text_chunk数据模型落盘成功")
+            # 更新workflow
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id, data={"action": "text_chunk"}
+            )
+            # 开始提取图结构
+            graphs: BatchTextChunkGenerateGraphsResponse = (
+                await batch_text_chunk_generate_graphs_process(chunks)
+            )
+            logger.info("子图结构提取完成")
+            # 开始计算消耗的llm_tokens 后续用来累加
+            llm_total_token_usage += llm_token_usage_var.get()
+            logger.info(f"目前消耗的llm的token数量为{llm_total_token_usage}")
 
-        # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
+            # 更新workflow
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id, data={"action": "sub_graph_generate"}
+            )
+            # 开始合并每个文本分块得到的子图结构变成一张完整的图谱结构
+            merged_graph: CompleteGraphData = await merge_sub_entity_relationship_graph(
+                graphs
+            )
+            logger.info("子图结构合并完成一张完整的图")
+            # 更新workflow
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id, data={"action": "merge_sub_graph"}
+            )
+            # 对完整的图谱结构进行普通的可视化
+            graph_data_html = await store_graph_data_to_html_with_no_leiden(
+                merged_graph
+            )
+            logger.info("对完整的图结构可视化完成")
+
+            # 然后将可视化的html文件上传到Minio中方便查看
+            await upload_file_to_minio_func(
+                bucket_name=minio_object_reference.bucket_name,
+                object_name=f"html_content/{str(uuid.uuid4())}_graph_data_with_no_leiden.html",
+                string_data=graph_data_html.root,
+            )
+            logger.info("完整的图结构可视化的HTML文件上传到Minio完成")
+            await self.index_workflow_service.update_workflow(
+                id=created_workflow.id,
+                data={
+                    "action": "Generate a visualization of the complete graph structure and store it in MinIO."
+                },
+            )
+
+            # 涉及merged_graph_data的数据库模型
+            stored_merged_graph_data = (
+                await self.merged_graph_data_service.create_merged_graph_data(
+                    str(merged_graph.model_dump()), graph_data_html.root
+                )
+            )
+            # 这里在函数调用的外面仍然加了一个括号的作用是为了隐式续行，放心，不会变成元组
+
+            logger.info("merged_graph_data数据模型落盘完成")
+            # 涉及到sub_graph_data的数据库模型
+            await self.sub_graph_data_service.batch_create_sub_graph_data(
+                text_chunk_id_list=text_chunk_id_list,
+                sub_graph_data_list=graphs,
+                merged_graph_data_id=stored_merged_graph_data.id,
+            )
+            logger.info("sub_graph_data数据模型落盘完成")
+
+            # 将描述好的关系描述,以及关系描述的embedding向量以及附带的metadata嵌入到zilliz向量数据库中，目前我的metadata信息只有原文件名，考虑以后的可扩展性？现在考虑好了
 
         if not deep_index_pattern:
+            # 如果之前做过深度索引，那么可以在这里进行普通索引的过程中可以复用之前深度索引的中间过程的结果
+            if deep_index_status:
+                found_file: file = (
+                    await self.file_service.get_file_in_knowledge_space_by_doc_id(
+                        knowledge_scope.file_id
+                    )
+                )
+                merged_graph: str = found_file.text_chunks[
+                    0
+                ].sub_graph_datas.SubGraphDataMergedGraphData.graph_data
+                merged_graph: CompleteGraphData = CompleteGraphData(
+                    **(ast.literal_eval(merged_graph))
+                )
+                index_workflow_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                created_workflow = await self.index_workflow_service.create_workflow(
+                    status="processing",
+                    action="Retrieve the full knowledge graph structure created in the previous indexing phase.",
+                    workflow_start_time=index_workflow_start_time,
+                )
+
             # 得到完整的图谱结构以后，要对其中的关系描述进行加强
             graph_description = GraphDescriptionEnrichment()
             graph_data_with_description_enrichment: GraphDescriptionResponse = (
@@ -409,6 +467,28 @@ class DeepRAG:
                 },
             )
         else:
+            # 如果之前已经index好了，那么可以借用之前index过程中生成好的文件的merged_graph, 这块是需要被攻克的一个地方
+            if index_status:
+                found_file: file = (
+                    await self.file_service.get_file_in_knowledge_space_by_doc_id(
+                        knowledge_scope.file_id
+                    )
+                )
+                merged_graph: str = found_file.text_chunks[
+                    0
+                ].sub_graph_datas.SubGraphDataMergedGraphData.graph_data
+                merged_graph: CompleteGraphData = CompleteGraphData(
+                    **(ast.literal_eval(merged_graph))
+                )
+                logger.info("从数据库中获取到之前的index过程中产生的完整的图谱结构")
+                # 这里需要再重新建立一个workflow，因为之前的workflow已经结束了
+                index_workflow_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                created_workflow = await self.index_workflow_service.create_workflow(
+                    status="processing",
+                    action="Retrieve the full knowledge graph structure created in the previous indexing phase.",
+                    workflow_start_time=index_workflow_start_time,
+                )
+
             # 如果是deep_index_pattern 那么要生成社区报告。首先做好社区划分。
             graph_data_with_community_id: GraphDataAddCommunityWithVisualization = (
                 await realize_leiden_community_algorithm(merged_graph)
@@ -438,6 +518,7 @@ class DeepRAG:
             )
 
             # 生成带有社区id的graph_data, 并对其中的关系描述进行增强
+            graph_description = GraphDescriptionEnrichment()
             graph_data_with_community_id_and_description_enrichment: GraphDescriptionWithCommunityClusterResponse = await graph_description.describe_graph_with_community_cluster(
                 graph_data_with_community_id.graph_data
             )
@@ -450,10 +531,8 @@ class DeepRAG:
             )
 
             # 生成带有社区id的社区报告
-            community_report_with_community_id: BatchGenerateCommunityReportResponse = (
-                await batch_generate_community_report_func(
-                    graph_data_with_community_id_and_description_enrichment
-                )
+            community_report_with_community_id: BatchGenerateCommunityReportResponse = await batch_generate_community_report_func(
+                graph_data_with_community_id_and_description_enrichment.graph_description_dict_by_community_id
             )
             logger.info(
                 "对带有社区划分的完整的图谱结构增强过的关系描述的community报告生成完成"
@@ -467,12 +546,6 @@ class DeepRAG:
             # 这里产生了llm_token的消耗
             llm_total_token_usage += llm_token_usage_var.get()
             logger.info(f"目前消耗的llm的token数量为{llm_total_token_usage}")
-
-            # 这里涉及community_report的数据库模型
-            batch_create_community_report_response: BatchCreateCommunityReportResponse = await self.community_report_service.batch_create_community_report(
-                community_report_with_community_id
-            )
-            logger.info("community_report数据模型落盘完成")
             # 这里涉及community_cluster的数据库模型
             batch_create_community_cluster_response = (
                 await self.community_cluster_service.batch_create_community_cluster(
@@ -480,39 +553,59 @@ class DeepRAG:
                 )
             )
             logger.info("community_cluster数据模型落盘完成")
+
+            # 这里涉及community_report的数据库模型
+            batch_create_community_report_response: BatchCreateCommunityReportResponse = await self.community_report_service.batch_create_community_report(
+                community_report_with_community_id
+            )
+            logger.info("community_report数据模型落盘完成")
+
             if isinstance(meta_data, str):
                 meta_data = [
                     meta_data
                     for _ in range(
                         len(
-                            graph_data_with_description_enrichment.graph_description_list
+                            community_report_with_community_id.community_reports_structed_data_with_community_id
                         )
                     )
                 ]
             if meta_data is None:
                 meta_data_list = None
             if isinstance(knowledge_scope, KnowledgeScopeLocator):
-                knowledge_scope = [
+                knowledge_scope_list = [
                     knowledge_scope
                     for _ in range(
                         len(
-                            graph_data_with_description_enrichment.graph_description_list
+                            community_report_with_community_id.community_reports_structed_data_with_community_id
                         )
                     )
                 ]
+            # 利用embedding模型生成embedding向量
+            embedding_vector: BatchTextChunkGenerateEmbeddingsResponse = (
+                await batch_text_chunk_generate_embeddings_process(
+                    batch_create_community_report_response.community_report_list
+                )
+            )
 
             await data_insert_to_vector_db(
                 text_list=batch_create_community_report_response.community_report_list,
-                vector=embedding_vector,
+                vector=embedding_vector.root,
                 collection_name=collection_name,
-                knowledge_scope=knowledge_scope,
-                community_cluster=batch_create_community_report_response.community_id_list,
+                knowledge_scope_list=knowledge_scope_list,
+                community_cluster_list=batch_create_community_report_response.community_id_list,
                 meta_data=meta_data,
             )
             logger.info("向量数据库插入完成")
             index_workflow_end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             index_workflow_duration_time = str(
                 index_workflow_end_time - index_workflow_start_time
+            )
+            await self.file_service.update_existed_file_in_knowledge(
+                id=knowledge_scope.file_id,
+                data={
+                    "deep_indexed": True,
+                    "file_embedding_zilliz_collection_name": collection_name,
+                },
             )
             await self.index_workflow_service.update_workflow(
                 id=created_workflow.id,
@@ -599,6 +692,25 @@ class DeepRAG:
         collection_name = await self.file_service.get_zilliz_collection_name_by_file_id(
             knowledge_scope.file_id
         )
+        index_status = await self.file_service.get_index_status_by_file_id(
+            knowledge_scope.file_id
+        )
+        deep_index_status = await self.file_service.get_deep_index_status_by_file_id(
+            knowledge_scope.file_id
+        )
+        if deep_query_pattern:
+            if not deep_index_status:
+                raise Exception(
+                    message="当前文件的索引状态为False，请先对知识库进行深度索引后再进行查询",
+                    code=400,
+                )
+        else:
+            if not index_status:
+                raise Exception(
+                    message="当前文件的索引状态为False，请先对知识库进行索引后再进行查询",
+                    code=400,
+                )
+
         searched_text: SearchedTextResponse = await query_vector_db_by_vector(
             user_prompt,
             collection_name,
@@ -619,6 +731,7 @@ class DeepRAG:
             knowledge_scope_real_name=knowledge_scope_real_name,
             recalled_text_fragments=searched_text,
             session_id=session_id,
+            embedding_token_usage=embedding_total_token_usage,
             rag_pattern=deep_query_pattern,
             context=context,
         ):
@@ -692,6 +805,7 @@ class DeepRAG:
             knowledge_scope_real_name=knowledge_scope_real_name,
             recalled_text_fragments_list=searched_text.root,
             session_id=session_id,
+            embedding_token_usage=embedding_total_token_usage,
             deep_query_pattern=deep_query_pattern,
             context=context,
         )

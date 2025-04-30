@@ -32,7 +32,9 @@ class CommunityReportService:
             for _ in community_report_with_id.community_reports_with_community_id.keys()
         ]
         await self.dao.batch_create_community_report(
-            community_id_list=community_id_list, id_list=id_list
+            community_id_list=community_id_list,
+            id_list=id_list,
+            community_report_list=community_report_list,
         )
         return BatchCreateCommunityReportResponse(
             community_id_list=community_id_list,

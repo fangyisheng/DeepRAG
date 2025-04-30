@@ -27,7 +27,7 @@ class CommunityReportDAO:
         self,
         id_list: list[str],
         community_report_list: list[str],
-        community_id: list[str],
+        community_id_list: list[str],
     ) -> int:
         await self.db.connect()
         stored_community_report_count = await self.db.community_report.create_many(
@@ -38,7 +38,7 @@ class CommunityReportDAO:
                     "community_id": community_id,
                 }
                 for id, community_report, community_id in zip(
-                    id_list, community_report_list, community_id
+                    id_list, community_report_list, community_id_list
                 )
             ]
         )

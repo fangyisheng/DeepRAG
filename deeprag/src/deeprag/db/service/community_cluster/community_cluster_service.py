@@ -19,12 +19,12 @@ class CommunityClusterService:
 
         for key in community_reports_structed_and_unstructed_bundle.community_reports_structed_data_with_community_id.keys():
             community_cluster_list.append(
-                community_cluster(
-                    id=key,
-                    community_title=community_reports_structed_and_unstructed_bundle.community_reports_structed_data_with_community_id[
+                {
+                    "id": key,
+                    "community_title": community_reports_structed_and_unstructed_bundle.community_reports_structed_data_with_community_id[
                         key
                     ].title,
-                )
+                }
             )
 
         stored_community_cluster_list = await self.dao.batch_create_community_cluster(

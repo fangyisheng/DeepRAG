@@ -23,8 +23,28 @@
 
 # print(a.another_information["a"].text)
 
-a = 1
 
-b = """
-data: {}
-"""
+# 这样做是绝对不可以的
+# import asyncio
+# from pydantic import BaseModel
+
+
+# class my_data(BaseModel):
+#     text: str
+#     meta_data: str
+
+
+# async def test():
+#     return my_data(text="hello", meta_data="world")
+
+
+# async def main():
+#     a = await test().text
+#     return a
+
+
+# print(asyncio.run(main()))
+
+
+a = {"a": 1, "b": 2, "c": 3}
+print(len(a))

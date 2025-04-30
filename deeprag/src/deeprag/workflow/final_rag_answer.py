@@ -15,6 +15,7 @@ async def final_rag_answer_process_stream(
     knowledge_scope_real_name: KnowledgeScopeRealName,
     recalled_text_fragments_list: list[str],
     session_id: str,
+    embedding_token_usage: int,
     deep_query_pattern: bool = False,
     context: list[RoleMessage] | None = None,
 ) -> AsyncGenerator[FinalRAGAnswerStreamResponse, None]:
@@ -52,6 +53,8 @@ async def final_rag_answer_process_stream(
         if deep_query_pattern
         else "common_query_pattern",
         "session_id": session_id,
+        "embedding_token_usage": embedding_token_usage,
+        "llm_token_usage": response.cost_tokens,
     }
     yield f"""data: {last_message}\n\n"""
 
@@ -91,9 +94,9 @@ async def final_rag_answer_process_not_stream(
         if deep_query_pattern
         else "common_query_pattern",
         "rag_groundings": recalled_text_fragments,
-        "embedding_token_usage": embedding_token_usage,
-        "llm_token_usage": answer.cost_tokens,
         "session_id": session_id,
         "message_id": message_id,
+        "embedding_token_usage": embedding_token_usage,
+        "llm_token_usage": answer.cost_tokens,
     }
     return message

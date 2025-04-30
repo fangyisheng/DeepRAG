@@ -76,3 +76,18 @@ class UserDAO:
 
 
 # 测试一下update的功能方法
+
+
+# 写一点测试代码
+
+# import asyncio
+
+# user_dao = UserDAO()
+
+
+# async def main():
+#     result = await user_dao.get_user_name_by_id("f2b20e82-27e1-4518-bdfe-5afcdc856667")
+#     return result
+
+
+# print(asyncio.run(main()))

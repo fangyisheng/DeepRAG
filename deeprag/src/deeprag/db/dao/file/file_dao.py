@@ -18,8 +18,9 @@ class FileDAO:
         doc_text: str,
         minio_bucket_name: str,
         minio_object_name: str,
-        indexed: bool = False,
-        file_embedding_zilliz_collection_name: str | None = None,
+        # indexed: bool = False,
+        # deep_indexed: bool = False,
+        # file_embedding_zilliz_collection_name: str | None = None,
     ) -> file:
         await self.db.connect()
         stored_file = await self.db.file.create(
@@ -30,10 +31,10 @@ class FileDAO:
                 "doc_text": doc_text,
                 "minio_bucket_name": minio_bucket_name,
                 "minio_object_name": minio_object_name,
-                "indexed": indexed,
-                "file_embedding_zilliz_collection_name": file_embedding_zilliz_collection_name,
             },
-            include={"KnowledgeSpaceFile": True},
+            include={
+                "KnowledgeSpaceFile": True,
+            },
         )
         await self.db.disconnect()
         return stored_file
@@ -44,9 +45,7 @@ class FileDAO:
         await self.db.disconnect()
         return deleted_file
 
-    async def update_existed_file_in_knowledge_space(
-        self, id: str, data: UpdatedFile
-    ) -> file:
+    async def update_existed_file_in_knowledge_space(self, id: str, data: dict) -> file:
         await self.db.connect()
         updated_file = await self.db.file.update(where={"id": id}, data=data)
         await self.db.disconnect()
@@ -54,7 +53,20 @@ class FileDAO:
 
     async def get_file_in_knowledge_space_by_doc_id(self, id: str) -> file:
         await self.db.connect()
-        found_file = await self.db.file.find_unique(where={"id": id})
+        found_file = await self.db.file.find_unique(
+            where={"id": id},
+            include={
+                "text_chunks": {
+                    "include": {
+                        "sub_graph_datas": {
+                            "include": {
+                                "SubGraphDataMergedGraphData": True  # 注意这里是正确的 include 语法
+                            }
+                        }
+                    }
+                }
+            },
+        )
         await self.db.disconnect()
         return found_file
 
@@ -69,6 +81,18 @@ class FileDAO:
         found_file = await self.db.file.find_unique(where={"id": id})
         await self.db.disconnect()
         return found_file.file_embedding_zilliz_collection_name
+
+    async def get_index_status_by_file_id(self, id: str) -> bool:
+        await self.db.connect()
+        found_file = await self.db.file.find_unique(where={"id": id})
+        await self.db.disconnect()
+        return found_file.indexed
+
+    async def get_deep_index_status_by_file_id(self, id: str) -> bool:
+        await self.db.connect()
+        found_file = await self.db.file.find_unique(where={"id": id})
+        await self.db.disconnect()
+        return found_file.deep_indexed
 
 
 # # 撰写测试代码

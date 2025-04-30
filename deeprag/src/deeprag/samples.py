@@ -3,7 +3,7 @@ from deeprag.workflow.data_model import KnowledgeScopeLocator
 import asyncio
 from typing import Any
 import traceback
-from deeprag.rag_core_utils.
+
 deeprag = DeepRAG()
 
 
@@ -28,11 +28,15 @@ async def created_knowledge_scope(
     return knowledge_scope
 
 
-async def index(collection_name: str, knowlege_scope: KnowledgeScopeLocator):
+async def index(
+    collection_name: str,
+    knowlege_scope: KnowledgeScopeLocator,
+    deep_index_pattern: bool = False,
+):
     await deeprag.index(
         collection_name=collection_name,
         knowledge_scope=knowlege_scope,
-        deep_index_pattern=False,
+        deep_index_pattern=deep_index_pattern,
     )
 
 
@@ -53,46 +57,45 @@ async def query_non_stream(
 import asyncio
 
 
-# knowledge_scope = asyncio.run(
-#     created_knowledge_scope(
+# async def main():
+#     await created_knowledge_scope(
 #         user_name="test_name",
 #         knowledge_space_name="test_knowledge_space",
 #         minio_bucket_name="mybucket",
 #         minio_object_name="test1.txt",
 #         file_path="/home/easonfang/DeepRAG/deeprag/src/deeprag/knowledge_file/test2.txt",
 #     )
-# )
-
-
-# async def main():
-#     await index(
-#         collection_name="test_collection",
-#         knowlege_scope=KnowledgeScopeLocator(
-#             user_id="67f54e07-03aa-4319-9fcd-93034e8e990c",
-#             knowledge_space_id="a1fe02fe-76be-4bb6-9498-aa9cd86e8b8f",
-#             file_id="0da4cf66-ab9d-4378-a54d-c87ea0b36651",
-#         ),
-#     )
-
-
-# print(asyncio.run(main()))
 
 
 async def main():
-    try:
-        answer = await query_non_stream(
-            user_prompt="深度求索和哪些公司有关系？",
-            knowledge_scope=KnowledgeScopeLocator(
-                user_id="67f54e07-03aa-4319-9fcd-93034e8e990c",
-                knowledge_space_id="a1fe02fe-76be-4bb6-9498-aa9cd86e8b8f",
-                file_id="0da4cf66-ab9d-4378-a54d-c87ea0b36651",
-            ),
-        )
-        print()
-        return answer
-    except Exception as e:
-        print(e)
-        print(traceback.format_exc())
+    await index(
+        collection_name="test_collection",
+        knowlege_scope=KnowledgeScopeLocator(
+            user_id="c6fc9b5c-439b-4af5-8ac8-8540d384e2e6",
+            knowledge_space_id="3de5bcd0-ccd8-4cf3-8583-02c71ca51ac1",
+            file_id="e6edc631-1b3e-436c-9888-4b6d1f84a706",
+        ),
+        deep_index_pattern=True,
+    )
+
+
+print(asyncio.run(main()))
+
+
+# async def main():
+#     try:
+#         answer = await query_non_stream(
+#             user_prompt="深度求索和哪些公司有关系？",
+#             knowledge_scope=KnowledgeScopeLocator(
+#                 user_id="c6fc9b5c-439b-4af5-8ac8-8540d384e2e6",
+#                 knowledge_space_id="3de5bcd0-ccd8-4cf3-8583-02c71ca51ac1",
+#                 file_id="e6edc631-1b3e-436c-9888-4b6d1f84a706",
+#             ),
+#         )
+#         return answer
+#     except Exception as e:
+#         print(e)
+#         print(traceback.format_exc())
 
 
 print(asyncio.run(main()))
