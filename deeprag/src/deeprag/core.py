@@ -89,6 +89,7 @@ from deeprag.rag_core_utils.utils.context_holder import (
 import json
 from datetime import datetime
 import ast
+from io import BytesIO
 
 
 class DeepRAG:
@@ -145,10 +146,13 @@ class DeepRAG:
 
     async def create_file_and_upload_to_minio(
         self,
-        file_path: str,
         knowledge_space_id: str,
         bucket_name: str,
         object_name: str,
+        file_path: str | None = None,
+        string_data: str | None = None,
+        io_data: BytesIO | None = None,
+        metadata: dict | None = None,
     ) -> KnowledgeScopeMinioMapping:
         doc_title = Path(file_path).name
         stored_file: file = await self.file_service.upload_new_file_to_knowledge_space(
@@ -161,7 +165,12 @@ class DeepRAG:
         logger.info(f"创建文件{stored_file.id}成功")
         # 这里就对应着doc_text这个字段在数据库表file中是可选的，因为业务逻辑的需求，所以这里doc_text为空
         await self.file_service.upload_new_file_to_minio(
-            bucket_name=bucket_name, file_path=file_path, object_name=object_name
+            bucket_name=bucket_name,
+            file_path=file_path,
+            object_name=object_name,
+            string_data=string_data,
+            io_data=io_data,
+            metadata=metadata,
         )
         return KnowledgeScopeMinioMapping(
             knowledge_scope=KnowledgeScopeLocator(
@@ -668,7 +677,7 @@ class DeepRAG:
             embedding_token_usage=embedding_total_token_usage,
         )
 
-    async def query(
+    async def query_by_stream(
         self,
         user_prompt: str,
         knowledge_scope: KnowledgeScopeLocator,
@@ -681,7 +690,7 @@ class DeepRAG:
         可以用实际已经存在的session_id去调取context上下文，也可以开发者或者用户根据给定的数据结构手动构造上下文添加进来
         session_id如果是空白的，那就是新开一个会话，这个逻辑是可通的, 感觉这个collection_name 是不是也可以去除了，只要针对知识空间提问就行了，不需要再引入别的复杂度了？？"""
         """
-        好像这里的deep_query_pattern好像还没开始写这部分的功能
+        好像这里的deep_query_pattern好像还没开始写这部分的功能。现在已经写好了
         """
 
         # 首先利用输入的query对向量数据库进行有筛选的检索
@@ -730,10 +739,10 @@ class DeepRAG:
         async for response in final_rag_answer_process_stream(
             user_prompt=user_prompt,
             knowledge_scope_real_name=knowledge_scope_real_name,
-            recalled_text_fragments=searched_text,
+            recalled_text_fragments_list=searched_text.root,
             session_id=session_id,
             embedding_token_usage=embedding_total_token_usage,
-            rag_pattern=deep_query_pattern,
+            deep_query_pattern=deep_query_pattern,
             context=context,
         ):
             yield response
@@ -764,7 +773,7 @@ class DeepRAG:
             message_id=real_response_dict["message_id"],
         )
 
-    async def query_answer_non_stream(
+    async def query_by_non_stream(
         self,
         user_prompt: str,
         knowledge_scope: KnowledgeScopeLocator,

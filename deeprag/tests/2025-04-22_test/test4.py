@@ -49,7 +49,10 @@
 # a = {"a": 1, "b": 2, "c": 3}
 # print(len(a))
 
-from loguru import logger
+# from loguru import logger
 
-a = "file_id"
-logger.info(f"""knowlege_scope["{a}"] == "uuid" """)
+# a = "file_id"
+# logger.info(f"""knowlege_scope["{a}"] == "uuid" """)
+
+
+# print(len(b"hello world"))

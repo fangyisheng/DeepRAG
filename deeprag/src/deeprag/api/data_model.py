@@ -1,26 +1,15 @@
 from pydantic import BaseModel
 from deeprag.workflow.data_model import KnowledgeScopeLocator
-
-
-class ChatRequest(BaseModel):
-    """
-    Chat request model.
-    """
-
-    question: str
-    history: list[dict[str, str]] | None = None
-    knowledge_scope: str | None = None
-    recalled_text_fragments_top_k: int | None = None
-    deep_query_pattern: bool | None = None
-    cot_prompt: list[dict[str, str]] | None = None
-    system_prompt: str | None = None
+from deeprag.db.data_model import RoleMessage
 
 
 class UploadFileRequestParam(BaseModel):
     id: str
     knowledge_space_id: str
     doc_title: str
-    doc_text: str
+    minio_bucket_name: str
+    minio_object_name: str
+    doc_text: str | None = None
 
 
 class IndexRequestParam(BaseModel):
@@ -37,10 +26,11 @@ class BatchIndexRequestParam(BaseModel):
     deep_index_pattern: bool = False
 
 
-class QueryRequestParam(BaseModel):
+class ChatRequestParam(BaseModel):
     user_prompt: str
     knowledge_scope: KnowledgeScopeLocator
     deep_query_pattern: bool = False
     session_id: str | None = None
     context: list[RoleMessage] | None = None
     recalled_text_fragments_top_k: int = 5
+    stream: bool = False

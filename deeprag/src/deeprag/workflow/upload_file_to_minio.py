@@ -8,6 +8,7 @@ async def upload_file_to_minio_func(
     object_name: str,
     file_path: str | None = None,
     string_data: str | None = None,
+    io_data: BytesIO | None = None,
     metadata: dict | None = None,
 ) -> UploadFileToMinioResponse:
     client = await create_minio_client()
@@ -17,7 +18,7 @@ async def upload_file_to_minio_func(
         client.make_bucket(bucket_name)
 
     # 上传文件
-    if file_path and not string_data:
+    if file_path and not string_data and not io_data:
         uploaded_file_object = client.fput_object(
             bucket_name=bucket_name,
             object_name=object_name,
@@ -25,12 +26,20 @@ async def upload_file_to_minio_func(
             metadata=metadata,
         )
 
-    if string_data and not file_path:
+    if string_data and not file_path and not io_data:
         uploaded_file_object = client.put_object(
             bucket_name=bucket_name,
             object_name=object_name,
             data=BytesIO(string_data.encode("utf-8")),
             length=len(string_data.encode("utf-8")),
+            metadata=metadata,
+        )
+    if io_data and not string_data and not file_path:
+        uploaded_file_object = client.put_object(
+            bucket_name=bucket_name,
+            object_name=object_name,
+            data=BytesIO(io_data),
+            length=len(io_data),
             metadata=metadata,
         )
 

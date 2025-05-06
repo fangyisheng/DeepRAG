@@ -38,12 +38,12 @@ class FileService:
     ) -> file:
         id = str(uuid.uuid4())
         new_file = await self.dao.upload_new_file_to_knowledge_space(
-            id,
-            knowledge_space_id,
-            doc_title,
-            doc_text,
-            minio_bucket_name,
-            minio_object_name,
+            id=id,
+            knowledge_space_id=knowledge_space_id,
+            doc_title=doc_title,
+            doc_text=doc_text,
+            minio_bucket_name=minio_bucket_name,
+            minio_object_name=minio_object_name,
         )
 
         return new_file
