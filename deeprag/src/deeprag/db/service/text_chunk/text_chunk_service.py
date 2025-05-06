@@ -30,4 +30,4 @@ class TextChunkService:
     async def get_text_chunk_by_id(self, id: str):
         found_text_chunk = await self.dao.get_text_chunk_by_id(id)
 
-        return found_text_chunk.model_dump()
+        return found_text_chunk

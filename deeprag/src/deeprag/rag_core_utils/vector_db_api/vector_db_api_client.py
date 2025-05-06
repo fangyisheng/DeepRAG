@@ -34,7 +34,7 @@ async def create_or_use_hybrid_search_milvus_client_collection(
     )
     schema.add_field(
         field_name="meta_data", datatype=DataType.JSON
-    )  # 这是使用DeepRAG的用户和开发者添加的元数据信息
+    )  # 这是使用DeepRAG的用户和开发者添加的结构化元数据信息
     schema.add_field(
         field_name="community_id", max_length=1000, datatype=DataType.VARCHAR
     )

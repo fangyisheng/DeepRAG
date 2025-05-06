@@ -43,12 +43,13 @@ async def index(
 async def query_non_stream(
     user_prompt: str,
     knowledge_scope: KnowledgeScopeLocator,
+    deep_query_pattern: bool = False,
     session_id: str | None = None,
 ):
     response_answer = await deeprag.query_answer_non_stream(
         user_prompt=user_prompt,
         knowledge_scope=knowledge_scope,
-        deep_query_pattern=False,
+        deep_query_pattern=deep_query_pattern,
         session_id=session_id,
     )
     return response_answer
@@ -67,30 +68,31 @@ import asyncio
 #     )
 
 
-async def main():
-    await index(
-        collection_name="test_collection",
-        knowlege_scope=KnowledgeScopeLocator(
-            user_id="c6fc9b5c-439b-4af5-8ac8-8540d384e2e6",
-            knowledge_space_id="3de5bcd0-ccd8-4cf3-8583-02c71ca51ac1",
-            file_id="e6edc631-1b3e-436c-9888-4b6d1f84a706",
-        ),
-        deep_index_pattern=True,
-    )
+# async def main():
+#     await index(
+#         collection_name="test_collection",
+#         knowlege_scope=KnowledgeScopeLocator(
+#             user_id="c6fc9b5c-439b-4af5-8ac8-8540d384e2e6",
+#             knowledge_space_id="3de5bcd0-ccd8-4cf3-8583-02c71ca51ac1",
+#             file_id="e6edc631-1b3e-436c-9888-4b6d1f84a706",
+#         ),
+#         deep_index_pattern=True,
+#     )
 
 
-print(asyncio.run(main()))
+# print(asyncio.run(main()))
 
 
 # async def main():
 #     try:
 #         answer = await query_non_stream(
-#             user_prompt="深度求索和哪些公司有关系？",
+#             user_prompt="当前深度求索技术的产业生态是怎样的？",
 #             knowledge_scope=KnowledgeScopeLocator(
 #                 user_id="c6fc9b5c-439b-4af5-8ac8-8540d384e2e6",
 #                 knowledge_space_id="3de5bcd0-ccd8-4cf3-8583-02c71ca51ac1",
 #                 file_id="e6edc631-1b3e-436c-9888-4b6d1f84a706",
 #             ),
+#             deep_query_pattern=True,
 #         )
 #         return answer
 #     except Exception as e:
@@ -98,4 +100,4 @@ print(asyncio.run(main()))
 #         print(traceback.format_exc())
 
 
-print(asyncio.run(main()))
+# print(asyncio.run(main()))

@@ -46,5 +46,10 @@
 # print(asyncio.run(main()))
 
 
-a = {"a": 1, "b": 2, "c": 3}
-print(len(a))
+# a = {"a": 1, "b": 2, "c": 3}
+# print(len(a))
+
+from loguru import logger
+
+a = "file_id"
+logger.info(f"""knowlege_scope["{a}"] == "uuid" """)

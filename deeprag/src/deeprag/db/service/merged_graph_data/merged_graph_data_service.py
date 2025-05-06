@@ -27,4 +27,4 @@ class MergedGraphDataService:
     async def get_merged_graph_data_by_id(self, id: str) -> dict:
         found_merged_graph_data = await self.dao.get_merged_graph_data_by_id(id)
 
-        return found_merged_graph_data.model_dump()
+        return found_merged_graph_data

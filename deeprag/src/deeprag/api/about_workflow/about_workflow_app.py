@@ -1,12 +1,16 @@
-from fastapi import APIRouter
-from deeprag.db.service.index_workflow.index_workflow_service import WorkFlowService
+from fastapi import APIRouter, HTTPException
+from deeprag.db.service.index_workflow.index_workflow_service import (
+    IndexWorkFlowService,
+)
 
 workflow_router = APIRouter(tags=["workflow"])
 
-workflow_service = WorkFlowService()
+workflow_service = IndexWorkFlowService()
 
 
 @workflow_router.get("/{id}")
-async def get_workflow(id):
-    workflow = await workflow_service.get_workflow_by_id()
-    return {"msg": "work is flowing", "data": workflow, "code": 200}
+async def get_workflow(id: str):
+    found_workflow = await workflow_service.get_workflow_by_id(id)
+    if not found_workflow:
+        raise HTTPException(status_code=404, detail="workflow not found")
+    return {"msg": "work is flowing", "data": found_workflow.model_dump(), "code": 200}

@@ -598,7 +598,8 @@ class DeepRAG:
             logger.info("向量数据库插入完成")
             index_workflow_end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             index_workflow_duration_time = str(
-                index_workflow_end_time - index_workflow_start_time
+                datetime.strptime(index_workflow_end_time, "%Y-%m-%d %H:%M:%S")
+                - datetime.strptime(index_workflow_start_time, "%Y-%m-%d %H:%M:%S")
             )
             await self.file_service.update_existed_file_in_knowledge(
                 id=knowledge_scope.file_id,
@@ -783,6 +784,7 @@ class DeepRAG:
         collection_name = await self.file_service.get_zilliz_collection_name_by_file_id(
             knowledge_scope.file_id
         )
+        logger.info(f"本次查询的zilliz的collection名称是{collection_name}")
         searched_text: SearchedTextResponse = await query_vector_db_by_vector(
             user_prompt,
             collection_name,
