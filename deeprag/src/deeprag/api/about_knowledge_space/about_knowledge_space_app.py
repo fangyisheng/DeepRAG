@@ -56,11 +56,12 @@ async def delete_knowledge_space(id: str):
             status_code=404,
             detail="knowledge_space delete failed or knowledge_space has been deleted",
         )
-    return {
+    result = {
         "msg": "you have deleted a knowledge_sapce successful",
         "data": deleted_knowledge_space,
         "code": 200,
     }
+    return JSONResponse(content=result)
 
 
 @knowledge_space_router.post("/update/{id}")
@@ -73,8 +74,9 @@ async def update_knowledge_space(id: str, data: dict):
             status_code=404,
             detail="knowledge_space update failed",
         )
-    return {
+    result = {
         "msg": "you have updated the existed knowledge_space in database",
         "data": updated_knowledge_space,
         "code": 200,
     }
+    return JSONResponse(content=result)

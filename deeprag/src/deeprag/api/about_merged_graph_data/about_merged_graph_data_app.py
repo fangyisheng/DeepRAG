@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from deeprag.db.service.merged_graph_data.merged_graph_data_service import (
     MergedGraphDataService,
 )
+from fastapi.responses import JSONResponse
 
 merged_graph_data_service = MergedGraphDataService()
 
@@ -16,8 +17,9 @@ async def get_merged_graph_data(id):
     )
     if not found_merged_graph_data:
         raise HTTPException(status_code=404, detail="merged_graph_data not found")
-    return {
+    result = {
         "msg": "get merged_graph_data successfully",
         "data": found_merged_graph_data.model_,
         "code": 200,
     }
+    return JSONResponse(content=result)

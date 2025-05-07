@@ -91,6 +91,7 @@ from datetime import datetime
 import ast
 from io import BytesIO
 import yaml
+from fastapi import HTTPException
 
 
 class DeepRAG:
@@ -207,7 +208,9 @@ class DeepRAG:
 
         """
         if knowledge_scope.file_id is None:
-            raise ValueError("knowledge_scope.file_id is Needed")
+            raise HTTPException(
+                status_code=500, detail="knowledge_scope.file_id is Needed"
+            )
 
         index_status = await self.file_service.get_index_status_by_file_id(
             knowledge_scope.file_id
@@ -222,7 +225,9 @@ class DeepRAG:
 
         if deep_index_pattern:
             if deep_index_status:
-                raise Exception("当前文件已经被深度索引过了！")
+                raise HTTPException(
+                    status_code=500, detail="当前文件已经被深度索引过了！"
+                )
             if index_status:
                 logger.info(
                     "当前文件已经被普通索引过了，但是没有被深度索引过，可以复用之前的中间过程开始深度索引"
@@ -231,11 +236,11 @@ class DeepRAG:
                 logger.info("当前文件没有深度索引过，也没有普通索引过，开始深度索引")
         else:
             if deep_index_status:
-                raise Exception(
+                logger.info(
                     "当前文件已经被深度索引过了,但是没有被普通索引过，可以复用之前的中间过程开始普通索引"
                 )
             if index_status:
-                raise Exception("当前文件已经被普通索引过了！")
+                raise HTTPException("当前文件已经被普通索引过了！")
             else:
                 logger.info("当前文件没有深度索引过，也没有普通索引过，开始普通索引")
         llm_total_token_usage = 0
