@@ -4,6 +4,7 @@ from deeprag.workflow.upload_file_to_minio import upload_file_to_minio_func
 import uuid
 from deeprag.workflow.data_model import UploadFileToMinioResponse, MinioObjectReference
 from prisma.models import file
+from io import BytesIO
 
 
 class FileService:
@@ -17,6 +18,7 @@ class FileService:
         string_data: str | None = None,
         metadata: dict | None = None,
         file_path: str | None = None,
+        io_data: BytesIO | None = None,
     ) -> UploadFileToMinioResponse:
         uploaded_file = await upload_file_to_minio_func(
             bucket_name=bucket_name,
@@ -24,6 +26,7 @@ class FileService:
             object_name=object_name,
             string_data=string_data,
             metadata=metadata,
+            io_data=io_data,
         )
         return uploaded_file
 

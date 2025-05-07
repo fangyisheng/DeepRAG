@@ -34,15 +34,15 @@ async def get_knowledge_space(knowledge_space_id: str):
 
 
 @knowledge_space_router.post("/")
-async def create_knowledge_space(knowledge_space_title):
+async def create_knowledge_space(user_id: str, knowledge_space_name: str):
     created_knowledge_space = await knowledge_space_service.create_knowledge_space(
-        knowledge_space_title
+        user_id=user_id, knowledge_space_name=knowledge_space_name
     )
     if not created_knowledge_space:
         raise HTTPException(status_code=404, detail="knowledge_space create failed")
     result = {
         "msg": "create new knowledge_space successful",
-        "data": created_knowledge_space.model,
+        "data": created_knowledge_space.model_dump(),
         "code": 200,
     }
     return JSONResponse(content=result)
@@ -58,7 +58,7 @@ async def delete_knowledge_space(id: str):
         )
     result = {
         "msg": "you have deleted a knowledge_sapce successful",
-        "data": deleted_knowledge_space,
+        "data": deleted_knowledge_space.model_dump(),
         "code": 200,
     }
     return JSONResponse(content=result)
@@ -76,7 +76,7 @@ async def update_knowledge_space(id: str, data: dict):
         )
     result = {
         "msg": "you have updated the existed knowledge_space in database",
-        "data": updated_knowledge_space,
+        "data": updated_knowledge_space.model_dump(),
         "code": 200,
     }
     return JSONResponse(content=result)

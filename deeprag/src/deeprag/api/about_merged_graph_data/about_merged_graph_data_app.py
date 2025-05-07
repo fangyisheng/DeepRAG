@@ -19,7 +19,7 @@ async def get_merged_graph_data(id):
         raise HTTPException(status_code=404, detail="merged_graph_data not found")
     result = {
         "msg": "get merged_graph_data successfully",
-        "data": found_merged_graph_data.model_,
+        "data": found_merged_graph_data.model_dump(),
         "code": 200,
     }
     return JSONResponse(content=result)

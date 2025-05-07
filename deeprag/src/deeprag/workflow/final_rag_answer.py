@@ -4,6 +4,7 @@ from deeprag.workflow.data_model import (
     FinalRAGAnswerResponse,
     FinalRAGAnswerStreamResponse,
     KnowledgeScopeRealName,
+    KnowledgeScopeLocator,
 )
 from deeprag.db.data_model import RoleMessage
 from typing import AsyncGenerator
@@ -13,6 +14,7 @@ import json
 
 async def final_rag_answer_process_stream(
     user_prompt: str,
+    knowledge_scope: KnowledgeScopeLocator,
     knowledge_scope_real_name: KnowledgeScopeRealName,
     recalled_text_fragments_list: list[str],
     session_id: str,
@@ -40,6 +42,7 @@ async def final_rag_answer_process_stream(
     async for answer in response.assistant_response_generator:
         message = {
             "answer": answer,
+            "knowledge_scope": knowledge_scope.model_dump(),
             "rag_pattern": "deep_query_pattern"
             if deep_query_pattern
             else "common_query_pattern",
@@ -50,6 +53,7 @@ async def final_rag_answer_process_stream(
         yield f"data: {json.dumps(message, ensure_ascii=False)}\n\n"
     last_message = {
         "answer": "",
+        "knowledge_scope": knowledge_scope.model_dump(),
         "rag_pattern": "deep_query_pattern"
         if deep_query_pattern
         else "common_query_pattern",
@@ -64,6 +68,7 @@ async def final_rag_answer_process_stream(
 
 async def final_rag_answer_process_not_stream(
     user_prompt: str,
+    knowledge_scope: KnowledgeScopeLocator,
     knowledge_scope_real_name: KnowledgeScopeRealName,
     recalled_text_fragments_list: list[str],
     session_id: str,
@@ -93,6 +98,7 @@ async def final_rag_answer_process_not_stream(
 
     message = {
         "answer": answer.assistant_response,
+        "knowledge_scope": knowledge_scope.model_dump(),
         "rag_pattern": "deep_query_pattern"
         if deep_query_pattern
         else "common_query_pattern",

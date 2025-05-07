@@ -24,7 +24,7 @@ class MergedGraphDataService:
         return stored_merged_graph_data
 
     # 这可能才是外部的开发者和用户真正需要的servie服务
-    async def get_merged_graph_data_by_id(self, id: str) -> dict:
+    async def get_merged_graph_data_by_id(self, id: str) -> merged_graph_data:
         found_merged_graph_data = await self.dao.get_merged_graph_data_by_id(id)
 
         return found_merged_graph_data

@@ -262,7 +262,7 @@ class DeepRAG:
 
             # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
             # 涉及file的数据库模型
-            await self.file_service.update_existed_file_in_knowledge(
+            await self.file_service.update_existed_file_in_knowledge_space(
                 knowledge_scope.file_id,
                 {
                     "doc_text": complete_text.root[:300],
@@ -465,7 +465,7 @@ class DeepRAG:
                 - datetime.strptime(index_workflow_start_time, "%Y-%m-%d %H:%M:%S")
             )
             # 文件索引完毕，也确定好了文件的索引要放在zilliz某个集群下哪个collection_name了,所以要
-            await self.file_service.update_existed_file_in_knowledge(
+            await self.file_service.update_existed_file_in_knowledge_space(
                 id=knowledge_scope.file_id,
                 data={
                     "indexed": True,
@@ -616,7 +616,7 @@ class DeepRAG:
                 datetime.strptime(index_workflow_end_time, "%Y-%m-%d %H:%M:%S")
                 - datetime.strptime(index_workflow_start_time, "%Y-%m-%d %H:%M:%S")
             )
-            await self.file_service.update_existed_file_in_knowledge(
+            await self.file_service.update_existed_file_in_knowledge_space(
                 id=knowledge_scope.file_id,
                 data={
                     "deep_indexed": True,
@@ -674,6 +674,8 @@ class DeepRAG:
                     for file in found_file_list
                 ]
                 results = await asyncio.gather(**tasks)
+            if knowledge_scope.user_id and not knowledge_scope.knowledge_space_id and not knowledge_scope.file_id:
+                found_file_list = await self.user_service.
         llm_total_token_usage = sum([result.llm_token_usage for result in results])
         embedding_total_token_usage = sum(
             [result.embedding_token_usage for result in results]
@@ -744,6 +746,7 @@ class DeepRAG:
         message_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         async for response in final_rag_answer_process_stream(
             user_prompt=user_prompt,
+            knowledge_scope=knowledge_scope,
             knowledge_scope_real_name=knowledge_scope_real_name,
             recalled_text_fragments_list=searched_text.root,
             session_id=session_id,
@@ -821,6 +824,7 @@ class DeepRAG:
 
         answer = await final_rag_answer_process_not_stream(
             user_prompt=user_prompt,
+            knowledge_scope=knowledge_scope,
             knowledge_scope_real_name=knowledge_scope_real_name,
             recalled_text_fragments_list=searched_text.root,
             session_id=session_id,

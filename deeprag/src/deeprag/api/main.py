@@ -19,6 +19,7 @@ from deeprag.api.about_index.about_index_app import index_router
 from deeprag.api.about_batch_index.about_batch_index_app import (
     batch_index_router,
 )
+from deeprag.api.about_rag_param.about_rag_param_app import rag_param_router
 
 app = FastAPI()
 
@@ -33,3 +34,4 @@ app.include_router(user_router, prefix="/user")
 app.include_router(workflow_router, prefix="/workflow")
 app.include_router(batch_index_router, prefix="/batch_index")
 app.include_router(index_router, prefix="/index")
+app.include_router(rag_param_router, prefix="/rag_param")

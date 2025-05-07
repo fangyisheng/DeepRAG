@@ -1,6 +1,6 @@
 from prisma import Prisma
 from dotenv import load_dotenv
-from prisma.models import user
+from prisma.models import user, file
 
 load_dotenv()
 
@@ -79,15 +79,14 @@ class UserDAO:
 
 
 # 写一点测试代码
+import asyncio
 
-# import asyncio
-
-# user_dao = UserDAO()
-
-
-# async def main():
-#     result = await user_dao.get_user_name_by_id("f2b20e82-27e1-4518-bdfe-5afcdc856667")
-#     return result
+user_dao = UserDAO()
 
 
-# print(asyncio.run(main()))
+async def main():
+    result = await user_dao.get_user_name_by_id("8cc0c135-135d-4355-a797-df82d4fca247")
+    return result
+
+
+print(asyncio.run(main()))

@@ -3,29 +3,44 @@ from deeprag.workflow.data_model import KnowledgeScopeLocator
 import asyncio
 from typing import Any
 import traceback
+from io import BytesIO
+import asyncio
+from loguru import logger
 
 deeprag = DeepRAG()
 
 
-async def created_knowledge_scope(
-    user_name: str,
+async def create_user(user_name: str):
+    create_user = await deeprag.create_user(user_name)
+    return create_user
+
+
+async def create_knowledge_space(
+    user_id: str,
     knowledge_space_name: str,
-    minio_bucket_name: str,
-    minio_object_name: str,
-    file_path: str,
-) -> Any:
-    created_user = await deeprag.create_user(user_name)
+):
     created_knowledge_space = await deeprag.create_knowledge_space(
-        created_user.id, knowledge_space_name
+        user_id, knowledge_space_name
     )
-    created_file = await deeprag.create_file_and_upload_to_minio(
+    return created_knowledge_space
+
+
+async def create_file_and_upload_to_minio(
+    knowledge_space_id: str,
+    bucket_name: str,
+    object_name: str,
+    file_path: str | None = None,
+    string_data: str | None = None,
+    io_data: BytesIO | None = None,
+    metadata: dict | None = None,
+):
+    knowledge_scope_minio_mapping = await deeprag.create_file_and_upload_to_minio(
+        knowledge_space_id=knowledge_space_id,
+        bucket_name=bucket_name,
+        object_name=object_name,
         file_path=file_path,
-        knowledge_space_id=created_knowledge_space.id,
-        bucket_name=minio_bucket_name,
-        object_name=minio_object_name,
     )
-    knowledge_scope = created_file.knowledge_scope
-    return knowledge_scope
+    return knowledge_scope_minio_mapping
 
 
 async def index(
@@ -34,6 +49,18 @@ async def index(
     deep_index_pattern: bool = False,
 ):
     await deeprag.index(
+        collection_name=collection_name,
+        knowledge_scope=knowlege_scope,
+        deep_index_pattern=deep_index_pattern,
+    )
+
+
+async def batch_index(
+    collection_name: str,
+    knowlege_scope: list[KnowledgeScopeLocator] | KnowledgeScopeLocator,
+    deep_index_pattern: bool = False,
+):
+    await deeprag.batch_index(
         collection_name=collection_name,
         knowledge_scope=knowlege_scope,
         deep_index_pattern=deep_index_pattern,
@@ -64,52 +91,89 @@ async def query(
     return response_answer
 
 
-import asyncio
+# 业务流程开始，先跑一遍全流程
 
 
-# async def main():
-#     await created_knowledge_scope(
-#         user_name="test_name",
-#         knowledge_space_name="test_knowledge_space",
-#         minio_bucket_name="mybucket",
-#         minio_object_name="test1.txt",
-#         file_path="/home/easonfang/DeepRAG/deeprag/src/deeprag/knowledge_file/test2.txt",
-#     )
+async def main(
+    user_name: str,
+    knowledge_space_name: str,
+    file_path: str,
+    collection_name: str,
+    deep_index_pattern: bool,
+    deep_query_pattern: bool,
+    minio_bucket_name: str,
+    minio_object_name: str,
+    user_prompt: str,
+    session_id: str,
+    stream: bool,
+):
+    user = await create_user(user_name=user_name)
+    logger.info(user)
+    knowledge_space = await create_knowledge_space(
+        user_id=user.id, knowledge_space_name=knowledge_space_name
+    )
+    logger.info(knowledge_space)
+    file = await create_file_and_upload_to_minio(
+        knowledge_space_id=knowledge_space.id,
+        bucket_name=minio_bucket_name,
+        object_name=minio_object_name,
+        file_path=file_path,
+    )
+    knowledge_scope = KnowledgeScopeLocator(
+        user_id=user.id,
+        knowledge_space_id=knowledge_space.id,
+        file_id=file.knowledge_scope.file_id,
+    )
+
+    await index(
+        collection_name=collection_name,
+        knowlege_scope=knowledge_scope,
+        deep_index_pattern=deep_index_pattern,
+    )
+    result = await query(
+        user_prompt=user_prompt,
+        knowledge_scope=knowledge_scope,
+        deep_query_pattern=deep_query_pattern,
+        session_id=session_id,
+        stream=stream,
+    )
+    if stream:
+        async for chunk in result:
+            print(chunk)
+    else:
+        print(result)
 
 
-# async def main():
-#     await index(
-#         collection_name="test_collection",
-#         knowlege_scope=KnowledgeScopeLocator(
-#             user_id="c6fc9b5c-439b-4af5-8ac8-8540d384e2e6",
-#             knowledge_space_id="3de5bcd0-ccd8-4cf3-8583-02c71ca51ac1",
-#             file_id="e6edc631-1b3e-436c-9888-4b6d1f84a706",
-#         ),
-#         deep_index_pattern=True,
-#     )
-
-
-# print(asyncio.run(main()))
-
-
-async def main():
-    try:
-        answer = await query(
-            user_prompt="你好",
-            knowledge_scope=KnowledgeScopeLocator(
-                user_id="c6fc9b5c-439b-4af5-8ac8-8540d384e2e6",
-                knowledge_space_id="3de5bcd0-ccd8-4cf3-8583-02c71ca51ac1",
-                file_id="e6edc631-1b3e-436c-9888-4b6d1f84a706",
-            ),
+# 如果stream=True，则返回SSE的数据流，如果stream=False，则返回一个字典（其中包含回答）
+# 对于SSE数据更推荐使用postman或者apifox的API测试来查看数据
+print(
+    asyncio.run(
+        main(
+            user_name="test",
+            knowledge_space_name="test",
+            file_path="/home/easonfang/DeepRAG/deeprag/src/deeprag/knowledge_file/test2.txt",
+            collection_name="test_collection",
+            deep_index_pattern=True,
             deep_query_pattern=True,
-            stream=False,
+            minio_bucket_name="test",
+            minio_object_name="test2.txt",
+            user_prompt="深度求索的产业生态怎么样？",
+            session_id="",
+            stream=True,
         )
-        # async for chunk in answer:
-        #     print(chunk)
-        print(answer)
-    except Exception as e:
-        print(e)
-        print(traceback.format_exc())
+    )
+)
+
+# 如果已经创建好了user空间和knowledge_space空间，想要做batch_index的过程，那么参考如下的操作
 
 
-print(asyncio.run(main()))
+async def batch_index_process(
+    knowledge_scope: KnowledgeScopeLocator,
+    collection_name: str,
+    deep_index_pattern: bool = False,
+):
+    result = await batch_index(
+        collection_name=collection_name,
+        knowledge_scope=knowledge_scope,
+        deep_index_pattern=deep_index_pattern,
+    )

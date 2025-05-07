@@ -69,7 +69,7 @@ async def delete_file(id: str):
         )
     result = {
         "msg": "you have deleted a file in a knowledge_space",
-        "data": deleted_file,
+        "data": deleted_file.model_dump(),
         "code": 200,
     }
 

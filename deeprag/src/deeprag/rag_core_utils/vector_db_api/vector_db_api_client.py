@@ -2,6 +2,7 @@
 from pymilvus import MilvusClient, DataType, Function, FunctionType
 from dotenv import load_dotenv
 import os
+from loguru import logger
 
 load_dotenv()
 
@@ -66,11 +67,13 @@ async def create_or_use_hybrid_search_milvus_client_collection(
     # 首先判断这个输入的参数collection_name存不存在
     # 如果输入的参数存在，那么继续判断这个collection_name在不在zilliz的集群中
     if not client.has_collection(collection_name=collection_name):
+        logger.info("这个collection_name不存在，开始创建这个collection_name")
         client.create_collection(
             collection_name=collection_name,
             schema=schema,
             index_params=index_params,
         )
+    logger.info(f"{collection_name}的collection已经存在，不需要创建")
 
     # # 检查并创建分区
     # if not client.has_partition(
@@ -81,3 +84,13 @@ async def create_or_use_hybrid_search_milvus_client_collection(
     #     )
 
     return client
+
+
+# # 编写测试代码
+# import asyncio
+
+# asyncio.run(
+#     create_or_use_hybrid_search_milvus_client_collection(
+#         collection_name="test_collection"
+#     )
+# )
