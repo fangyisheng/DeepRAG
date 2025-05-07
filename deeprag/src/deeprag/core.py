@@ -90,6 +90,7 @@ import json
 from datetime import datetime
 import ast
 from io import BytesIO
+import yaml
 
 
 class DeepRAG:
@@ -734,7 +735,7 @@ class DeepRAG:
             context = None
         else:
             context = await self.llm_chat_service.construct_context(session_id)
-        complete_response = None
+        complete_response = ""
         message_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         async for response in final_rag_answer_process_stream(
             user_prompt=user_prompt,
@@ -746,8 +747,10 @@ class DeepRAG:
             context=context,
         ):
             yield response
-            real_response_dict = json.loads(response.split(":", 1)[1].strip())
-            complete_response += real_response_dict["answer"]
+            real_response_dict = yaml.safe_load(response)
+            # logger.info(real_response_dict)
+            if real_response_dict["data"]["answer"]:
+                complete_response += real_response_dict["data"]["answer"]
         message_end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         message_duration_time = str(
             datetime.strptime(message_end_time, "%Y-%m-%d %H:%M:%S")
@@ -756,7 +759,7 @@ class DeepRAG:
         llm_total_token_usage = llm_token_usage_var.get()
 
         await self.llm_chat_service.create_message(
-            id=real_response_dict["message_id"],
+            id=real_response_dict["data"]["message_id"],
             user_id=knowledge_scope.user_id,
             user_prompt=user_prompt,
             user_context=context,
@@ -764,13 +767,13 @@ class DeepRAG:
             message_start_time=message_start_time,
             message_end_time=message_end_time,
             message_duration_time=message_duration_time,
-            session_id=real_response_dict["session_id"],
+            session_id=real_response_dict["data"]["session_id"],
             llm_token_usage=llm_total_token_usage,
             embedding_token_usage=embedding_total_token_usage,
         )
         await self.rag_param_service.create_rag_param(
-            grounds_for_response=real_response_dict["rag_groundings"],
-            message_id=real_response_dict["message_id"],
+            grounds_for_response=real_response_dict["data"]["rag_groundings"],
+            message_id=real_response_dict["data"]["message_id"],
         )
 
     async def query_by_non_stream(

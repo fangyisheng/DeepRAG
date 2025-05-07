@@ -3,6 +3,7 @@ import json
 from deeprag.db.service.knowledge_space.knowledge_space_service import (
     KnowledgeSpaceService,
 )
+from fastapi.responses import JSONResponse
 
 knowledge_space_router = APIRouter(tags=["knowledge_space"])
 
@@ -23,11 +24,13 @@ async def get_knowledge_space(knowledge_space_id: str):
     )
     if not found_knowledge_space:
         raise HTTPException(status_code=404, detail="knowledge_space not found")
-    return {
+    result = {
         "msg": "get knowledge_space successful",
         "data": found_knowledge_space.model_dump(),
         "code": 200,
     }
+
+    return JSONResponse(content=result)
 
 
 @knowledge_space_router.post("/")
@@ -37,11 +40,12 @@ async def create_knowledge_space(knowledge_space_title):
     )
     if not created_knowledge_space:
         raise HTTPException(status_code=404, detail="knowledge_space create failed")
-    return {
+    result = {
         "msg": "create new knowledge_space successful",
         "data": created_knowledge_space.model,
         "code": 200,
     }
+    return JSONResponse(content=result)
 
 
 @knowledge_space_router.post("/delete/{id}")

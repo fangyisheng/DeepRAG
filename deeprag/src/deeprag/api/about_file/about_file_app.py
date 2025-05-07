@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, File, UploadFile, Form
+from fastapi.responses import JSONResponse
 from deeprag.db.service.file.file_service import FileService
 from deeprag.api.data_model import UploadFileRequestParam
 from deeprag.core import DeepRAG
@@ -16,11 +17,12 @@ async def get_file_by_file_id(id: str):
     found_file = await file_service.get_file_in_knowledge_space_by_doc_id(id)
     if not found_file:
         return HTTPException(status_code=404, detail="file not found")
-    return {
+    result = {
         "msg": "get new file successfully",
         "data": found_file.model_dump(),
         "code": 200,
     }
+    return JSONResponse(content=result)
 
 
 @file_router.post("/")
@@ -49,11 +51,13 @@ async def upload_file(
     )
     if not uploaded_file:
         return HTTPException(status_code=404, detail="file upload failed")
-    return {
+    result = {
         "msg": "you have uploaded new file in a knowledge_space",
         "data": uploaded_file.model_dump(),
         "code": 200,
     }
+
+    return JSONResponse(content=result)
 
 
 @file_router.post("/delete/{id}")
@@ -63,18 +67,21 @@ async def delete_file(id: str):
         return HTTPException(
             status_code=404, detail="file delete failed or file has been deleted"
         )
-    return {
+    result = {
         "msg": "you have deleted a file in a knowledge_space",
         "data": deleted_file,
         "code": 200,
     }
 
+    return JSONResponse(content=result)
+
 
 @file_router.post("/update/{id}")
 async def update_file(id: str, data: dict):
     updated_file = await file_service.update_existed_file_in_knowledge_space(id, data)
-    return {
+    result = {
         "msg": "you have updated a old file in a knowledge",
-        "data": updated_file,
+        "data": updated_file.model_dump(),
         "code": 200,
     }
+    return JSONResponse(content=result)

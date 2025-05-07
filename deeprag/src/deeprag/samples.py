@@ -95,17 +95,18 @@ import asyncio
 async def main():
     try:
         answer = await query(
-            user_prompt="当前深度求索技术的产业生态是怎样的？",
+            user_prompt="你好",
             knowledge_scope=KnowledgeScopeLocator(
                 user_id="c6fc9b5c-439b-4af5-8ac8-8540d384e2e6",
                 knowledge_space_id="3de5bcd0-ccd8-4cf3-8583-02c71ca51ac1",
                 file_id="e6edc631-1b3e-436c-9888-4b6d1f84a706",
             ),
             deep_query_pattern=True,
-            stream=True,
+            stream=False,
         )
-        async for chunk in answer:
-            print(chunk)
+        # async for chunk in answer:
+        #     print(chunk)
+        print(answer)
     except Exception as e:
         print(e)
         print(traceback.format_exc())

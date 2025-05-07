@@ -60,7 +60,7 @@ class FileService:
 
         return file
 
-    async def update_existed_file_in_knowledge(self, id: str, data: dict) -> file:
+    async def update_existed_file_in_knowledge_space(self, id: str, data: dict) -> file:
         file = await self.dao.update_existed_file_in_knowledge_space(id, data)
 
         return file

@@ -8,6 +8,7 @@ from deeprag.workflow.data_model import (
 from deeprag.db.data_model import RoleMessage
 from typing import AsyncGenerator
 import uuid
+import json
 
 
 async def final_rag_answer_process_stream(
@@ -46,17 +47,19 @@ async def final_rag_answer_process_stream(
             "session_id": session_id,
             "message_id": message_id,
         }
-        yield f"data: {message}\n\n"
+        yield f"data: {json.dumps(message, ensure_ascii=False)}\n\n"
     last_message = {
         "answer": "",
         "rag_pattern": "deep_query_pattern"
         if deep_query_pattern
         else "common_query_pattern",
+        "rag_groundings": recalled_text_fragments,
         "session_id": session_id,
+        "message_id": message_id,
         "embedding_token_usage": embedding_token_usage,
-        "llm_token_usage": response.cost_tokens,
+        "llm_token_usage": response.cost_tokens.result(),
     }
-    yield f"""data: {last_message}\n\n"""
+    yield f"data: {json.dumps(last_message, ensure_ascii=False)}\n\n"
 
 
 async def final_rag_answer_process_not_stream(
