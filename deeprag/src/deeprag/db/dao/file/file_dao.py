@@ -39,6 +39,46 @@ class FileDAO:
         await self.db.disconnect()
         return stored_file
 
+    async def batch_upload_file_in_knowledge_space(
+        self,
+        id_list: list[str],
+        knowledge_space_id_list: list[str],
+        doc_title_list: list[str],
+        doc_text_list: list[str],
+        minio_bucket_name_list: list[str],
+        minio_object_name_list: list[str],
+    ) -> int:
+        await self.db.connect()
+        stored_file_list_count = await self.db.file.create_many(
+            data=[
+                {
+                    "id": id,
+                    "knowledge_space_id": knowledge_space_id,
+                    "doc_title": doc_title,
+                    "doc_text": doc_text,
+                    "minio_bucket_name": minio_bucket_name,
+                    "minio_object_name": minio_object_name,
+                }
+                for (
+                    id,
+                    knowledge_space_id,
+                    doc_title,
+                    doc_text,
+                    minio_bucket_name,
+                    minio_object_name,
+                ) in zip(
+                    id_list,
+                    knowledge_space_id_list,
+                    doc_title_list,
+                    doc_text_list,
+                    minio_bucket_name_list,
+                    minio_object_name_list,
+                )
+            ],
+        )
+        await self.db.disconnect()
+        return stored_file_list_count
+
     async def delete_file_in_knowledge_space(self, id: str) -> file:
         await self.db.connect()
         deleted_file = await self.db.file.delete(where={"id": id})

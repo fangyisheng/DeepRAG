@@ -174,6 +174,7 @@ class DeepRAG:
             io_data=io_data,
             metadata=metadata,
         )
+        logger.info(f"上传文件{stored_file.id}到MinIO成功")
         return KnowledgeScopeMinioMapping(
             knowledge_scope=KnowledgeScopeLocator(
                 user_id=stored_file.KnowledgeSpaceFile.user_id,
@@ -184,6 +185,54 @@ class DeepRAG:
                 bucket_name=bucket_name, object_name=object_name
             ),
         )
+
+    async def batch_create_file_and_upload_to_minio(
+        self,
+        knowledge_space_id_or_id_list: list[str] | str,
+        bucket_name_list: list[str],
+        object_name_iist: list[str],
+        file_path_list: list[str],
+        string_data_list: list[str] | None = None,
+        io_data_list: list[BytesIO] | None = None,
+        metadata_list: list[dict] | None = None,
+    ) -> list[KnowledgeScopeMinioMapping]:
+        if isinstance(knowledge_space_id_or_id_list, str):
+            knowledge_space_id_list = [knowledge_space_id_or_id_list] * len(
+                file_path_list
+            )
+        else:
+            knowledge_space_id_list = knowledge_space_id_or_id_list
+        doc_title_list = [Path(file_path).name for file_path in file_path_list]
+        stored_file_list = await self.file_service.batch_upload_file_in_knowledge_space(
+            knowledge_space_id_list=knowledge_space_id_list,
+            doc_title_list=doc_title_list,
+            doc_text_list=[None] * len(file_path_list),
+            minio_bucket_name_list=bucket_name_list,
+            minio_object_name_list=object_name_iist,
+        )
+        logger.info(f"批量创建文件成功{stored_file_list}")
+        await self.file_service.bath_upload_new_file_to_minio(
+            bucket_name_list=bucket_name_list,
+            object_name_list=object_name_iist,
+            string_data_list=string_data_list,
+            metadata_list=metadata_list,
+            file_path_list=file_path_list,
+            io_data_list=io_data_list,
+        )
+        logger.info(f"批量上传文件到MinIO成功{stored_file_list}")
+        return [
+            KnowledgeScopeMinioMapping(
+                knowledge_scope=KnowledgeScopeLocator(
+                    user_id=stored_file.KnowledgeSpaceFile.user_id,
+                    knowledge_space_id=knowledge_space_id,
+                    file_id=stored_file.id,
+                ),
+                minio_object_reference=MinioObjectReference(
+                    bucket_name=bucket_name, object_name=object_name
+                ),
+            )
+            for stored_file, knowledge_space, bucket_name, object_name in zip()
+        ]
 
     # 这个get_all的函数还需要进行优化,暂时先不管了
     async def get_all_knowledge_scope_structure(self):
@@ -674,8 +723,26 @@ class DeepRAG:
                     for file in found_file_list
                 ]
                 results = await asyncio.gather(**tasks)
-            if knowledge_scope.user_id and not knowledge_scope.knowledge_space_id and not knowledge_scope.file_id:
-                found_file_list = await self.user_service.
+            if (
+                knowledge_scope.user_id
+                and not knowledge_scope.knowledge_space_id
+                and not knowledge_scope.file_id
+            ):
+                found_file_list = (
+                    await self.user_service.get_all_files_under_user_knowledge_spaces(
+                        knowledge_scope.user_id
+                    )
+                )
+                tasks = [
+                    self.index(
+                        collection_name=collection_name,
+                        knowledge_scope=knowledge_scope.__setattr__("file_id", file.id),
+                        meta_data=meta_data,
+                        deep_index_pattern=deep_index_pattern,
+                    )
+                    for file in found_file_list
+                ]
+                results = await asyncio.gather(**tasks)
         llm_total_token_usage = sum([result.llm_token_usage for result in results])
         embedding_total_token_usage = sum(
             [result.embedding_token_usage for result in results]

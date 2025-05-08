@@ -5,6 +5,7 @@ import uuid
 from deeprag.workflow.data_model import UploadFileToMinioResponse, MinioObjectReference
 from prisma.models import file
 from io import BytesIO
+import asyncio
 
 
 class FileService:
@@ -30,6 +31,37 @@ class FileService:
         )
         return uploaded_file
 
+    async def bath_upload_new_file_to_minio(
+        self,
+        bucket_name_list: list[str],
+        object_name_list: list[str],
+        string_data_list: list[str] | None = None,
+        metadata_list: list[dict] | None = None,
+        file_path_list: list[str] | None = None,
+        io_data_list: list[BytesIO] | None = None,
+    ) -> list[UploadFileToMinioResponse]:
+        tasks = []
+        tasks = [
+            upload_file_to_minio_func(
+                bucket_name=bucket_name,
+                file_path=file_path,
+                object_name=object_name,
+                string_data=string_data,
+                metadata=metadata,
+                io_data=io_data,
+            )
+            for bucket_name, file_path, object_name, string_data, metadata, io_data in zip(
+                bucket_name_list,
+                file_path_list,
+                object_name_list,
+                string_data_list,
+                metadata_list,
+                io_data_list,
+            )
+        ]
+        results = await asyncio.gather(*tasks)
+        return results
+
     # 这里的dict[str,str]还是改一下吧，结合pydantic做好具体的键值对的数据验证，方便大型项目的开发
     async def upload_new_file_to_knowledge_space(
         self,
@@ -50,6 +82,29 @@ class FileService:
         )
 
         return new_file
+
+    async def batch_upload_file_in_knowledge_space(
+        self,
+        knowledge_space_id_list: list[str],
+        doc_title_list: list[str],
+        doc_text_list: list[str],
+        minio_bucket_name_list: list[str],
+        minio_object_name_list: list[str],
+    ) -> list[str]:
+        """
+        返回文件的id列表，方便我后续调用的时候打日志
+        调用的dao层的batch_upload_file_in_knowledge_space方法中使用了create_many方法，这个函数方法返回的是一个int整数，表示count数量
+        """
+        id_list = [str(uuid.uuid4()) for _ in range(len(doc_title_list))]
+        stored_file_list_count = await self.dao.batch_upload_file_in_knowledge_space(
+            id_list=id_list,
+            knowledge_space_id_list=knowledge_space_id_list,
+            doc_title_list=doc_title_list,
+            doc_text_list=doc_text_list,
+            minio_bucket_name_list=minio_bucket_name_list,
+            minio_object_name_list=minio_object_name_list,
+        )
+        return id_list
 
     async def get_minio_reference_by_id(self, id: str) -> MinioObjectReference:
         found_file = await self.dao.get_file_in_knowledge_space_by_doc_id(id)

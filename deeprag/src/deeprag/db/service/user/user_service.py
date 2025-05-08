@@ -1,6 +1,6 @@
 from deeprag.db.dao.user.user_dao import UserDAO
 import uuid
-from prisma.models import user
+from prisma.models import user, file
 
 
 class UserService:
@@ -32,9 +32,26 @@ class UserService:
         found_users = await self.dao.get_users_by_user_name(user_name)
         return found_users
 
+    async def get_all_files_under_user_knowledge_spaces(self, id: str) -> list[file]:
+        files_under_user_knowledge_spaces = (
+            await self.dao.get_all_files_under_user_knowledge_spaces(id)
+        )
+        found_file_list = [
+            file
+            for knowledge_space in files_under_user_knowledge_spaces.knowledge_spaces
+            for file in knowledge_space.files
+        ]
+        return found_file_list
+
 
 # # 测试代码
 # user_service = UserService()
 # import asyncio
 
-# print(asyncio.run(user_service.create_user("test")))
+# print(
+#     asyncio.run(
+#         user_service.get_all_files_under_user_knowledge_spaces(
+#             "e7a6aec2-f7d8-4911-be92-1947c8343975"
+#         )
+#     )
+# )

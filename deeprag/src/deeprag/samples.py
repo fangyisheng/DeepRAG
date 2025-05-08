@@ -4,7 +4,6 @@ import asyncio
 from typing import Any
 import traceback
 from io import BytesIO
-import asyncio
 from loguru import logger
 
 deeprag = DeepRAG()
@@ -55,6 +54,8 @@ async def index(
     )
 
 
+# 如果已经创建好了user空间和knowledge_space空间，想要对某个user_id下面的所有知识空间的所有文件进行batch_index的过程，那么参考如下的操作
+# 或者说是对某个知识空间下的所有文件进行batch_index的过程，那么参考如下的操作
 async def batch_index(
     collection_name: str,
     knowlege_scope: list[KnowledgeScopeLocator] | KnowledgeScopeLocator,
@@ -146,34 +147,39 @@ async def main(
 
 # 如果stream=True，则返回SSE的数据流，如果stream=False，则返回一个字典（其中包含回答）
 # 对于SSE数据更推荐使用postman或者apifox的API测试来查看数据
-print(
-    asyncio.run(
-        main(
-            user_name="test",
-            knowledge_space_name="test",
-            file_path="/home/easonfang/DeepRAG/deeprag/src/deeprag/knowledge_file/test2.txt",
-            collection_name="test_collection",
-            deep_index_pattern=True,
-            deep_query_pattern=True,
-            minio_bucket_name="test",
-            minio_object_name="test2.txt",
-            user_prompt="深度求索的产业生态怎么样？",
-            session_id="",
-            stream=True,
-        )
-    )
-)
 
-# 如果已经创建好了user空间和knowledge_space空间，想要做batch_index的过程，那么参考如下的操作
+##下面是运行过程
+# print(
+#     asyncio.run(
+#         main(
+#             user_name="test",
+#             knowledge_space_name="test",
+#             file_path="/home/easonfang/DeepRAG/deeprag/src/deeprag/knowledge_file/test2.txt",
+#             collection_name="test_collection",
+#             deep_index_pattern=True,
+#             deep_query_pattern=True,
+#             minio_bucket_name="test",
+#             minio_object_name="test2.txt",
+#             user_prompt="深度求索的产业生态怎么样？",
+#             session_id="",
+#             stream=True,
+#         )
+#     )
+# )
 
 
-async def batch_index_process(
-    knowledge_scope: KnowledgeScopeLocator,
-    collection_name: str,
-    deep_index_pattern: bool = False,
+# 只在某个用户下的某个知识空间上传一个文件，是不够的，还可以继续上传
+# 对于批量文件上传，可以参考如下的操作
+async def batch_create_file_and_upload_to_minio_process(
+    knowledge_space_id: str,
+    file_path_list: list[str],
+    bucket_name_list: list[str],
+    object_name_list: list[str],
 ):
-    result = await batch_index(
-        collection_name=collection_name,
-        knowledge_scope=knowledge_scope,
-        deep_index_pattern=deep_index_pattern,
+    results = await deeprag.batch_create_file_and_upload_to_minio(
+        knowledge_space_id=knowledge_space_id,
+        file_path_list=file_path_list,
+        bucket_name_list=bucket_name_list,
+        object_name_list=object_name_list,
     )
+    return results

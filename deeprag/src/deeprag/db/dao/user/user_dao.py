@@ -67,6 +67,15 @@ class UserDAO:
         await self.db.disconnect()
         return updated_user
 
+    async def get_all_files_under_user_knowledge_spaces(self, id: str) -> user:
+        await self.db.connect()
+        files_under_user_knowledge_spaces = await self.db.user.find_unique(
+            where={"id": id},
+            include={"knowledge_spaces": {"include": {"files": True}}},
+        )
+        await self.db.disconnect()
+        return files_under_user_knowledge_spaces
+
 
 # # 做一下select方法的测试,可能在Python的prisma客户端里没有select方法，还要做一下human_readable_id的序列增加
 
@@ -78,15 +87,17 @@ class UserDAO:
 # 测试一下update的功能方法
 
 
-# 写一点测试代码
-import asyncio
+# # 写一点测试代码
+# import asyncio
 
-user_dao = UserDAO()
-
-
-async def main():
-    result = await user_dao.get_user_name_by_id("8cc0c135-135d-4355-a797-df82d4fca247")
-    return result
+# user_dao = UserDAO()
 
 
-print(asyncio.run(main()))
+# async def main():
+#     result = await user_dao.get_all_file_in_user_id(
+#         "e7a6aec2-f7d8-4911-be92-1947c8343975"
+#     )
+#     return result
+
+
+# print(asyncio.run(main()))
