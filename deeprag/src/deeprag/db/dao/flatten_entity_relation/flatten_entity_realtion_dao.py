@@ -19,7 +19,8 @@ class FlattenEntityRelationDAO:
         merged_graph_data_id: str,
         community_id: str,
     ) -> flatten_entity_relation:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_flatten_entity_relation = await self.db.flatten_entity_relation.create(
             data={
                 "id": id,
@@ -37,7 +38,8 @@ class FlattenEntityRelationDAO:
         self,
         flatten_entity_relations: list[FlattenEntityRelation],
     ) -> int:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_flatten_entity_relation_count = (
             await self.db.flatten_entity_relation.create_many(
                 data=[
@@ -53,7 +55,8 @@ class FlattenEntityRelationDAO:
     async def get_flatten_entity_relation_by_id(
         self, id: str
     ) -> flatten_entity_relation:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_flatten_entity_relation = (
             await self.db.flatten_entity_relation.find_unique(where={"id": id})
         )
@@ -63,7 +66,8 @@ class FlattenEntityRelationDAO:
     async def get_flatten_entity_relation_by_community_id(
         self, community_id: str
     ) -> list[flatten_entity_relation]:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_flatten_entity_relation_list = (
             await self.db.flatten_entity_relation.find_many(
                 where={"community_id": community_id}

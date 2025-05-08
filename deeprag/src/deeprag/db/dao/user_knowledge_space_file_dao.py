@@ -12,7 +12,8 @@ class UserKnowledgeSpaceFileDAO:
         self.db = Prisma()
 
     async def get_all_knowledge_scope_structure(self) -> list[user]:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         all_knowledge_scope_structure = await self.db.user.find_many(
             include={
                 "knowledge_spaces": {
@@ -28,7 +29,8 @@ class UserKnowledgeSpaceFileDAO:
     async def get_knowledge_scope_real_name_by_id(
         self, knowledge_scope_locator: KnowledgeScopeLocator
     ) -> KnowledgeScopeRealName:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_user = await self.db.user.find_unique(
             where={
                 "id": knowledge_scope_locator.user_id,

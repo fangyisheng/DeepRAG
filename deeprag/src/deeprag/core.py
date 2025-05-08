@@ -92,6 +92,7 @@ import ast
 from io import BytesIO
 import yaml
 from fastapi import HTTPException
+from tqdm.asyncio import tqdm_asyncio
 
 
 class DeepRAG:
@@ -190,7 +191,7 @@ class DeepRAG:
         self,
         knowledge_space_id_or_id_list: list[str] | str,
         bucket_name_list: list[str],
-        object_name_iist: list[str],
+        object_name_list: list[str],
         file_path_list: list[str],
         string_data_list: list[str] | None = None,
         io_data_list: list[BytesIO] | None = None,
@@ -208,30 +209,43 @@ class DeepRAG:
             doc_title_list=doc_title_list,
             doc_text_list=[None] * len(file_path_list),
             minio_bucket_name_list=bucket_name_list,
-            minio_object_name_list=object_name_iist,
+            minio_object_name_list=object_name_list,
         )
         logger.info(f"批量创建文件成功{stored_file_list}")
-        await self.file_service.bath_upload_new_file_to_minio(
+        await self.file_service.batch_upload_new_file_to_minio(
             bucket_name_list=bucket_name_list,
-            object_name_list=object_name_iist,
+            object_name_list=object_name_list,
             string_data_list=string_data_list,
             metadata_list=metadata_list,
             file_path_list=file_path_list,
             io_data_list=io_data_list,
         )
         logger.info(f"批量上传文件到MinIO成功{stored_file_list}")
+        user_id_list = [
+            knowledge_space.user_id
+            for knowledge_space in await self.knowledge_space_service.batch_get_knowledge_space_by_id_list(
+                knowledge_space_id_list
+            )
+        ]
+
         return [
             KnowledgeScopeMinioMapping(
                 knowledge_scope=KnowledgeScopeLocator(
-                    user_id=stored_file.KnowledgeSpaceFile.user_id,
+                    user_id=user_id,
                     knowledge_space_id=knowledge_space_id,
-                    file_id=stored_file.id,
+                    file_id=file_id,
                 ),
                 minio_object_reference=MinioObjectReference(
                     bucket_name=bucket_name, object_name=object_name
                 ),
             )
-            for stored_file, knowledge_space, bucket_name, object_name in zip()
+            for user_id, file_id, knowledge_space_id, bucket_name, object_name in zip(
+                user_id_list,
+                stored_file_list,
+                knowledge_space_id_list,
+                bucket_name_list,
+                object_name_list,
+            )
         ]
 
     # 这个get_all的函数还需要进行优化,暂时先不管了
@@ -696,7 +710,7 @@ class DeepRAG:
         # 这个batch index的行为有三种情况，一个是对不同的file_id进行batch index,另外一个是对相同的知识库id下面的文件做batch index，第三个行为是对用户空间下不同知识库id下面的所有的file id进行index/.
         # 这个函数后期还需要改进一下，集中返回所有文件消耗的llm_token_usage和embedding_token_usage
         results = []
-        if isinstance(knowledge_scope, list[KnowledgeScopeLocator]):
+        if isinstance(knowledge_scope, list):
             if all(knowledge_scope.file_id for knowledge_scope in knowledge_scope):
                 tasks = [
                     self.index(
@@ -707,7 +721,14 @@ class DeepRAG:
                     )
                     for knowledge_scope in knowledge_scope
                 ]
-                results = await asyncio.gather(*tasks)
+                results = []
+                for future in tqdm_asyncio(
+                    asyncio.as_completed(tasks),
+                    total=len(tasks),
+                    desc="批量进行对文件的索引",
+                ):
+                    result = await future
+                    results.append(result)
         if isinstance(knowledge_scope, KnowledgeScopeLocator):
             if knowledge_scope.knowledge_space_id and not knowledge_scope.file_id:
                 found_file_list = await self.file_service.get_file_in_knowledge_space_by_knowledge_space_id(
@@ -716,13 +737,22 @@ class DeepRAG:
                 tasks = [
                     self.index(
                         collection_name=collection_name,
-                        knowledge_scope=knowledge_scope.__setattr__("file_id", file.id),
+                        knowledge_scope=knowledge_scope.model_copy(
+                            update={"file_id": file.id}
+                        ),
                         meta_data=meta_data,
                         deep_index_pattern=deep_index_pattern,
                     )
                     for file in found_file_list
                 ]
-                results = await asyncio.gather(**tasks)
+                results = []
+                for future in tqdm_asyncio(
+                    asyncio.as_completed(tasks),
+                    total=len(tasks),
+                    desc="批量进行对文件的索引",
+                ):
+                    result = await future
+                    results.append(result)
             if (
                 knowledge_scope.user_id
                 and not knowledge_scope.knowledge_space_id
@@ -733,16 +763,30 @@ class DeepRAG:
                         knowledge_scope.user_id
                     )
                 )
+                # logger.info(f"found_file_list: {found_file_list}")
+                # logger.info(f"{knowledge_scope}")
+                # for file in found_file_list:
+                #     knowledge_scope = knowledge_scope.__setattr__("file_id", file.id)
+                #     logger.info(f"knowledge_scope: {knowledge_scope}")
                 tasks = [
                     self.index(
                         collection_name=collection_name,
-                        knowledge_scope=knowledge_scope.__setattr__("file_id", file.id),
+                        knowledge_scope=knowledge_scope.model_copy(
+                            update={"file_id": file.id}
+                        ),
                         meta_data=meta_data,
                         deep_index_pattern=deep_index_pattern,
                     )
                     for file in found_file_list
                 ]
-                results = await asyncio.gather(**tasks)
+                results = []
+                for future in tqdm_asyncio(
+                    asyncio.as_completed(tasks),
+                    total=len(tasks),
+                    desc="批量进行对文件的索引",
+                ):
+                    result = await future
+                    results.append(result)
         llm_total_token_usage = sum([result.llm_token_usage for result in results])
         embedding_total_token_usage = sum(
             [result.embedding_token_usage for result in results]

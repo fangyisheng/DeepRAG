@@ -22,7 +22,8 @@ class FileDAO:
         # deep_indexed: bool = False,
         # file_embedding_zilliz_collection_name: str | None = None,
     ) -> file:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_file = await self.db.file.create(
             data={
                 "id": id,
@@ -48,7 +49,8 @@ class FileDAO:
         minio_bucket_name_list: list[str],
         minio_object_name_list: list[str],
     ) -> int:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_file_list_count = await self.db.file.create_many(
             data=[
                 {
@@ -80,19 +82,22 @@ class FileDAO:
         return stored_file_list_count
 
     async def delete_file_in_knowledge_space(self, id: str) -> file:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         deleted_file = await self.db.file.delete(where={"id": id})
         await self.db.disconnect()
         return deleted_file
 
     async def update_existed_file_in_knowledge_space(self, id: str, data: dict) -> file:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         updated_file = await self.db.file.update(where={"id": id}, data=data)
         await self.db.disconnect()
         return updated_file
 
     async def get_file_in_knowledge_space_by_doc_id(self, id: str) -> file:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_file = await self.db.file.find_unique(
             where={"id": id},
             include={
@@ -111,25 +116,29 @@ class FileDAO:
         return found_file
 
     async def get_file_in_knowledge_space_by_knowledge_space_id(self, id: str) -> file:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_file_list = await self.db.file.find_many(where={"knowledge_space_id": id})
         await self.db.disconnect()
         return found_file_list
 
     async def get_zilliz_collection_name_by_file_id(self, id: str) -> str:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_file = await self.db.file.find_unique(where={"id": id})
         await self.db.disconnect()
         return found_file.file_embedding_zilliz_collection_name
 
     async def get_index_status_by_file_id(self, id: str) -> bool:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_file = await self.db.file.find_unique(where={"id": id})
         await self.db.disconnect()
         return found_file.indexed
 
     async def get_deep_index_status_by_file_id(self, id: str) -> bool:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_file = await self.db.file.find_unique(where={"id": id})
         await self.db.disconnect()
         return found_file.deep_indexed

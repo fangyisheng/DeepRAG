@@ -31,7 +31,7 @@ class FileService:
         )
         return uploaded_file
 
-    async def bath_upload_new_file_to_minio(
+    async def batch_upload_new_file_to_minio(
         self,
         bucket_name_list: list[str],
         object_name_list: list[str],
@@ -41,24 +41,19 @@ class FileService:
         io_data_list: list[BytesIO] | None = None,
     ) -> list[UploadFileToMinioResponse]:
         tasks = []
-        tasks = [
-            upload_file_to_minio_func(
-                bucket_name=bucket_name,
-                file_path=file_path,
-                object_name=object_name,
-                string_data=string_data,
-                metadata=metadata,
-                io_data=io_data,
+        for i in range(len(bucket_name_list)):
+            tasks.append(
+                upload_file_to_minio_func(
+                    bucket_name=bucket_name_list[i],
+                    object_name=object_name_list[i],
+                    file_path=file_path_list[i] if file_path_list is not None else None,
+                    string_data=string_data_list[i]
+                    if string_data_list is not None
+                    else None,
+                    metadata=metadata_list[i] if metadata_list is not None else None,
+                    io_data=io_data_list[i] if io_data_list is not None else None,
+                )
             )
-            for bucket_name, file_path, object_name, string_data, metadata, io_data in zip(
-                bucket_name_list,
-                file_path_list,
-                object_name_list,
-                string_data_list,
-                metadata_list,
-                io_data_list,
-            )
-        ]
         results = await asyncio.gather(*tasks)
         return results
 

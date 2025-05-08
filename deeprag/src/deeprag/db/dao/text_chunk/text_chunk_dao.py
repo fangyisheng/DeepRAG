@@ -13,7 +13,8 @@ class TextChunkDAO:
     async def create_text_chunk(
         self, id: str, doc_id: str, text_chunk: str, n_tokens: str
     ) -> text_chunk:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_text_chunk = await self.db.text_chunk.create(
             data={
                 "id": id,
@@ -32,7 +33,8 @@ class TextChunkDAO:
         text_chunk_list: list[str],
         n_tokens_list: list[int],
     ) -> int:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_text_chunk_count = await self.db.text_chunk.create_many(
             data=[
                 {
@@ -50,7 +52,8 @@ class TextChunkDAO:
         return stored_text_chunk_count
 
     async def get_text_chunk_by_id(self, id: str) -> text_chunk:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_text_chunk = await self.db.text_chunk.find_unique(where={"id": id})
         await self.db.disconnect()
         return found_text_chunk

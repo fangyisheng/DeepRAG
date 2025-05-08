@@ -20,7 +20,8 @@ class IndexWorkFlowDAO:
         llm_cost_tokens: int | None = None,
         embedding_cost_tokens: int | None = None,
     ) -> index_workflow:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_workflow = await self.db.index_workflow.create(
             data={
                 "id": id,
@@ -37,13 +38,15 @@ class IndexWorkFlowDAO:
         return stored_workflow
 
     async def get_workflow_by_id(self, id: str) -> index_workflow:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_workflow = await self.db.index_workflow.find_unique(where={"id": id})
         await self.db.disconnect()
         return found_workflow
 
     async def get_workflow_by_message_id(self, message_id: str) -> index_workflow:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_workflow = await self.db.index_workflow.find_unique(
             where={"message_id": message_id}
         )
@@ -51,7 +54,8 @@ class IndexWorkFlowDAO:
         return found_workflow
 
     async def update_workflow(self, id: str, data: dict) -> index_workflow:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         # data = {}
         # if status is not None:
         #     data["status"] = status

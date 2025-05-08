@@ -12,7 +12,8 @@ class CommunityReportDAO:
     async def create_community_report(
         self, id: str, community_report: str, community_id: str
     ) -> community_report:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_community_report = await self.db.community_report.create(
             data={
                 "id": id,
@@ -29,7 +30,8 @@ class CommunityReportDAO:
         community_report_list: list[str],
         community_id_list: list[str],
     ) -> int:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_community_report_count = await self.db.community_report.create_many(
             data=[
                 {
@@ -46,7 +48,8 @@ class CommunityReportDAO:
         return stored_community_report_count
 
     async def get_community_report_by_id(self, id: str) -> community_report:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_community_report = await self.db.community_report.find_unique(
             where={"id": id}
         )

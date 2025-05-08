@@ -13,7 +13,8 @@ class KnowledgeSpaceDAO:
     async def create_knowledge_space(
         self, id: str, user_id: str, knowledge_space_name: str
     ) -> knowledge_space:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_knowledge_space = await self.db.knowledge_space.create(
             data={
                 "user_id": user_id,
@@ -25,23 +26,37 @@ class KnowledgeSpaceDAO:
         return stored_knowledge_space
 
     async def delete_knowledge_space(self, id: str) -> knowledge_space:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         deleted_knowledge_space = await self.db.knowledge_space.delete(where={"id": id})
         await self.db.connect()
         return deleted_knowledge_space
 
     async def get_knowledge_space_by_id(self, id: str) -> knowledge_space:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_knowledge_space = await self.db.knowledge_space.find_unique(
             where={"id": id}
         )
         await self.db.connect()
         return found_knowledge_space
 
+    async def batch_get_knowledge_space_by_id_list(
+        self, id_list: list[str]
+    ) -> list[knowledge_space]:
+        if not self.db.is_connected():
+            await self.db.connect()
+        found_knowledge_space_list = await self.db.knowledge_space.find_many(
+            where={"id": {"in": id_list}}
+        )
+        await self.db.disconnect()
+        return found_knowledge_space_list
+
     async def update_knowledge_space(
         self, id: str, data: UpdateKnowledgeSpace
     ) -> knowledge_space:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         updated_knowledge_space = await self.db.knowledge_space.update(
             where={"id": id}, data=data
         )
@@ -54,7 +69,8 @@ class KnowledgeSpaceDAO:
         """
         对知识库空间进行知识库名字的精确检索
         """
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_knowledge_space = await self.db.knowledge_space.find_many(
             where={"knowledge_space_title": knowledge_space_name}
         )
@@ -67,7 +83,8 @@ class KnowledgeSpaceDAO:
         """
         对知识库空间进行知识库名字的模糊检索
         """
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_knowledge_space = await self.db.knowledge_space.find_many(
             where={"knowledge_space_title": {"contains": knowledge_space_name}}
         )

@@ -7,7 +7,7 @@ load_dotenv()
 
 
 class SubGraphDataDAO:
-    def __init__(self):
+    def __init__(self, db):
         self.db = Prisma()
 
     async def create_sub_graph_data(
@@ -17,7 +17,8 @@ class SubGraphDataDAO:
         graph_data: str,
         merged_graph_data_id: str,
     ) -> sub_graph_data:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_sub_graph_data = await self.db.sub_graph_data.create(
             data={
                 "id": id,
@@ -36,7 +37,8 @@ class SubGraphDataDAO:
         sub_graph_data_list: list[str],
         merged_graph_data_id: str,
     ) -> int:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         data = [
             {
                 "id": id,
@@ -56,7 +58,8 @@ class SubGraphDataDAO:
         return stored_sub_graph_data_count
 
     async def get_sub_graph_data_by_id(self, id: str) -> sub_graph_data:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_sub_graph_data = await self.db.sub_graph_data.find_unique(
             where={"id": id}
         )

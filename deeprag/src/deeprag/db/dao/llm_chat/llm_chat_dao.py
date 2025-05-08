@@ -23,7 +23,8 @@ class LLMChatDAO:
         llm_token_usage: int,
         embedding_token_usage: int,
     ) -> llm_chat:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         stored_message = await self.db.llm_chat.create(
             data={
                 "id": id,
@@ -43,13 +44,15 @@ class LLMChatDAO:
         return stored_message
 
     async def get_message_by_id(self, id: str) -> llm_chat:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_message = await self.db.llm_chat.find_unique(where={"id": id})
         await self.db.disconnect()
         return found_message
 
     async def get_message_by_session_id(self, session_id: str) -> list[llm_chat]:
-        await self.db.connect()
+        if not self.db.is_connected():
+            await self.db.connect()
         found_message = await self.db.llm_chat.find_many(
             where={"session_id": session_id}
         )

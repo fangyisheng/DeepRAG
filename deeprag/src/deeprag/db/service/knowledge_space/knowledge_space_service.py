@@ -26,6 +26,18 @@ class KnowledgeSpaceService:
 
         return found_knowledge_space
 
+    async def get_user_id_by_knowledge_space_id(self, id: str) -> str:
+        found_knowledge_space = await self.dao.get_knowledge_space_by_id(id)
+        return found_knowledge_space.user_id
+
+    async def batch_get_knowledge_space_by_id_list(
+        self, id_list: list[str]
+    ) -> list[knowledge_space]:
+        found_knowledge_space_list = (
+            await self.dao.batch_get_knowledge_space_by_id_list(id_list)
+        )
+        return found_knowledge_space_list
+
     async def update_knowledge_space(self, id: str, data: dict) -> knowledge_space:
         updated_knowledge_space = await self.dao.update_knowledge_space(id, data)
 

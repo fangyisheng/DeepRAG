@@ -171,13 +171,13 @@ async def main(
 # 只在某个用户下的某个知识空间上传一个文件，是不够的，还可以继续上传
 # 对于批量文件上传，可以参考如下的操作
 async def batch_create_file_and_upload_to_minio_process(
-    knowledge_space_id: str,
+    knowledge_space_id_or_id_list: list[str] | str,
     file_path_list: list[str],
     bucket_name_list: list[str],
     object_name_list: list[str],
 ):
     results = await deeprag.batch_create_file_and_upload_to_minio(
-        knowledge_space_id=knowledge_space_id,
+        knowledge_space_id_or_id_list=knowledge_space_id_or_id_list,
         file_path_list=file_path_list,
         bucket_name_list=bucket_name_list,
         object_name_list=object_name_list,
