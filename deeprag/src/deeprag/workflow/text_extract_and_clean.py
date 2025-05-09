@@ -24,6 +24,7 @@ async def process_text(bucket_name: str, object_name: str) -> CompleteTextUnit:
     # continuous_text = "".join(line.strip().replace(" ", "") for line in lines if line.strip())
     # return continuous_text
     content = file.read().decode("utf-8")
+    # print(type(content))
     if Path(object_name).suffix != ".csv":
         content = content.replace("\n", "")
         cleaned_content = re.sub(
@@ -34,7 +35,37 @@ async def process_text(bucket_name: str, object_name: str) -> CompleteTextUnit:
         return CompleteTextUnit(root=content)
 
 
-# # 单元化功能测试成功
-# import asyncio
+# 单元化功能测试成功
+import asyncio
+import csv
+import io
+import traceback
 
-# print(asyncio.run(process_text("mybucket", "test2.txt")))
+
+async def get_csv_content(bucket_name, object_name):
+    client = await create_minio_client()
+
+    try:
+        with client.get_object(bucket_name, object_name) as response:
+            text_stream = io.TextIOWrapper(response, encoding="utf-8")
+            reader = csv.reader(text_stream)
+            header = next(reader)
+            print("Header:", header)
+            for row in reader:
+                print("Row:", row)
+    finally:
+        response.close()
+        response.release_conn()  # 非常重要，释放底层连接池资源
+
+
+asyncio.run(get_csv_content("mybucket", "test.csv"))
+
+# # 将响应内容（bytes）转为字符串流 StringIO
+# # data = response.read().decode("utf-8")  # 假设是 utf-8 编码
+# # text_stream = io.StringIO(data)
+# text_stream = io.TextIOWrapper(response, encoding="utf-8")
+
+# # 使用 csv.DictReader 解析文本流
+# reader = csv.DictReader(text_stream)
+# for row in reader:
+#     print(row)  # 每一行是一个字典

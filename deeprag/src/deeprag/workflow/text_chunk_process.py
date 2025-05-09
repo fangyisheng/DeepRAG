@@ -59,13 +59,15 @@ class TextSplitter:
 
         return ChunkedTextUnit(root=self.chunks)
 
-    async def split_text_by_row_in_csv(self, file_path: str) -> ChunkedTextUnit:
-        with open(file_path, newline="", encoding="utf-8") as csvfile:
-            reader = csv.reader(csvfile)
-            header = next(reader)
-            for row in reader:
-                new_row = [f"{header[i]}: {row[i]}" for i in range(len(row))]
-                self.chunks.append(", ".join(new_row))
+    async def split_text_by_row_in_csv(
+        self, file_content: CompleteTextUnit
+    ) -> ChunkedTextUnit:
+        # with open(file_path, newline="", encoding="utf-8") as csvfile:
+        #     reader = csv.reader(csvfile)
+        #     header = next(reader)
+        #     for row in reader:
+        #         new_row = [f"{header[i]}: {row[i]}" for i in range(len(row))]
+        #         self.chunks.append(", ".join(new_row))
         return ChunkedTextUnit(root=self.chunks)
 
 
@@ -99,3 +101,5 @@ class TextSplitter:
 
 #     result = asyncio.run(main())
 #     print(result)
+
+# 接下来需要测试的内容包括直接读取CSV的文件流来切分CSV文件

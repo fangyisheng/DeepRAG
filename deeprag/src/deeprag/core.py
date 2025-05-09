@@ -315,39 +315,41 @@ class DeepRAG:
         )
 
         if not index_status and not deep_index_status:
-            # 接下来判断需要做index的文件类型，如果是csv或者excel等有结构的数据，那么就要跳过数据清洗
-
-            # 首先提取文本
-            complete_text: CompleteTextUnit = await process_text(
-                minio_object_reference.bucket_name, minio_object_reference.object_name
-            )
-            logger.info("数据提取和清洗完成")
-
-            # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
-            # 涉及file的数据库模型
-            await self.file_service.update_existed_file_in_knowledge_space(
-                knowledge_scope.file_id,
-                {
-                    "doc_text": complete_text.root[:300],
-                },
-            )
-            logger.info("file数据模型落盘成功")
-            # 然后创建workflow 落盘数据库
-            index_workflow_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            created_workflow: index_workflow = (
-                await self.index_workflow_service.create_workflow(
-                    status="processing",
-                    action="text_extract",
-                    workflow_start_time=index_workflow_start_time,
-                )
-            )
-            # 然后进行文本切分
-            splitter = TextSplitter()
             if Path(minio_object_reference.object_name).suffix != ".csv":
+                # 接下来判断需要做index的文件类型，如果是csv或者excel等有结构的数据，那么就要跳过数据清洗
+
+                # 首先提取文本
+                complete_text: CompleteTextUnit = await process_text(
+                    minio_object_reference.bucket_name,
+                    minio_object_reference.object_name,
+                )
+                logger.info("数据提取和清洗完成")
+
+                # 此时需要将提取干净的文本放进数据库，考虑到数据库IO的压力，这里最多只存放300个字符作为数据库的预览
+                # 涉及file的数据库模型
+                await self.file_service.update_existed_file_in_knowledge_space(
+                    knowledge_scope.file_id,
+                    {
+                        "doc_text": complete_text.root[:300],
+                    },
+                )
+                logger.info("file数据模型落盘成功")
+                # 然后创建workflow 落盘数据库
+                index_workflow_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                created_workflow: index_workflow = (
+                    await self.index_workflow_service.create_workflow(
+                        status="processing",
+                        action="text_extract",
+                        workflow_start_time=index_workflow_start_time,
+                    )
+                )
+                # 然后进行文本切分
+                splitter = TextSplitter()
                 chunks: ChunkedTextUnit = await splitter.split_text_by_token(
                     complete_text
                 )
             else:
+                splitter = TextSplitter()
                 chunks: ChunkedTextUnit = await splitter.split_text_by_row_in_csv(
                     complete_text
                 )
