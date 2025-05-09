@@ -7,35 +7,29 @@ load_dotenv()
 
 class RagParamDAO:
     def __init__(self):
-        self.db = Prisma()
+        pass
 
     async def create_rag_param(
         self, id: str, grounds_for_response: str, message_id: str
     ) -> rag_param:
-        if not self.db.is_connected():
-            await self.db.connect()
-        stored_rag_param = await self.db.rag_param.create(
-            data={
-                "id": id,
-                "rag_groundings": grounds_for_response,
-                "message_id": message_id,
-            }
-        )
-        await self.db.disconnect()
+        async with Prisma() as db:
+            stored_rag_param = await db.rag_param.create(
+                data={
+                    "id": id,
+                    "rag_groundings": grounds_for_response,
+                    "message_id": message_id,
+                }
+            )
         return stored_rag_param
 
     async def get_rag_param_by_id(self, id: str) -> rag_param:
-        if not self.db.is_connected():
-            await self.db.connect()
-        found_rag_param = await self.db.rag_param.find_unique(where={"id": id})
-        await self.db.disconnect()
+        async with Prisma() as db:
+            found_rag_param = await db.rag_param.find_unique(where={"id": id})
         return found_rag_param
 
     async def get_rag_param_by_message_id(self, message_id: str) -> rag_param:
-        if not self.db.is_connected():
-            await self.db.connect()
-        found_rag_param = await self.db.rag_param.find_unique(
-            where={"message_id": message_id}
-        )
-        await self.db.disconnect()
+        async with Prisma() as db:
+            found_rag_param = await db.rag_param.find_unique(
+                where={"message_id": message_id}
+            )
         return found_rag_param

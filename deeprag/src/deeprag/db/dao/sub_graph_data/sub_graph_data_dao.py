@@ -7,8 +7,8 @@ load_dotenv()
 
 
 class SubGraphDataDAO:
-    def __init__(self, db):
-        self.db = Prisma()
+    def __init__(self):
+        pass
 
     async def create_sub_graph_data(
         self,
@@ -17,17 +17,16 @@ class SubGraphDataDAO:
         graph_data: str,
         merged_graph_data_id: str,
     ) -> sub_graph_data:
-        if not self.db.is_connected():
-            await self.db.connect()
-        stored_sub_graph_data = await self.db.sub_graph_data.create(
-            data={
-                "id": id,
-                "text_chunk_id": text_chunk_id,
-                "graph_data": graph_data,
-                "merged_graph_data_id": merged_graph_data_id,
-            }
-        )
-        await self.db.disconnect()
+        async with Prisma() as db:
+            stored_sub_graph_data = await db.sub_graph_data.create(
+                data={
+                    "id": id,
+                    "text_chunk_id": text_chunk_id,
+                    "graph_data": graph_data,
+                    "merged_graph_data_id": merged_graph_data_id,
+                }
+            )
+
         return stored_sub_graph_data
 
     async def batch_create_sub_graph_data(
@@ -37,33 +36,27 @@ class SubGraphDataDAO:
         sub_graph_data_list: list[str],
         merged_graph_data_id: str,
     ) -> int:
-        if not self.db.is_connected():
-            await self.db.connect()
-        data = [
-            {
-                "id": id,
-                "text_chunk_id": text_chunk_id,
-                "graph_data": graph_data,
-                "merged_graph_data_id": merged_graph_data_id,
-            }
-            for (id, text_chunk_id, graph_data) in zip(
-                id_list, text_chunk_id_list, sub_graph_data_list
-            )
-        ]
-        # logger.info(data)
-        stored_sub_graph_data_count = await self.db.sub_graph_data.create_many(
-            data=data
-        )
-        await self.db.disconnect()
+        async with Prisma() as db:
+            data = [
+                {
+                    "id": id,
+                    "text_chunk_id": text_chunk_id,
+                    "graph_data": graph_data,
+                    "merged_graph_data_id": merged_graph_data_id,
+                }
+                for (id, text_chunk_id, graph_data) in zip(
+                    id_list, text_chunk_id_list, sub_graph_data_list
+                )
+            ]
+            # logger.info(data)
+            stored_sub_graph_data_count = await db.sub_graph_data.create_many(data=data)
+
         return stored_sub_graph_data_count
 
     async def get_sub_graph_data_by_id(self, id: str) -> sub_graph_data:
-        if not self.db.is_connected():
-            await self.db.connect()
-        found_sub_graph_data = await self.db.sub_graph_data.find_unique(
-            where={"id": id}
-        )
-        await self.db.connect()
+        async with Prisma() as db:
+            found_sub_graph_data = await db.sub_graph_data.find_unique(where={"id": id})
+
         return found_sub_graph_data
 
 

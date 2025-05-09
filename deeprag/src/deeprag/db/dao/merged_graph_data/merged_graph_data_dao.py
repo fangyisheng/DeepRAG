@@ -7,7 +7,7 @@ load_dotenv()
 
 class MergedGraphDataDAO:
     def __init__(self):
-        self.db = Prisma()
+        pass
 
     async def create_merged_graph_data(
         self,
@@ -15,23 +15,21 @@ class MergedGraphDataDAO:
         merged_graph_data: str,
         merged_graph_data_visualization_html: str,
     ) -> merged_graph_data:
-        if not self.db.is_connected():
-            await self.db.connect()
-        stored_merged_graph_data = await self.db.merged_graph_data.create(
-            data={
-                "id": id,
-                "graph_data": merged_graph_data,
-                "merged_graph_data_visualization_html": merged_graph_data_visualization_html,
-            }
-        )
-        await self.db.disconnect()
+        async with Prisma() as db:
+            stored_merged_graph_data = await db.merged_graph_data.create(
+                data={
+                    "id": id,
+                    "graph_data": merged_graph_data,
+                    "merged_graph_data_visualization_html": merged_graph_data_visualization_html,
+                }
+            )
+
         return stored_merged_graph_data
 
     async def get_merged_graph_data_by_id(self, id: str) -> merged_graph_data:
-        if not self.db.is_connected():
-            await self.db.connect()
-        found_merged_graph_data = await self.db.merged_graph_data.find_unique(
-            where={"id": id}
-        )
-        await self.db.connect()
+        async with Prisma() as db:
+            found_merged_graph_data = await db.merged_graph_data.find_unique(
+                where={"id": id}
+            )
+
         return found_merged_graph_data

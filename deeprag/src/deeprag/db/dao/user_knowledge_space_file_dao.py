@@ -9,46 +9,43 @@ load_dotenv()
 
 class UserKnowledgeSpaceFileDAO:
     def __init__(self):
-        self.db = Prisma()
+        pass
 
     async def get_all_knowledge_scope_structure(self) -> list[user]:
-        if not self.db.is_connected():
-            await self.db.connect()
-        all_knowledge_scope_structure = await self.db.user.find_many(
-            include={
-                "knowledge_spaces": {
-                    "include": {
-                        "files": True,
-                    }
+        async with Prisma() as db:
+            all_knowledge_scope_structure = await db.user.find_many(
+                include={
+                    "knowledge_spaces": {
+                        "include": {
+                            "files": True,
+                        }
+                    },
                 },
-            },
-        )
-        await self.db.disconnect()
+            )
+
         return all_knowledge_scope_structure
 
     async def get_knowledge_scope_real_name_by_id(
         self, knowledge_scope_locator: KnowledgeScopeLocator
     ) -> KnowledgeScopeRealName:
-        if not self.db.is_connected():
-            await self.db.connect()
-        found_user = await self.db.user.find_unique(
-            where={
-                "id": knowledge_scope_locator.user_id,
-            }
-        )
-        found_knowledge_space = await self.db.knowledge_space.find_unique(
-            where={
-                "id": knowledge_scope_locator.knowledge_space_id,
-            },
-        )
+        async with Prisma() as db:
+            found_user = await db.user.find_unique(
+                where={
+                    "id": knowledge_scope_locator.user_id,
+                }
+            )
+            found_knowledge_space = await db.knowledge_space.find_unique(
+                where={
+                    "id": knowledge_scope_locator.knowledge_space_id,
+                },
+            )
 
-        found_file = await self.db.file.find_unique(
-            where={
-                "id": knowledge_scope_locator.file_id,
-            },
-        )
+            found_file = await db.file.find_unique(
+                where={
+                    "id": knowledge_scope_locator.file_id,
+                },
+            )
 
-        await self.db.disconnect()
         return KnowledgeScopeRealName(
             user_name=found_user.user_name,
             knowledge_space_name=found_knowledge_space.knowledge_space_name,

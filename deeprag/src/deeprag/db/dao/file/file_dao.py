@@ -8,7 +8,7 @@ load_dotenv()
 
 class FileDAO:
     def __init__(self):
-        self.db = Prisma()
+        pass
 
     async def upload_new_file_to_knowledge_space(
         self,
@@ -22,22 +22,21 @@ class FileDAO:
         # deep_indexed: bool = False,
         # file_embedding_zilliz_collection_name: str | None = None,
     ) -> file:
-        if not self.db.is_connected():
-            await self.db.connect()
-        stored_file = await self.db.file.create(
-            data={
-                "id": id,
-                "knowledge_space_id": knowledge_space_id,
-                "doc_title": doc_title,
-                "doc_text": doc_text,
-                "minio_bucket_name": minio_bucket_name,
-                "minio_object_name": minio_object_name,
-            },
-            include={
-                "KnowledgeSpaceFile": True,
-            },
-        )
-        await self.db.disconnect()
+        async with Prisma() as db:
+            stored_file = await db.file.create(
+                data={
+                    "id": id,
+                    "knowledge_space_id": knowledge_space_id,
+                    "doc_title": doc_title,
+                    "doc_text": doc_text,
+                    "minio_bucket_name": minio_bucket_name,
+                    "minio_object_name": minio_object_name,
+                },
+                include={
+                    "KnowledgeSpaceFile": True,
+                },
+            )
+
         return stored_file
 
     async def batch_upload_file_in_knowledge_space(
@@ -49,98 +48,90 @@ class FileDAO:
         minio_bucket_name_list: list[str],
         minio_object_name_list: list[str],
     ) -> int:
-        if not self.db.is_connected():
-            await self.db.connect()
-        stored_file_list_count = await self.db.file.create_many(
-            data=[
-                {
-                    "id": id,
-                    "knowledge_space_id": knowledge_space_id,
-                    "doc_title": doc_title,
-                    "doc_text": doc_text,
-                    "minio_bucket_name": minio_bucket_name,
-                    "minio_object_name": minio_object_name,
-                }
-                for (
-                    id,
-                    knowledge_space_id,
-                    doc_title,
-                    doc_text,
-                    minio_bucket_name,
-                    minio_object_name,
-                ) in zip(
-                    id_list,
-                    knowledge_space_id_list,
-                    doc_title_list,
-                    doc_text_list,
-                    minio_bucket_name_list,
-                    minio_object_name_list,
-                )
-            ],
-        )
-        await self.db.disconnect()
+        async with Prisma() as db:
+            stored_file_list_count = await db.file.create_many(
+                data=[
+                    {
+                        "id": id,
+                        "knowledge_space_id": knowledge_space_id,
+                        "doc_title": doc_title,
+                        "doc_text": doc_text,
+                        "minio_bucket_name": minio_bucket_name,
+                        "minio_object_name": minio_object_name,
+                    }
+                    for (
+                        id,
+                        knowledge_space_id,
+                        doc_title,
+                        doc_text,
+                        minio_bucket_name,
+                        minio_object_name,
+                    ) in zip(
+                        id_list,
+                        knowledge_space_id_list,
+                        doc_title_list,
+                        doc_text_list,
+                        minio_bucket_name_list,
+                        minio_object_name_list,
+                    )
+                ],
+            )
+
         return stored_file_list_count
 
     async def delete_file_in_knowledge_space(self, id: str) -> file:
-        if not self.db.is_connected():
-            await self.db.connect()
-        deleted_file = await self.db.file.delete(where={"id": id})
-        await self.db.disconnect()
+        async with Prisma() as db:
+            deleted_file = await db.file.delete(where={"id": id})
+
         return deleted_file
 
     async def update_existed_file_in_knowledge_space(self, id: str, data: dict) -> file:
-        if not self.db.is_connected():
-            await self.db.connect()
-        updated_file = await self.db.file.update(where={"id": id}, data=data)
-        await self.db.disconnect()
+        async with Prisma() as db:
+            updated_file = await db.file.update(where={"id": id}, data=data)
+
         return updated_file
 
     async def get_file_in_knowledge_space_by_doc_id(self, id: str) -> file:
-        if not self.db.is_connected():
-            await self.db.connect()
-        found_file = await self.db.file.find_unique(
-            where={"id": id},
-            include={
-                "text_chunks": {
-                    "include": {
-                        "sub_graph_datas": {
-                            "include": {
-                                "SubGraphDataMergedGraphData": True  # 注意这里是正确的 include 语法
+        async with Prisma() as db:
+            found_file = await db.file.find_unique(
+                where={"id": id},
+                include={
+                    "text_chunks": {
+                        "include": {
+                            "sub_graph_datas": {
+                                "include": {
+                                    "SubGraphDataMergedGraphData": True  # 注意这里是正确的 include 语法
+                                }
                             }
                         }
                     }
-                }
-            },
-        )
-        await self.db.disconnect()
+                },
+            )
+
         return found_file
 
     async def get_file_in_knowledge_space_by_knowledge_space_id(self, id: str) -> file:
-        if not self.db.is_connected():
-            await self.db.connect()
-        found_file_list = await self.db.file.find_many(where={"knowledge_space_id": id})
-        await self.db.disconnect()
+        async with Prisma() as db:
+            found_file_list = await db.file.find_many(where={"knowledge_space_id": id})
+
         return found_file_list
 
     async def get_zilliz_collection_name_by_file_id(self, id: str) -> str:
-        if not self.db.is_connected():
-            await self.db.connect()
-        found_file = await self.db.file.find_unique(where={"id": id})
-        await self.db.disconnect()
+        async with Prisma() as db:
+            found_file = await db.file.find_unique(where={"id": id})
+
         return found_file.file_embedding_zilliz_collection_name
 
     async def get_index_status_by_file_id(self, id: str) -> bool:
-        if not self.db.is_connected():
-            await self.db.connect()
-        found_file = await self.db.file.find_unique(where={"id": id})
-        await self.db.disconnect()
+        async with Prisma() as db:
+            found_file = await db.file.find_unique(where={"id": id})
+
         return found_file.indexed
 
     async def get_deep_index_status_by_file_id(self, id: str) -> bool:
-        if not self.db.is_connected():
-            await self.db.connect()
-        found_file = await self.db.file.find_unique(where={"id": id})
-        await self.db.disconnect()
+        async with Prisma() as db:
+            found_file = await db.file.find_unique(where={"id": id})
+
         return found_file.deep_indexed
 
 
