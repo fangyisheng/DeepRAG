@@ -35,30 +35,29 @@ async def process_text(bucket_name: str, object_name: str) -> CompleteTextUnit:
         return CompleteTextUnit(root=content)
 
 
-# 单元化功能测试成功
-import asyncio
-import csv
-import io
-import traceback
+# # 单元化功能测试成功
+# import asyncio
+# import csv
+# import io
+# import traceback
+# from loguru import logger
 
 
-async def get_csv_content(bucket_name, object_name):
-    client = await create_minio_client()
+# async def get_csv_content(bucket_name, object_name):
+#     client = await create_minio_client()
 
-    try:
-        with client.get_object(bucket_name, object_name) as response:
-            text_stream = io.TextIOWrapper(response, encoding="utf-8")
-            reader = csv.reader(text_stream)
-            header = next(reader)
-            print("Header:", header)
-            for row in reader:
-                print("Row:", row)
-    finally:
-        response.close()
-        response.release_conn()  # 非常重要，释放底层连接池资源
+#     response = client.get_object(bucket_name, object_name)
+
+#     text_stream = io.StringIO(response.read().decode("utf-8"))
+#     # text_stream = io.TextIOWrapper(response, encoding="utf-8")
+#     reader = csv.reader(text_stream)
+#     header = next(reader)
+#     print("Header:", header)
+#     for row in reader:
+#         logger.info(f"Row: {row}")
 
 
-asyncio.run(get_csv_content("mybucket", "test.csv"))
+# asyncio.run(get_csv_content("mybucket", "test.csv"))
 
 # # 将响应内容（bytes）转为字符串流 StringIO
 # # data = response.read().decode("utf-8")  # 假设是 utf-8 编码

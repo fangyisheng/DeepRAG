@@ -36,10 +36,12 @@ import asyncio
 # )
 
 asyncio.run(
-    batch_index(
+    index(
         collection_name="test_collection",
         knowlege_scope=KnowledgeScopeLocator(
-            user_id="d53c17a9-3a1a-4c21-ab86-bd609242fe91"
+            user_id="d53c17a9-3a1a-4c21-ab86-bd609242fe91",
+            knowledge_space_id="47c8aa05-3761-4254-a3eb-e8d6943eaf6a",
+            file_id="28051a25-2922-41e9-aaef-1158798bc220",
         ),
         deep_index_pattern=True,
     )
