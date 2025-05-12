@@ -830,29 +830,38 @@ class DeepRAG:
         if deep_query_pattern:
             if not deep_index_status:
                 raise Exception(
-                    message="当前文件的索引状态为False，请先对知识库进行深度索引后再进行查询",
-                    code=400,
+                    "当前文件的索引状态为False，请先对知识库进行深度索引后再进行查询"
                 )
         else:
             if not index_status:
                 raise Exception(
-                    message="当前文件的索引状态为False，请先对知识库进行索引后再进行查询",
-                    code=400,
+                    "当前文件的索引状态为False，请先对知识库进行索引后再进行查询"
                 )
 
-        searched_text: SearchedTextResponse = await query_vector_db_by_vector(
-            user_prompt,
-            collection_name,
-            knowledge_scope,
-            recalled_text_fragments_top_k,
-            deep_query_pattern,
-        )
-        embedding_total_token_usage = embedding_token_usage_var.get()
-        logger.info(f"本次检索到的文本是{searched_text}")
         if not session_id:
             context = None
+            query = user_prompt
         else:
             context = await self.llm_chat_service.construct_context(session_id)
+            logger.info(f"这是历史对话：{context}")
+            all_old_user_prompt = (
+                await self.llm_chat_service.get_all_user_prompt_from_context(
+                    context=context
+                )
+            )
+            query = all_old_user_prompt + " " + user_prompt
+            logger.info(f"这是新的查询：{query}")
+
+        searched_text: SearchedTextResponse = await query_vector_db_by_vector(
+            query=query,
+            collection_name=collection_name,
+            knowledge_scope=knowledge_scope,
+            recalled_text_fragments_top_k=recalled_text_fragments_top_k,
+            deep_query_pattern=deep_query_pattern,
+        )
+        logger.info(f"本次检索到的文本是{searched_text}")
+        embedding_total_token_usage = embedding_token_usage_var.get()
+
         complete_response = ""
         message_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         async for response in final_rag_answer_process_stream(
@@ -876,6 +885,7 @@ class DeepRAG:
             - datetime.strptime(message_start_time, "%Y-%m-%d %H:%M:%S")
         )
         llm_total_token_usage = llm_token_usage_var.get()
+        logger.info(f"完整的回答是:{complete_response}")
 
         await self.llm_chat_service.create_message(
             id=real_response_dict["data"]["message_id"],
@@ -916,20 +926,26 @@ class DeepRAG:
             knowledge_scope.file_id
         )
         logger.info(f"本次查询的zilliz的collection名称是{collection_name}")
+        if not session_id:
+            context = None
+            query = user_prompt
+        else:
+            context = await self.llm_chat_service.construct_context(session_id)
+
+            all_old_user_prompt = (
+                await self.llm_chat_service.get_all_user_prompt_from_context(context)
+            )
+            query = all_old_user_prompt + " " + user_prompt
         searched_text: SearchedTextResponse = await query_vector_db_by_vector(
-            user_prompt,
-            collection_name,
-            knowledge_scope,
-            recalled_text_fragments_top_k,
-            deep_query_pattern,
+            query=query,
+            collection_name=collection_name,
+            knowledge_scope=knowledge_scope,
+            recalled_text_fragments_top_k=recalled_text_fragments_top_k,
+            deep_query_pattern=deep_query_pattern,
         )
 
         embedding_total_token_usage = embedding_token_usage_var.get()
         logger.info(f"本次检索到的文本是{searched_text}")
-        if not session_id:
-            context = None
-        else:
-            context = await self.llm_chat_service.construct_context(session_id)
 
         message_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 

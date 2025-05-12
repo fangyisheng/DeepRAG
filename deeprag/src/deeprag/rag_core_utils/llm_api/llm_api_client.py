@@ -14,6 +14,7 @@ from deeprag.rag_core_utils.utils.decorators import (
 from deeprag.rag_core_utils.utils.context_holder import (
     llm_token_usage_var,
 )
+from deeprag.db.data_model import RoleMessage
 
 load_dotenv()
 llm_base_url = os.getenv("LLM_BASE_URL")

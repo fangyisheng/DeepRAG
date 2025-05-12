@@ -35,14 +35,33 @@ import asyncio
 #     )
 # )
 
-asyncio.run(
-    index(
-        collection_name="test_collection",
-        knowlege_scope=KnowledgeScopeLocator(
+# asyncio.run(
+#     batch_index(
+#         collection_name="test_collection",
+#         knowlege_scope=KnowledgeScopeLocator(
+#             user_id="d53c17a9-3a1a-4c21-ab86-bd609242fe91"
+#         ),
+#         deep_index_pattern=True,
+#     )
+# )
+
+# 下面测试多轮对话
+
+
+async def test():
+    chat = await query(
+        user_prompt="我刚刚是不是跟你打招呼了，如果有的话就回答一下，谢谢",
+        knowledge_scope=KnowledgeScopeLocator(
             user_id="d53c17a9-3a1a-4c21-ab86-bd609242fe91",
             knowledge_space_id="47c8aa05-3761-4254-a3eb-e8d6943eaf6a",
             file_id="28051a25-2922-41e9-aaef-1158798bc220",
         ),
-        deep_index_pattern=True,
+        stream=True,
+        deep_query_pattern=True,
+        session_id="ac956983-c0ca-4463-a4a2-acdf812e791b",
     )
-)
+    async for chunk in chat:
+        print(chunk)
+
+
+asyncio.run(test())

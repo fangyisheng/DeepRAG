@@ -29,7 +29,7 @@ async def final_rag_answer_process_stream(
     if not context:
         response = await llm_chat(system_prompt=system_prompt, user_prompt=user_prompt)
     else:
-        context = str([item.model_dump() for item in context])
+        context = [item.model_dump() for item in context]
         response = await llm_chat(
             system_prompt=system_prompt,
             context_histroy=context,
@@ -86,7 +86,7 @@ async def final_rag_answer_process_not_stream(
             system_prompt=system_prompt, user_prompt=user_prompt
         )
     else:
-        context = str([item.model_dump() for item in context])
+        context = [item.model_dump() for item in context]
         answer = await llm_chat_not_stream(
             system_prompt=system_prompt,
             context_histroy=context,

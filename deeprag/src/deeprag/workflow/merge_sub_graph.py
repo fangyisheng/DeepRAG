@@ -17,6 +17,7 @@ from deeprag.workflow.data_model import (
     BatchTextChunkGenerateGraphsResponse,
     CompleteGraphData,
 )
+from loguru import logger
 
 
 async def merge_sub_entity_relationship_graph(
@@ -70,7 +71,15 @@ async def merge_sub_entity_relationship_graph(
             if existing_text:
                 existing_text["id"] = str(uuid.uuid4())
                 if existing_text["type"] != entity["type"]:
-                    existing_text["type"] = [existing_text["type"], entity["type"]]
+                    existing_types = existing_text["type"]
+                    new_types = entity["type"]
+
+                    if not isinstance(existing_types, list):
+                        existing_types = [existing_types]
+                    if not isinstance(new_types, list):
+                        new_types = [new_types]
+
+                    existing_text["type"] = list(set(existing_types + new_types))
 
             else:
                 entity["id"] = str(uuid.uuid4())
@@ -85,12 +94,19 @@ async def merge_sub_entity_relationship_graph(
                 ),
                 None,
             )
+            logger.info(f"{existing_relation}")
             if existing_relation:
                 if existing_relation["type"] != relation["type"]:
-                    existing_relation["type"] = [
-                        existing_relation["type"],
-                        entity["type"],
-                    ]
+                    existing_types = existing_relation["type"]
+                    new_types = relation["type"]
+
+                    if not isinstance(existing_types, list):
+                        existing_types = [existing_types]
+                    if not isinstance(new_types, list):
+                        new_types = [new_types]
+
+                    existing_relation["type"] = list(set(existing_types + new_types))
+
             else:
                 relation["id"] = str(uuid.uuid4())
                 merged_graph["relations"].append(relation)
@@ -112,6 +128,7 @@ async def merge_sub_entity_relationship_graph(
             ),
             None,
         )
+    logger.info(f"{merged_graph}")
 
     return CompleteGraphData(**merged_graph)
 
@@ -205,7 +222,7 @@ async def merge_sub_entity_relationship_graph(
 #         ),
 #         FirstExtractedGraphData(
 #             entities=[
-#                 EntityIdInt(text="OpenAI", type="组织", id=0),
+#                 EntityIdInt(text="OpenAI", type=["组织,公司"], id=0),
 #                 EntityIdInt(text="o1", type="模型", id=1),
 #                 EntityIdInt(text="DeepSeek-R1", type="模型", id=2),
 #                 EntityIdInt(text="周鸿祎", type="人物", id=3),

@@ -1,6 +1,7 @@
 from prisma import Prisma
 from dotenv import load_dotenv
 from prisma.models import llm_chat
+from deeprag.db.data_model import RoleMessage
 
 load_dotenv()
 
@@ -14,7 +15,7 @@ class LLMChatDAO:
         id: str,
         user_id: str,
         user_prompt: str,
-        user_context: str,
+        user_context: list[RoleMessage],
         llm_answer: str,
         message_start_time: str,
         message_end_time: str,
@@ -24,6 +25,7 @@ class LLMChatDAO:
         embedding_token_usage: int,
     ) -> llm_chat:
         async with Prisma() as db:
+            user_context = str([item.model_dump() for item in user_context])
             stored_message = await db.llm_chat.create(
                 data={
                     "id": id,
