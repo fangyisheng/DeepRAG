@@ -12,6 +12,10 @@ or vllm. For the further information about self-hosting , vllm and SGLang docs w
 
 **Step 2: Zilliz/Milvus vector database is required**
 
+u can self-host the milvus vector database by docker to setup the milvus_uri and milvus_token which .env file needs
+as the docker shells for standalone and distributed deploying milvus vector database are different, the shells example wont be provided in the readme. For the further information on how to self-host the milvus
+vector database, the milvus docs website is your best choice.
+
 As u always concerned,why u dont use the open-source vector database. Cuz I want to build a hight-performance RAG system and self-hosted vector database may bring u some unpredictable problems annoying.
 Given the Zilliz vector database, u can go to the Zilliz domain website to register your own account. For the economics consideration, by the way ,if u just dev or learn the RAG system, just subscribe the Free
 cluster in Zilliz. Free, and relative high-performance and low failure rate.
@@ -31,6 +35,9 @@ docker run --name my-postgres \
 ```bash
 docker run -d --name minio --restart always -p 9002:9000 -p 9001:9001 -v minio_data:/data -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" minio/minio server /data --console-address ":9001"
 ```
+
+**Step4: complete writing the .env file**
+``` git clone 
 
 
 
