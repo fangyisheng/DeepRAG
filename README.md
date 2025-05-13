@@ -1,3 +1,9 @@
+# DeepRAG A Fast and Efficient Retrieval-Augmented Generation (RAG) Framework for LLMs
+
+DeepRAG is a lightweight, high-performance RAG framework designed for building advanced LLM-powered applications. It supports integration with large language models such as DeepSeek-v3 , Qwen , Llama 3 , and more — whether from cloud APIs or self-hosted backends like SGLang or vLLM .
+
+With support for powerful vector databases like Zilliz/Milvus , efficient data parsing pipelines, and modular architecture, DeepRAG makes it easy to build, scale, and customize retrieval-augmented generation systems for real-world applications.
+
 ![9c0d2b267fb0518c63d1e634b95285c](https://github.com/user-attachments/assets/48739d37-39a9-40c4-b1d6-ad5a6870cba1)
 A Fast and Efficient LLM-RAG Python project based DeepSeek-v3 or other LLM models using Poetry
 
