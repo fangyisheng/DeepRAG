@@ -38,6 +38,3 @@ list_of_dicts = [{"a": [1, 2]}, {"b": [3, 4]}]
 # 要添加的键和值
 key_to_append = "c"
 value_to_append = 5
-
-for d in list_of_dicts:
-    
