@@ -1,8 +1,3 @@
-version: '3.8'
-
-env_file:
-  - .docker.env
-
 networks:
   app-network:
     driver: bridge
@@ -14,14 +9,16 @@ volumes:
 
 services:
   db:
-    image:postgres: latest
+    image: postgres:latest
     container_name: deeprag-db
+    env_file:
+      - ./docker.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "$ {PG_EXPOSED_PORT}:5432"
+      - "${PG_EXPOSED_PORT}:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
     networks:
@@ -31,17 +28,19 @@ services:
   minio:
     image: minio/minio:latest
     container_name: deeprag-minio
+    env_file:
+      - ./docker.env
     ports:
-      - "$ {MINIO_EXPOSED_PORT}:9000"
-      - "$ {MINIO_CONSOLE_EXPOSED_PORT}:9001}"
+      - "${MINIO_EXPOSED_PORT}:9000"
+      - "${MINIO_CONSOLE_EXPOSED_PORT}:9001"
     environment:
-      MINIO_ROOT_USER: $ {MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: $ {MINIO_ROOT_PASSWORD}
-    command: server /data --console-address ":9001"
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":${MINIO_CONSOLE_EXPOSED_PORT}"
     volumes:
       - minio_data:/data
     networks:
-      - app_network
+      - app-network
     restart: unless-stopped
 
   app:
@@ -49,13 +48,15 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: deeprag-app
-    dependes_on:
+    env_file:
+      - ./docker.env
+    depends_on:
       - db
       - minio
     environment:
       - name=value
     ports:
-      - "$ {DEEPRAG_APP_PORT}:8000"
+      - "${DEEPRAG_APP_PORT}:8000"
     networks:
-      - app_network
+      - app-network
     restart: unless-stopped

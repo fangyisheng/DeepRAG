@@ -5,9 +5,8 @@ description = "A Fast and Efficient LLM-RAG Python project based DeepSeek-v3 or 
 authors = ["fys380799654@gmail.com"]  # 作者信息
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.12"
 aiolimiter = "1.2.1"
-beeprint = "2.4.11"
 fastapi = "0.115.12"
 leidenalg = "0.10.2"
 loguru = "0.7.3"
@@ -29,6 +28,9 @@ requests = "2.32.3"
 rich = "14.0.0"
 tiktoken = "0.9.0"
 tqdm = "4.67.1"
+uvicorn = "0.34.0"
+prisma = "0.15.0"
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]  # 构建系统要求
