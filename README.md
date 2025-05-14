@@ -123,7 +123,10 @@ then initialize the ORM and Database
 
 ```bash prisma db push --schema ./db/prisma/schema.prisma```
 
-```bash prisma db execute --file ./db/prisma/schema.prisma
+```bash prisma db execute --file ./db/prisma/create_auto_increment.sql --schema ./db/prisma/schema.prisma```
+
+### Self-host by docker
+
 
 
 
