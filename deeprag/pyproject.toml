@@ -4,6 +4,31 @@ version = "0.1.2"                  # 项目版本
 description = "A Fast and Efficient LLM-RAG Python project based DeepSeek-v3 or other LLM models using Poetry "  # 项目描述
 authors = ["fys380799654@gmail.com"]  # 作者信息
 
+[tool.poetry.dependencies]
+python = "^3.10"
+aiolimiter = "1.2.1"
+beeprint = "2.4.11"
+fastapi = "0.115.12"
+leidenalg = "0.10.2"
+loguru = "0.7.3"
+matplotlib = "3.10.3"
+minio = "7.2.15"
+networkx = "3.2.1"
+openai = "1.78.1"
+pandas = "2.2.3"
+pydantic = "2.11.4"
+pymilvus = "2.5.4"
+python-dotenv = "1.1.0"
+python_igraph = "0.11.8"
+pyvi = "0.1.1"
+pyvis = "0.3.2"
+PyYAML = "6.0.2"
+rank_bm25 = "0.2.2"
+redis = "5.2.1"
+requests = "2.32.3"
+rich = "14.0.0"
+tiktoken = "0.9.0"
+tqdm = "4.67.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]  # 构建系统要求
