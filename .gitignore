@@ -1,4 +1,5 @@
 *.pyc
 *.env
 **/schema.prisma
+**/.docker.env
 
