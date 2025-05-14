@@ -110,28 +110,35 @@ MINIO_SECURE=
 ```
 
 #### **Step5**: initialize the deeprag module and initialize the ORM and Database
-```bash cd DeepRAG/deeprag
+```bash
+cd DeepRAG/deeprag
 ```
 
-```bash poetry install
+```bash
+poetry install
 ```
 if u dont have poetry, please install it in your environment
 
 then initialize the ORM and Database
 
-```bash cd Deeprag/deeprag/src/deeprag/db/prisma
+```bash
+cd Deeprag/deeprag/src/deeprag/db/prisma
 ```
 
-```bash cp origin_schema.prisma schema.prisma
+```bash
+cp origin_schema.prisma schema.prisma
 ```
 
-```bash cd Deeprag/deeprag/src/deeprag 
+```bash
+cd Deeprag/deeprag/src/deeprag 
 ```
 
-```bash prisma db push --schema ./db/prisma/schema.prisma
+```bash
+prisma db push --schema ./db/prisma/schema.prisma
 ```
 
-```bash prisma db execute --file ./db/prisma/create_auto_increment.sql --schema ./db/prisma/schema.prisma
+```bash
+prisma db execute --file ./db/prisma/create_auto_increment.sql --schema ./db/prisma/schema.prisma
 ```
 
 ### Self-host by docker
