@@ -143,6 +143,7 @@ prisma db execute --file ./db/prisma/create_auto_increment.sql --schema ./db/pri
 
 ### Self-host by docker
 
+is writing..... wait for me to upgrading
 
 
 
