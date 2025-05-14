@@ -40,6 +40,7 @@ if u dont want to purchase cloud database,  just self-host it by docker or podma
 docker run --name my-postgres \
   -e POSTGRES_USER=myuser \
   -e POSTGRES_PASSWORD=mypassword \
+  -e POSTGRES_DB=mydb \
   -v pg_data:/var/lib/postgresql/data \
   -p 5432:5432 \
   -d postgres
