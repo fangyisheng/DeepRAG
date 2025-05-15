@@ -11,8 +11,6 @@ services:
   db:
     image: postgres:latest
     container_name: deeprag-db
-    env_file:
-      - ./docker.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -28,8 +26,6 @@ services:
   minio:
     image: minio/minio:latest
     container_name: deeprag-minio
-    env_file:
-      - ./docker.env
     ports:
       - "${MINIO_EXPOSED_PORT}:9000"
       - "${MINIO_CONSOLE_EXPOSED_PORT}:9001"
@@ -48,13 +44,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: deeprag-app
-    env_file:
-      - ./docker.env
     depends_on:
       - db
       - minio
-    environment:
-      - name=value
+    command: [ "/app/src/deeprag/entrypoint.sh" ]
     ports:
       - "${DEEPRAG_APP_PORT}:8000"
     networks:

@@ -17,12 +17,11 @@ COPY ./deeprag/poetry.lock .
 #     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
+COPY ./deeprag/src ./src
 # 使用poetry 安装依赖
 RUN poetry install
-
-COPY ./deeprag/src ./src
 COPY entrypoint.sh /app/src/deeprag/entrypoint.sh
 RUN chmod +x /app/src/deeprag/entrypoint.sh
-ENTRYPOINT [ "/app/src/deeprag/entrypoint.sh" ]
+# RUN cd /app/src/deeprag && bash /app/src/deeprag/entrypoint.sh
 #启动应用
 CMD ["poetry", "run", "uvicorn", "deeprag.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
