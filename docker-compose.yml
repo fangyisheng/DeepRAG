@@ -44,6 +44,9 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: deeprag-app
+    environment:
+      - MINIO_ENDPOINT=deeprag-minio:9000
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@deeprag-db:5432/${POSTGRES_DB}?schema=public
     depends_on:
       - db
       - minio
