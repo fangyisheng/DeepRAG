@@ -32,9 +32,10 @@ if [ ! -f "$INIT_FLAG_FILE" ]; then
     # 创建标志文件，防止重复初始化
     touch "$INIT_FLAG_FILE"
     echo "==> Initialization complete, flag file created"
+    poetry run prisma generate --schema ./db/prisma/schema.prisma
 else
     echo "==> Prisma schema already initialized. Skipping setup."
-    poetry run prisma generate --schema ./db/prisma/schema.prisma
+    
 fi
 
 echo "==> Prisma generate executed" 

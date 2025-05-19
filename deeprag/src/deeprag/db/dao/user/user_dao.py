@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 from prisma.models import user, file
 
 load_dotenv()
-Prisma(auto_register=False)
 
 
 class UserDAO:
@@ -104,3 +103,13 @@ class UserDAO:
 
 
 # print(asyncio.run(main()))
+
+# 测试一下create_user的方法
+
+# import asyncio
+
+# user_dao = UserDAO()
+
+# a = asyncio.run(user_dao.create_user("e7a6aec2-f7d8-4911-be92-1947c8343975", "test"))
+
+# print(a)

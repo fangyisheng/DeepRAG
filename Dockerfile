@@ -1,9 +1,6 @@
 FROM python:3.12
 
 
-ARG HTTP_PROXY=http://172.31.208.1:7890
-ARG HTTPS_PROXY=http://172.31.208.1:7890
-
 WORKDIR /app
 RUN pip install poetry
 #分阶段构建
@@ -20,8 +17,9 @@ COPY ./deeprag/poetry.lock .
 COPY ./deeprag/src ./src
 # 使用poetry 安装依赖
 RUN poetry install
+RUN cd /app/src/deeprag && poetry run prisma generate --schema ./db/prisma/schema.prisma
 COPY entrypoint.sh /app/src/deeprag/entrypoint.sh
 RUN chmod +x /app/src/deeprag/entrypoint.sh
 # RUN cd /app/src/deeprag && bash /app/src/deeprag/entrypoint.sh
 #启动应用
-CMD ["poetry", "run", "uvicorn", "deeprag.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["poetry", "run", "uvicorn", "deeprag.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
