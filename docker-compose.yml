@@ -5,6 +5,7 @@ networks:
 volumes:
   pg_data:
   minio_data:
+  app_data:
 
 
 services:
@@ -32,7 +33,7 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    command: server /data --console-address ":${MINIO_CONSOLE_EXPOSED_PORT}"
+    command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
     networks:
@@ -53,6 +54,8 @@ services:
     command: [ "/app/src/deeprag/entrypoint.sh" ]
     ports:
       - "${DEEPRAG_APP_PORT}:8000"
+    volumes:
+      - app_data:/app
     networks:
       - app-network
     restart: unless-stopped

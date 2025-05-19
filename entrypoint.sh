@@ -34,7 +34,9 @@ if [ ! -f "$INIT_FLAG_FILE" ]; then
     echo "==> Initialization complete, flag file created"
 else
     echo "==> Prisma schema already initialized. Skipping setup."
+    poetry run prisma generate --schema ./db/prisma/schema.prisma
 fi
 
+echo "==> Prisma generate executed" 
 echo "==> Starting application with uvicorn..."
 exec poetry run uvicorn deeprag.api.main:app --host 0.0.0.0 --port 8000
