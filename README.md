@@ -140,10 +140,28 @@ prisma db push --schema ./db/prisma/schema.prisma
 ```bash
 prisma db execute --file ./db/prisma/create_auto_increment.sql --schema ./db/prisma/schema.prisma
 ```
+```bash
+prisma db pull  --schema ./db/prisma/schema.prisma
+```
+```bash
+prisma generate  --schema ./db/prisma/schema.prisma
+```
 
 ### Self-host by docker
 
-is writing..... wait for me to upgrading
+if u want to self-host deeprag system by docker, following instructions are needed.
+
+This is the first env file you need to fill out.
+```bash
+cd /DeepRAG
+```
+```bash
+cp .env.docker .env
+```
+
+
+
+
 
 
 
