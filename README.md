@@ -250,7 +250,15 @@ Cuz the two variants have been filled in by docker-compose.yml
 
 ![image](https://github.com/user-attachments/assets/5a77ef47-15cd-4d4e-a5f1-1794c767203b)
 
-#### **Step 2: Start the Deeprag container service using the Docker Compose configuration file.**
+#### **Step 2: Create the prisma schema***
+```bash
+cd Deeprag/deeprag/src/deeprag/db/prisma
+```
+```bash
+cp origin_prisma.schema prisma.schema
+```
+
+#### **Step 3: Start the Deeprag container service using the Docker Compose configuration file.**
 ```bash
 cd /DeepRAG
 ```
