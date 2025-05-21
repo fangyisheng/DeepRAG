@@ -255,7 +255,7 @@ Cuz the two variants have been filled in by docker-compose.yml
 cd Deeprag/deeprag/src/deeprag/db/prisma
 ```
 ```bash
-cp origin_prisma.schema prisma.schema
+cp origin_schema.prisma schema.prisma
 ```
 
 #### **Step 3: Start the Deeprag container service using the Docker Compose configuration file.**
