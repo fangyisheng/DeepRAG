@@ -165,7 +165,7 @@ This is the first env file you need to fill out.
 cd /DeepRAG
 ```
 ```bash
-cp .env.docker .env
+cp docker.env.example docker.env
 ```
 
 ```env
